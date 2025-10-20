@@ -26,6 +26,10 @@ public class TimedSlider : MonoBehaviour
     [SerializeField] private GameObject bars;
     [SerializeField] private MainLoop mainLoop;
 
+    [SerializeField] private AudioPlayer sexualMoansPlayer;
+    //[SerializeField] private AudioPlayer coomPlayer;
+    [SerializeField] private AudioClip orgasmMoan;
+
 
     //[SerializeField] private Text climaxText;
     [SerializeField] private Transform climaxTransform;
@@ -65,15 +69,30 @@ public class TimedSlider : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space)) && !clickedThisCycle)
+        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space)) && !clickedThisCycle && !mainLoop.clickedButtonName.StartsWith("toggle"))
         {
             clickedThisCycle = true;
             volume += value;
             climax += 10f;
+            if (climax > 200f) climax = 200f;
             if (volume > maxVolume) volume = maxVolume;
             volumeTransform.localScale = new Vector3(volume / 100f, volumeTransform.localScale.y, 1);
             climaxTransform.localScale = new Vector3(climax / 100f, climaxTransform.localScale.y, 1);
             StartCoroutine(mainLoop.Bounce(0.1f));
+            sexualMoansPlayer.PlayRandom();
+        }
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+            clickedThisCycle = true;
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                volume = maxVolume;
+                volumeTransform.localScale = new Vector3(volume / 100f, volumeTransform.localScale.y, 1);
+            }
+            climax = 200f;
+            climaxTransform.localScale = new Vector3(climax / 100f, climaxTransform.localScale.y, 1);
+            StartCoroutine(mainLoop.Bounce(0.1f));
+            sexualMoansPlayer.PlayRandom();
         }
         screenFlash.color = new Color(screenFlash.color.r, screenFlash.color.g, screenFlash.color.b, climax / 1000f);
 
@@ -158,6 +177,8 @@ public class TimedSlider : MonoBehaviour
         //previewBG.color = new Color(previewBG.color.r, previewBG.color.g, previewBG.color.b, 0.2f);
         previewFace.SetCounterTo(2);
         backdropFace.SetCounterTo(2);
+
+        sexualMoansPlayer.PlayCustom(orgasmMoan);
 
         while (climax > 0)
         {

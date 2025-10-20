@@ -1,0 +1,135 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class AudioPlayer : MonoBehaviour
+{
+    [SerializeField] private AudioClip[] audioClips;
+    private AudioSource source;
+
+    private int previousClipIndex = -1;
+    
+    // Start is called before the first frame update
+    public float volumeMultiplier = 1f;
+
+    private float internalVolume = 1f;
+    private float startingVolume = 1f;
+    
+    void Awake()
+    {
+        source = GetComponent<AudioSource>();
+    }
+    
+    void Start()
+    {
+        startingVolume = source.volume;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        /*if (Input.GetKeyDown(KeyCode.Q)) volumeMultiplier = 0f;
+        if (Input.GetKeyDown(KeyCode.W)) volumeMultiplier = 0.5f;
+        if (Input.GetKeyDown(KeyCode.E)) volumeMultiplier = 1f;
+        if (Input.GetKeyDown(KeyCode.S)) StartCoroutine(ChangeTrackTo(1, 5f));
+        if (Input.GetKeyDown(KeyCode.A)) StartCoroutine(ChangeTrackTo(0, 5f));*/
+        source.volume = internalVolume * volumeMultiplier;
+
+    }
+
+    public void PlayRandom()
+    {
+        internalVolume = startingVolume;
+        int clipIndex = Random.Range(0, audioClips.Length);
+        for (int i = 0; i < 8; i++)
+        {
+            int newIndex = Random.Range(0, audioClips.Length);
+            if (newIndex != previousClipIndex) clipIndex = newIndex;
+        }
+        previousClipIndex = clipIndex;
+        source.clip = audioClips[clipIndex];
+        source.Play();
+        /*if (!source.isPlaying)
+        {
+            
+        }*/
+    }
+
+    public void PlayCustom(AudioClip clip)
+    {
+        
+        internalVolume = 1f;
+        source.clip = clip;
+        source.Play();
+    }
+
+    public void PlayCustom(AudioClip clip, float volume)
+    {
+        internalVolume = volume;
+        source.clip = clip;
+        source.Play();
+    }
+
+    public IEnumerator ChangeTrackTo(int index, float duration)
+    {
+        if (source.clip != audioClips[index])
+        {
+            float timer = 0f;
+            if (internalVolume > 0f)
+            {
+                while (timer < duration)
+                {
+                    internalVolume -= Time.deltaTime / duration;
+                    source.volume = internalVolume * volumeMultiplier;
+                    timer += Time.deltaTime;
+                    yield return null;
+                }
+            }
+
+            internalVolume = 0f;
+            source.clip = audioClips[index];
+            source.Play();
+            timer = 0f;
+            while (timer < duration)
+            {
+                internalVolume += Time.deltaTime / duration;
+                source.volume = internalVolume * volumeMultiplier;
+                timer += Time.deltaTime;
+                yield return null;
+            }
+        }
+        else
+        {
+            yield return null;
+        }
+    }
+
+    public IEnumerator GraduallyUnmute(float duration)
+    {
+        
+        internalVolume = 0f;
+        float timer = 0f;
+        while (timer < duration)
+        {
+            internalVolume += Time.deltaTime / duration;
+            source.volume = internalVolume * volumeMultiplier;
+            timer += Time.deltaTime;
+            yield return null;
+        }
+ 
+    }
+
+    public IEnumerator GraduallyMute(float duration)
+    {
+        float timer = 0f;
+        while (timer < duration)
+        {
+            internalVolume -= Time.deltaTime / duration;
+            source.volume = internalVolume * volumeMultiplier;
+            timer += Time.deltaTime;
+            yield return null;
+        }
+        internalVolume = 0f;
+    }
+
+}

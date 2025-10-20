@@ -13,6 +13,14 @@ public class MainLoop : MonoBehaviour
     [SerializeField] private Text hungerText;
     [SerializeField] private Text achievementText;
 
+    [SerializeField] private AudioPlayer musicPlayer;
+    [SerializeField] private AudioPlayer stuffedMoansPlayer;
+    [SerializeField] private AudioPlayer gulpPlayer;
+    [SerializeField] private AudioPlayer gurglePlayer;
+    [SerializeField] private AudioClip hungrySound;
+    [SerializeField] private AudioPlayer achievementPlayer;
+    [SerializeField] private AudioPlayer gaspPlayer;
+
     [SerializeField] private SpriteRenderer overrideFace;
     [SerializeField] private SpriteRenderer roomBG;
 
@@ -75,13 +83,14 @@ public class MainLoop : MonoBehaviour
 
     public float trainingModifier = 1.0f;
     public float hungerModifier = 1.0f;
+    public float intestineMultiplier = 2f;
 
     int munchiesConsumed = 0;
     public int weedStock = 1;
 
     bool flowEnabled = false;
     float flowRate = 0.3f;
-    float intestineCapacity = 2.0f;
+    float intestineCapacity = 1.0f;
     float intestineContents = 0f;
     int disposalTimer = 0;
     public int disposalReq = 4;
@@ -146,6 +155,12 @@ public class MainLoop : MonoBehaviour
 
             }
             if (isAsleep) reactionFaceIndex = 0;
+            if (imageIndex > 4)
+            {
+                if (!isAsleep) stuffedMoansPlayer.PlayRandom();
+                if (stomachContents + intestineContents > 1.5f && Random.Range(0, Mathf.Max(0, 10 - imageIndex)) == 0) gurglePlayer.PlayRandom();
+            }
+
 
             faces.SetCounterTo(reactionFaceIndex);
         }
@@ -208,7 +223,7 @@ public class MainLoop : MonoBehaviour
                 rewardMessage = "Reward: when near the limit, eat twice";
                 break;
             case 2:
-                achievementMessage = "Miss Piggy: Digest 7000 calories in one day.";
+                achievementMessage = "Miss Piggy: Digest 6000 calories in one day.";
                 rewardMessage = "Reward: digestion starts 1 hour sooner";
                 break;
             case 3:
@@ -238,6 +253,7 @@ public class MainLoop : MonoBehaviour
                 break;
         }
 
+        achievementPlayer.PlayRandom();
         achievementText.text = "ACHIEVEMENT\n" + achievementMessage + "\n\n" + rewardMessage;
 
         //Debug.Log(achievementMessage);
@@ -261,7 +277,6 @@ public class MainLoop : MonoBehaviour
         {
             isBouncing = true;
             float initialYPos = transform.position.y;
-
             float timer = 0;
 
             while (timer < bounceDuration)
@@ -292,26 +307,28 @@ public class MainLoop : MonoBehaviour
         if (babyVolume >= 1.95f) babyDescriptor = "healthy ";
         if (babyVolume >= 2.0f) babyDescriptor = "perfectly healthy ";
 
-        while (fetusCount > 0)
-        {
-            StartCoroutine(Bounce(0.1f));
-            StartCoroutine(BellyJiggle(false));
-            faces.SetCounterTo(4);
-            yield return new WaitForSeconds(1f);
-            faces.SetCounterTo(5);
-            yield return new WaitForSeconds(1f);
-            fetusCount--;
-            wombContents -= babyVolume;
-            foodText.text = "You give birth to a " + babyDescriptor + "baby.";
-
-            PrintStats();
-        }
         StartCoroutine(Bounce(0.1f));
         StartCoroutine(BellyJiggle(false));
         faces.SetCounterTo(4);
         yield return new WaitForSeconds(1f);
         faces.SetCounterTo(5);
         yield return new WaitForSeconds(1f);
+
+        while (fetusCount > 0)
+        {
+            while (!Input.GetMouseButtonDown(0) && !Input.GetKey(KeyCode.Space)) yield return null;
+            gaspPlayer.PlayRandom();
+            StartCoroutine(Bounce(0.1f));
+            StartCoroutine(BellyJiggle(false));
+            faces.SetCounterTo(4);
+            yield return new WaitForSeconds(1f);
+            faces.SetCounterTo(5);
+
+            fetusCount--;
+            wombContents -= babyVolume;
+            foodText.text = "You give birth to a " + babyDescriptor + "baby.";
+            PrintStats();
+        }
     }
 
     IEnumerator MainRoutine()
@@ -324,6 +341,7 @@ public class MainLoop : MonoBehaviour
         RefreshTouchColliders();
 
         bool eligibleForAchievement = true;
+        bool topHeavyAtStart = false;
 
         while (true)
         {
@@ -332,6 +350,7 @@ public class MainLoop : MonoBehaviour
             if (stomachContents > stomachCapacity * trainingModifier)
             {
                 trainingModifier += Mathf.Round((stomachContents - (stomachCapacity * trainingModifier)) * (isAsleep ? 30 : 10)) / 1000;
+                //if (imageIndex > 3) gurglePlayer.PlayRandom();
                 if (trainingModifier >= 2f)
                 {
                     trainingModifier = 2f;
@@ -413,7 +432,9 @@ public class MainLoop : MonoBehaviour
             if (fetusCount == 0 && !isAsleep)
             {
                 minigameUI.SetActive(true);
+                StartCoroutine(musicPlayer.ChangeTrackTo(0, 3f));
                 yield return StartCoroutine(sexMinigame.Oscillate(imageIndex));
+                StartCoroutine(musicPlayer.ChangeTrackTo(1, 3f));
                 fetusCount = 1 + Mathf.Min((int)sexMinigame.amountReleased, 200) / 100;
                 //Debug.Log(sexMinigame.amountReleased);
                 sexMinigame.amountReleased = 0;
@@ -430,11 +451,14 @@ public class MainLoop : MonoBehaviour
                     if (stomachContents < adjustedStomachCapacity)
                     {
                         stomachContents += 0.4f;
+                        holdFaceDuration = 0f;
+                        gulpPlayer.PlayRandom();
                         if (achievements[1] && stomachContents >= adjustedStomachCapacity)
                         {
                             PrintStats();
                             yield return new WaitForSeconds(0.3f);
                             stomachContents += 0.4f;
+                            gulpPlayer.PlayRandom();
                         }
                         ateThisTurn = true;
                         if (stomachContents >= stomachCapacity * trainingModifier && hungerModifier > 1)
@@ -501,6 +525,7 @@ public class MainLoop : MonoBehaviour
             foodText.text = foodDescription;
             overrideFace.enabled = isAsleep;
             //end of hour
+            topHeavyAtStart = stomachContents > intestineContents;
 
             if (!ateThisTurn && (hungerModifier - 0.2f * munchiesConsumed) <= 1f) foodDescription = "";
             if (stomachContents >= adjustedStomachCapacity)
@@ -570,7 +595,7 @@ public class MainLoop : MonoBehaviour
                 else
                 {
                     if (digestionTimer > 0) digestionTimer--;
-                    if (digestionTimer == 0 && intestineContents < (intestineCapacity * trainingModifier)) flowEnabled = true;
+                    if (digestionTimer == 0 && intestineContents < (intestineCapacity * intestineMultiplier * trainingModifier)) flowEnabled = true;
 
                 }
                 hungerTimer = 0;
@@ -580,6 +605,18 @@ public class MainLoop : MonoBehaviour
             {
                 stomachContents = 0f;
                 if (hungerTimer < 10 && intestineContents <= 0f) hungerTimer++;
+
+                if (hungerTimer > 3 && !gurglePlayer.GetComponent<AudioSource>().isPlaying)
+                {
+                    gurglePlayer.PlayCustom(hungrySound, hungerTimer / 20f);
+                    holdFaceDuration = hungrySound.length;
+                }
+                if (hungerTimer > 5)
+                {
+                    faces.SetCounterTo(5);
+                    overrideFace.enabled = true;
+                }
+
                 hungerModifier = 1f + (hungerTimer * 0.2f) + (0.2f * munchiesConsumed);
                 if (!achievements[0] && hungerModifier >= 4f) UpdateAchievements(0);
                 flowEnabled = false;
@@ -593,7 +630,7 @@ public class MainLoop : MonoBehaviour
 
             if (flowEnabled)
             {
-                if (stomachContents >= flowRate && (intestineContents + flowRate) <= intestineCapacity * trainingModifier)
+                if (stomachContents >= flowRate && (intestineContents + flowRate) <= intestineCapacity * intestineMultiplier * trainingModifier)
                 {
                     stomachContents -= flowRate;
                     intestineContents += flowRate;
@@ -603,10 +640,10 @@ public class MainLoop : MonoBehaviour
                     intestineContents += stomachContents;
                     stomachContents = 0f;
                 }
-                else if (intestineContents < (intestineCapacity * trainingModifier) && (intestineContents + flowRate) > intestineCapacity * trainingModifier)
+                else if (intestineContents < (intestineCapacity * intestineMultiplier * trainingModifier) && (intestineContents + flowRate) > intestineCapacity * intestineMultiplier * trainingModifier)
                 {
-                    stomachContents -= ((intestineCapacity * trainingModifier) - intestineContents);
-                    intestineContents = intestineCapacity * trainingModifier;
+                    stomachContents -= ((intestineCapacity * intestineMultiplier * trainingModifier) - intestineContents);
+                    intestineContents = intestineCapacity * intestineMultiplier * trainingModifier;
                     flowEnabled = false;
                 }
                 else
@@ -615,7 +652,7 @@ public class MainLoop : MonoBehaviour
                     flowEnabled = false;
                 }
             }
-            if (intestineContents >= intestineCapacity * trainingModifier) flowEnabled = false;
+            if (intestineContents >= intestineCapacity * intestineMultiplier * trainingModifier) flowEnabled = false;
 
             if (intestineContents > 0)
             {
@@ -626,6 +663,7 @@ public class MainLoop : MonoBehaviour
                 if (disposalTimer > disposalReq && (!isAsleep || sleepCountdown == 1))
                 {
                     dailyCalories += Mathf.Round(intestineContents * 1000);
+                    if (!achievements[2] && (int)dailyCalories >= 6000) UpdateAchievements(2);
                     caloriesText.text = Mathf.Round(dailyCalories) + " / " + (2000 + fetusCount * (pregnancyDays >= 20 ? 400 : 0));
                     intestineContents = 0f;
                     disposalTimer = 0;
@@ -639,6 +677,7 @@ public class MainLoop : MonoBehaviour
                 currentTime = 0;
                 actualDays++;
                 sleepCountdown = 8;
+                holdFaceDuration = 0f;
                 isAsleep = true;
 
                 if (!achievements[1] && eligibleForAchievement) UpdateAchievements(1);
@@ -656,14 +695,15 @@ public class MainLoop : MonoBehaviour
                 //Debug.Log(pregnancyDays);
                 if (pregnancyDays < 20)
                 {
-                    wombContents += fetusCount * ((dailyCalories >= 2000) ? 0.05f : 0.025f);
+                    wombContents += fetusCount * ((dailyCalories >= 2000) ? 0.05f : 0.01f);
                 }
                 else if (pregnancyDays <= 40) 
                 {
-                    wombContents += fetusCount * ((dailyCalories >= 2000 + fetusCount * 400) ? 0.05f : 0.025f); //Mathf.Clamp(0.025f * ((dailyCalories - 2000) / fetusCount) / 400, 0f, 0.025f));
+                    wombContents += fetusCount * ((dailyCalories >= 2000 + fetusCount * 400) ? 0.05f : 0.01f); //Mathf.Clamp(0.025f * ((dailyCalories - 2000) / fetusCount) / 400, 0f, 0.025f));
                 }
                 else
                 {
+                    StartCoroutine(musicPlayer.GraduallyMute(2f));
                     yield return StartCoroutine(AnimateBirth());
                     wombContents = 0;
                     pregnancyDays = 0;
@@ -672,10 +712,10 @@ public class MainLoop : MonoBehaviour
                 }
                 //if (dailyCalories >= 2000 + fetusCount * 800) wombContents += fetusCount * 0.025f;
                 //Mathf.Clamp(wombContents, 0f, fetusCount * pregnancyDays * 0.05f);
-                if (!achievements[2] && (int)dailyCalories >= 7000) UpdateAchievements(2);
+
                 bankedCalories += (int)dailyCalories - (2000 + 400 * (pregnancyDays >= 20 ? 1 : 0));
                 Mathf.Clamp(bankedCalories, 0, 10000);
-                Debug.Log("banked calories: " + bankedCalories);
+                //Debug.Log("banked calories: " + bankedCalories);
                 dailyCalories = 0;
                 caloriesText.text = Mathf.Round(dailyCalories) + " / " + (2000 + fetusCount * (pregnancyDays >= 20 ? 400 : 0));
             }
@@ -685,8 +725,11 @@ public class MainLoop : MonoBehaviour
                 isAsleep = false;
                 if (!achievements[6] && stomachContents > stomachCapacity * trainingModifier) UpdateAchievements(6);
             }
-            overrideFace.enabled = isAsleep;
-            faces.SetCounterTo(0);
+            if (holdFaceDuration <= 0f)
+            {
+                overrideFace.enabled = isAsleep;
+                faces.SetCounterTo(0);
+            }
             timeText.text = currentTime + ":00 | Day " + actualDays;
             hungerText.text = "Hunger multiplier: " + hungerModifier + "x";
 
@@ -694,6 +737,7 @@ public class MainLoop : MonoBehaviour
             //intestineContents = Mathf.Round(intestineContents * 1000) / 1000;
             //wombContents = Mathf.Round(wombContents * 1000) / 1000;
             //trainingModifier = Mathf.Round(trainingModifier * 1000) / 1000;
+            if (stomachContents <= intestineContents && topHeavyAtStart && imageIndex > 3) gurglePlayer.PlayRandom();
             PrintStats();
             if (isAsleep)
             {
@@ -771,7 +815,7 @@ public class MainLoop : MonoBehaviour
                 }
                 else
                 {
-                    bellyDescription = "Your belly is so enormously stuffed that you can barely stand up.";
+                    bellyDescription = "Your belly is so enormously stuffed that you can barely stand upright.";
                 }
                 break;
             case 3:
@@ -895,7 +939,7 @@ public class MainLoop : MonoBehaviour
 
         stomachCapacityBar.localScale = new Vector3(stomachCapacity * trainingModifier, stomachCapacityBar.localScale.y, 1);
         stomachContentsBar.localScale = new Vector3(stomachContents, stomachContentsBar.localScale.y, 1);
-        intestineCapacityBar.localScale = new Vector3(intestineCapacity * trainingModifier, intestineCapacityBar.localScale.y, 1);
+        intestineCapacityBar.localScale = new Vector3(intestineCapacity * intestineMultiplier * trainingModifier, intestineCapacityBar.localScale.y, 1);
         intestineContentsBar.localScale = new Vector3(intestineContents, intestineContentsBar.localScale.y, 1);
         wombContentsBar.localScale = new Vector3(wombContents, intestineContentsBar.localScale.y, 1);
         //Debug.Log("poop timer: " + disposalTimer);
