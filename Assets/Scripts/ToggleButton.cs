@@ -9,17 +9,26 @@ public class ToggleButton : MonoBehaviour
 
     [SerializeField] private SpriteRenderer spriteRenderer;
 
-    private bool isActive = true;
+    public bool isActive = true;
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        spriteRenderer.color = new Color(spriteRenderer.color.r, spriteRenderer.color.g, spriteRenderer.color.b, isActive ? 1f : 0.2f);
     }
 
     // Update is called once per frame
     void Update()
     {
+        /*if (GetComponent<Collider2D>().enabled)
+        {
+            spriteRenderer.color = new Color(1f, 1f, 1f, spriteRenderer.color.a);
+        }
+        else
+        {
+            spriteRenderer.color = new Color(0.2f, 0.2f, 0.2f, spriteRenderer.color.a);
+        }*/
+
         if (mainLoop.clickedButtonName == this.gameObject.name)
         {
             isActive = !isActive;
@@ -37,6 +46,37 @@ public class ToggleButton : MonoBehaviour
             {
                 objectToToggle.SetActive(isActive);
             }
+        }
+    }
+
+    public void Brighten(bool newState)
+    {
+        if (newState)
+        {
+            spriteRenderer.color = new Color(1f, 1f, 1f, spriteRenderer.color.a);
+        }
+        else
+        {
+            spriteRenderer.color = new Color(0.2f, 0.2f, 0.2f, spriteRenderer.color.a);
+        }
+    }
+
+    public void ForceState(bool newState)
+    {
+        isActive = newState;
+        spriteRenderer.color = new Color(spriteRenderer.color.r, spriteRenderer.color.g, spriteRenderer.color.b, isActive ? 1f : 0.2f);
+        if (objectToToggle.GetComponentsInChildren<AudioSource>().Length > 0)
+        {
+            AudioSource[] sources = objectToToggle.GetComponentsInChildren<AudioSource>();
+            foreach (AudioSource source in sources)
+            {
+                source.mute = !isActive;
+            }
+            //objectToToggle.GetComponent<AudioSource>().mute = !isActive;
+        }
+        else
+        {
+            objectToToggle.SetActive(isActive);
         }
     }
 }

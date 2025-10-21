@@ -37,6 +37,14 @@ public class AudioPlayer : MonoBehaviour
 
     }
 
+    public void PlayAtIndex(int index)
+    {
+        internalVolume = startingVolume;
+        previousClipIndex = index;
+        source.clip = audioClips[index];
+        source.Play();
+    }
+
     public void PlayRandom()
     {
         internalVolume = startingVolume;

@@ -23,12 +23,13 @@ public class TimedSlider : MonoBehaviour
 
     [SerializeField] private Canvas canvas;
     [SerializeField] private GameObject buttons;
-    [SerializeField] private GameObject bars;
     [SerializeField] private MainLoop mainLoop;
 
     [SerializeField] private AudioPlayer sexualMoansPlayer;
+    [SerializeField] private AudioPlayer plapsPlayer;
     //[SerializeField] private AudioPlayer coomPlayer;
     [SerializeField] private AudioClip orgasmMoan;
+    [SerializeField] private AudioClip nutBuster;
 
 
     //[SerializeField] private Text climaxText;
@@ -54,7 +55,6 @@ public class TimedSlider : MonoBehaviour
         climax = 0f;
         amountReleased = 0f;
         buttons.SetActive(false);
-        bars.SetActive(false);
         //frameRate = initialFrameRate;
 
         //valueText.text = value.ToString();
@@ -79,12 +79,13 @@ public class TimedSlider : MonoBehaviour
             volumeTransform.localScale = new Vector3(volume / 100f, volumeTransform.localScale.y, 1);
             climaxTransform.localScale = new Vector3(climax / 100f, climaxTransform.localScale.y, 1);
             StartCoroutine(mainLoop.Bounce(0.1f));
+            plapsPlayer.PlayRandom();
             sexualMoansPlayer.PlayRandom();
         }
         if (Input.GetKeyDown(KeyCode.Return))
         {
             clickedThisCycle = true;
-            if (Input.GetKey(KeyCode.LeftShift))
+            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
             {
                 volume = maxVolume;
                 volumeTransform.localScale = new Vector3(volume / 100f, volumeTransform.localScale.y, 1);
@@ -92,6 +93,7 @@ public class TimedSlider : MonoBehaviour
             climax = 200f;
             climaxTransform.localScale = new Vector3(climax / 100f, climaxTransform.localScale.y, 1);
             StartCoroutine(mainLoop.Bounce(0.1f));
+            plapsPlayer.PlayRandom();
             sexualMoansPlayer.PlayRandom();
         }
         screenFlash.color = new Color(screenFlash.color.r, screenFlash.color.g, screenFlash.color.b, climax / 1000f);
@@ -108,7 +110,6 @@ public class TimedSlider : MonoBehaviour
         amountReleased = 0f;
         canvas.enabled = false;
         buttons.SetActive(false);
-        bars.SetActive(false);
 
         while (climax < 200f)
         {
@@ -178,6 +179,7 @@ public class TimedSlider : MonoBehaviour
         previewFace.SetCounterTo(2);
         backdropFace.SetCounterTo(2);
 
+        plapsPlayer.PlayCustom(nutBuster, 0.4f);
         sexualMoansPlayer.PlayCustom(orgasmMoan);
 
         while (climax > 0)
@@ -214,7 +216,6 @@ public class TimedSlider : MonoBehaviour
         climaxTransform.localScale = new Vector3(climax / 100f, climaxTransform.localScale.y, 1);
         volumeTransform.localScale = new Vector3(volume / 100f, volumeTransform.localScale.y, 1);
         canvas.enabled = true;
-        bars.SetActive(true);
         buttons.SetActive(true);
 
         if (amountReleased >= maxVolume && !mainLoop.achievements[4]) mainLoop.UpdateAchievements(4);
