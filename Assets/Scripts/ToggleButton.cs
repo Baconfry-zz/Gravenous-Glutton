@@ -10,6 +10,9 @@ public class ToggleButton : MonoBehaviour
     [SerializeField] private SpriteRenderer spriteRenderer;
 
     public bool isActive = true;
+    public float delayUntilNextPress = 0f;
+
+    float timer = 0f;
 
     // Start is called before the first frame update
     void Start()
@@ -29,7 +32,7 @@ public class ToggleButton : MonoBehaviour
             spriteRenderer.color = new Color(0.2f, 0.2f, 0.2f, spriteRenderer.color.a);
         }*/
 
-        if (mainLoop.clickedButtonName == this.gameObject.name)
+        if (mainLoop.clickedButtonName == this.gameObject.name && timer <= 0f)
         {
             isActive = !isActive;
             spriteRenderer.color = new Color(spriteRenderer.color.r, spriteRenderer.color.g, spriteRenderer.color.b, isActive ? 1f : 0.2f);
@@ -46,7 +49,9 @@ public class ToggleButton : MonoBehaviour
             {
                 objectToToggle.SetActive(isActive);
             }
+            timer += delayUntilNextPress;
         }
+        if (timer > 0) timer -= Time.deltaTime;
     }
 
     public void Brighten(bool newState)

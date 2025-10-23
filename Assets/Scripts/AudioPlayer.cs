@@ -63,6 +63,18 @@ public class AudioPlayer : MonoBehaviour
         }*/
     }
 
+    public IEnumerator PlayCustomWaitFor(AudioClip clip, AudioSource source)
+    {
+        while (source.isPlaying)
+        {
+            yield return null;
+        }
+        yield return null;
+        internalVolume = 1f;
+        this.source.clip = clip;
+        this.source.Play();
+    }
+
     public void PlayCustom(AudioClip clip)
     {
         

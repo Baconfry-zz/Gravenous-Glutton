@@ -5,9 +5,11 @@ using UnityEngine;
 public class Cursor : MonoBehaviour
 {
     [SerializeField] private MainLoop mainLoop;
+    private SpriteRenderer spriteRenderer;
     // Start is called before the first frame update
     void Start()
     {
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     // Update is called once per frame
@@ -39,5 +41,15 @@ public class Cursor : MonoBehaviour
         {
             mainLoop.clickedButtonName = "";
         }
+
+        spriteRenderer.color = new Color(spriteRenderer.color.r, spriteRenderer.color.g, spriteRenderer.color.b, GetColliderName(5) == "mouth" ? 0.6f : 1f);
+
+    }
+
+    public string GetColliderName(int mask)
+    {
+        int layerMask = 1 << mask;
+        Collider2D collider = Physics2D.OverlapCircle(transform.position, 0.01f, layerMask);
+        return collider != null ? collider.gameObject.name : "";
     }
 }

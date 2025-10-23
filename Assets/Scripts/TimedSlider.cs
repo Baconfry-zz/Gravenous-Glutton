@@ -82,14 +82,10 @@ public class TimedSlider : MonoBehaviour
             plapsPlayer.PlayRandom();
             sexualMoansPlayer.PlayRandom();
         }
-        if (Input.GetKeyDown(KeyCode.Return))
+        if (Input.GetKeyDown(KeyCode.Return) && climax < 200f && amountReleased == 0f)
         {
             clickedThisCycle = true;
-            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
-            {
-                volume = maxVolume;
-                volumeTransform.localScale = new Vector3(volume / 100f, volumeTransform.localScale.y, 1);
-            }
+            //if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) { volume = maxVolume; volumeTransform.localScale = new Vector3(volume / 100f, volumeTransform.localScale.y, 1); }
             climax = 200f;
             climaxTransform.localScale = new Vector3(climax / 100f, climaxTransform.localScale.y, 1);
             StartCoroutine(mainLoop.Bounce(0.1f));

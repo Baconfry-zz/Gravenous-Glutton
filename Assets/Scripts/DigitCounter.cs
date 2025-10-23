@@ -5,7 +5,7 @@ using UnityEngine;
 public class DigitCounter : MonoBehaviour
 {
     [SerializeField] private Sprite[] digits;
-    private SpriteRenderer spriteRenderer;
+    [SerializeField] private SpriteRenderer spriteRenderer;
     // Start is called before the first frame update
     void Start()
     {
@@ -13,7 +13,7 @@ public class DigitCounter : MonoBehaviour
 
     void Awake()
     {
-        spriteRenderer = GetComponent<SpriteRenderer>();
+        //spriteRenderer = GetComponent<SpriteRenderer>();
 
     }
 
