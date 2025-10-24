@@ -31,6 +31,7 @@ public class SaveData
     public int sleepCountdown;
     public bool isAsleep;
     public bool[] achievements;
+    public bool alwaysUseEatingAnimation;
 
     // Start is called before the first frame update
     void Start()

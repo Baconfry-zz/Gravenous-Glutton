@@ -75,6 +75,20 @@ public class AudioPlayer : MonoBehaviour
         this.source.Play();
     }
 
+    public IEnumerator PlayCustomInterrupt(AudioClip clip, AudioSource source)
+    {
+        bool initialState = source.mute;
+        source.mute = true;
+        internalVolume = 1f;
+        this.source.clip = clip;
+        this.source.Play();
+        while (this.source.isPlaying)
+        {
+            yield return null;
+        }
+        source.mute = initialState;
+    }
+
     public void PlayCustom(AudioClip clip)
     {
         
