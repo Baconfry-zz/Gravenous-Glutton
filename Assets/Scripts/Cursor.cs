@@ -52,4 +52,24 @@ public class Cursor : MonoBehaviour
         Collider2D collider = Physics2D.OverlapCircle(transform.position, 0.01f, layerMask);
         return collider != null ? collider.gameObject.name : "";
     }
+
+    public List<string> GetAllColliderNames(int mask)
+    {
+        int layerMask = 1 << mask;
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, 0.01f, layerMask);
+        List<string> names = new List<string>();
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            names.Add(colliders[i].gameObject.name);
+        }
+
+        /*layerMask = 1 << 3;
+        Collider2D otherCollider = Physics2D.OverlapCircle(transform.position, 0.01f, layerMask);
+        if (otherCollider != null)
+        {
+            names.Add(otherCollider.transform.parent.gameObject.name);
+        }*/
+
+        return names;
+    }
 }

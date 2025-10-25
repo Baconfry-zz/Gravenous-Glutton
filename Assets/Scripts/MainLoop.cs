@@ -85,18 +85,33 @@ public class MainLoop : MonoBehaviour
      * fetus req 400 cal/day
      * main req 2000 cal/day
      * daily weight increase in kg: 0.075 + min [0.025, 0.025*[(total cal - mainReq)/fetusCount]/400]
-     * theoretical max: (2*2)+4+6 = 18L
+     * theoretical max: (6*2)+(2*4 + 0.8)+4 = 24.8L
      * day end 0:00 day start 8:00
      * 0/232/426/735/1122/1548/1974/2632/3252/3677/4000/3574/4000
      * -1/0, 0/1 : -2/0, -1/1
      * 
-     * achievements:
+     * 5 + 2n
      * 
+     * 1:0.5
+     * 2:1
+     * 3:2
+     * 4:3
+     * 5:5 
+     * 6:7 =1
+     * 7:9 =2
+     * 8:11=3
+     * 9:13 =4
+     * 10:15 =5
+     * 11:17 =6
+     * 12:20
+     * 13:23
      * 
      * BUG: under certain conditions, weed leaf decreases hunger multiplier
      * training capacity doesn't visually update until after eating
      * belly description sometimes changes between 6/default when it shouldn't
      * sometimes stomach contents overflow intestines
+     * 
+     * reward for Elastigirl: see stomach/intestine/womb stats
      * 
      * for implementation: slightly randomize food intake?
      * calories digested use rolling animation
@@ -230,9 +245,23 @@ public class MainLoop : MonoBehaviour
         //weedStockCounter = weedButton.transform.Find("counter").GetComponent<DigitCounter>();
         //fetusCount = 0;
         //if (Random.Range(0, 10) > 7) fetusCount++;
+        
         if (File.Exists(Application.persistentDataPath + "/savedGame.json"))
         {
-            JsonUtility.FromJsonOverwrite(File.ReadAllText(Application.persistentDataPath + "/savedGame.json"), this);
+            try
+            {
+                JsonUtility.FromJsonOverwrite(File.ReadAllText(Application.persistentDataPath + "/savedGame.json"), this);
+            }
+            catch { }
+        }
+        if (achievements.Length < 11)
+        {
+            bool[] updatedAchievements = new bool[11];
+            for (int i = 0; i < achievements.Length; i++)
+            {
+                updatedAchievements[i] = achievements[i];
+            }
+            achievements = updatedAchievements;
         }
         yield return null;
         alwaysEatButton.ForceState(alwaysUseEatingAnimation);
@@ -386,7 +415,7 @@ public class MainLoop : MonoBehaviour
         string updatedText = "";
         updatedText += "Relaxant: +0.1 intestine capacity (max 2.0)\n\n";
         updatedText += "Enzyme: digest some food in stomach\n\n";
-        updatedText += "Laxative: " + (isStreaming ? "don't take laxatives while streaming\n\n" : "digest all food in intestines\n\n");
+        updatedText += "Laxative: " + (isStreaming ? "can't take laxatives while streaming\n\n" : "digest all food in intestines\n\n");
         updatedText += "Folate: restore 1 day of missed growth\n\n";
         updatedText += "Ghrelin: +1 hr of natural hunger\n\n";
         updatedText += "Caffeine: sleep at 2:00\n\n";
@@ -1458,32 +1487,10 @@ public class MainLoop : MonoBehaviour
             case 0:
                 if (totalBellyContents > 0.5f)
                 {
-                    //bellyDescription = "You feel satisfied.";
                     imageIndex = 2;
                 }
                 else if (totalBellyContents <= 0f)
                 {
-                    /*switch (hungerTimer)
-                    {
-                        case 0:
-                        case 1:
-                            break;
-                        case 2:
-                        case 3:
-                            break;
-                        case 4:
-                        case 5:
-                            break;
-                        case 6:
-                        case 7:
-                            break;
-                        case 8:
-                        case 9:
-                        case 10:
-                            break;
-                        default:
-                            break;
-                    }*/
                     imageIndex = 0;
                 }
                 else
@@ -1554,8 +1561,8 @@ public class MainLoop : MonoBehaviour
         //Debug.Log("Total belly contents: " + (stomachContents + intestineContents) + " | " + bellyDescription);
         bellyText.text = bellyDescription;
 
-        stomachContents = Mathf.Round(stomachContents * 1000) / 1000;
-        intestineContents = Mathf.Round(intestineContents * 1000) / 1000;
+        //stomachContents = Mathf.Round(stomachContents * 1000) / 1000;
+        //intestineContents = Mathf.Round(intestineContents * 1000) / 1000;
         wombContents = Mathf.Round(wombContents * 100) / 100;
         trainingModifier = Mathf.Round(trainingModifier * 1000) / 1000;
 
@@ -1566,7 +1573,7 @@ public class MainLoop : MonoBehaviour
         wombContentsBar.localScale = new Vector3(wombContents, intestineContentsBar.localScale.y, 1);
         wombCapacityBar.localScale = new Vector3(fetusCount * 2f, wombCapacityBar.localScale.y, 1);
         //Debug.Log("poop timer: " + disposalTimer);
-        Debug.Log("Time: " + currentTime + ":00 | stomach: " + stomachContents + "L / " + (stomachCapacity * trainingModifier) + "L | intestines: " + intestineContents + "L / " + (intestineCapacity * intestineMultiplier * trainingModifier) + "L | hunger modifier = " + hungerModifier);
+        Debug.Log("Time: " + currentTime + ":00 | stomach: " + (Mathf.Round(stomachContents * 1000) / 1000) + "L / " + (stomachCapacity * trainingModifier) + "L | intestines: " + (Mathf.Round(intestineContents * 1000) / 1000) + "L / " + (intestineCapacity * intestineMultiplier * trainingModifier) + "L | hunger modifier = " + hungerModifier);
 
     }
 

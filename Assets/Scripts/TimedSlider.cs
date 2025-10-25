@@ -116,6 +116,12 @@ public class TimedSlider : MonoBehaviour
             {
                 value += Time.deltaTime * speedMultiplier;
                 if (value > 10) value = 10f;
+                if (climax <= 0 && volume > 0)
+                {
+                    volume -= 10 * Time.deltaTime;
+                    if (volume < 0) volume = 0f;
+                    volumeTransform.localScale = new Vector3(volume / 100f, volumeTransform.localScale.y, 1);
+                }
                 //valueText.text = value.ToString();
                 transform.localScale = new Vector3((value / 10f), transform.localScale.y, 1);
                 yield return null;
@@ -126,6 +132,12 @@ public class TimedSlider : MonoBehaviour
             {
                 value -= Time.deltaTime * speedMultiplier;
                 if (value < 0) value = 0f;
+                if (climax <= 0 && volume > 0)
+                {
+                    volume -= 10 * Time.deltaTime;
+                    if (volume < 0) volume = 0f;
+                    volumeTransform.localScale = new Vector3(volume / 100f, volumeTransform.localScale.y, 1);
+                }
                 //valueText.text = value.ToString();
                 transform.localScale = new Vector3((value / 10f), transform.localScale.y, 1);
                 yield return null;
