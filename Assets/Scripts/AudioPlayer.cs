@@ -14,6 +14,8 @@ public class AudioPlayer : MonoBehaviour
 
     private float internalVolume = 1f;
     private float startingVolume = 1f;
+
+    private bool isTransitioning;
     
     void Awake()
     {
@@ -106,9 +108,11 @@ public class AudioPlayer : MonoBehaviour
 
     public IEnumerator ChangeTrackTo(int index, float duration)
     {
+        while (isTransitioning) yield return null;
         if (source.clip != audioClips[index])
         {
             float timer = 0f;
+            isTransitioning = true;
             if (internalVolume > 0f)
             {
                 while (timer < duration)
@@ -131,6 +135,7 @@ public class AudioPlayer : MonoBehaviour
                 timer += Time.deltaTime;
                 yield return null;
             }
+            isTransitioning = false;
         }
         else
         {

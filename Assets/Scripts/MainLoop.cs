@@ -18,6 +18,7 @@ public class MainLoop : MonoBehaviour
     [SerializeField] private Text medicineText;
     [SerializeField] private Text moneyText;
     [SerializeField] private Text donationsText;
+    [SerializeField] private Text[] contentsText;
 
     [SerializeField] private Text achievementBoard;
     [SerializeField] private Text achievementRewards;
@@ -40,6 +41,7 @@ public class MainLoop : MonoBehaviour
     [SerializeField] private SpriteRenderer mouthSprite;
 
     [SerializeField] private GameObject minigameUI;
+    [SerializeField] private GameObject statsView;
     [SerializeField] private TimedSlider sexMinigame;
     [SerializeField] private Cursor cursor;
     [SerializeField] private Sprite draggableFood;
@@ -267,7 +269,6 @@ public class MainLoop : MonoBehaviour
         alwaysEatButton.ForceState(alwaysUseEatingAnimation);
         PrintAchievementBoard();
         StartCoroutine(MainRoutine());
-
     }
 
     int BellyToFaceIndex()
@@ -407,7 +408,7 @@ public class MainLoop : MonoBehaviour
         medicineButtons[0].SetActive(intestineMultiplier < 2f);
         medicineButtons[1].SetActive(stomachContents > 0f && intestineContents < (intestineCapacity * intestineMultiplier * trainingModifier));
         medicineButtons[2].SetActive(intestineContents > 0f && !isStreaming);
-        medicineButtons[3].SetActive(Mathf.Round(wombContents * 100) / 100 < Mathf.Round(fetusCount * 5f * pregnancyDays) / 100);
+        medicineButtons[3].SetActive(Mathf.Round(wombContents * 10000) / 10000 < Mathf.Round((fetusCount + 2.5f) * 500f * pregnancyDays) / 10000);
         medicineButtons[4].SetActive(hungerTimer < 10);
         medicineButtons[5].SetActive(!tookCaffeine);
         medicineButtons[6].SetActive(achievements[10] && pregnancyDays == 0 && fetusCount < 6);
@@ -455,16 +456,16 @@ public class MainLoop : MonoBehaviour
                 rewardMessage = "Reward: when near the limit, eat twice";
                 break;
             case 2:
-                achievementMessage = "Miss Piggy: Digest 6000 calories in one day.";
+                achievementMessage = "Miss Piggy: Digest 8000 calories in one day.";
                 rewardMessage = "Reward: digestion starts 1 hour sooner";
                 break;
             case 3:
-                achievementMessage = "Mucho Texto: Have a total of 7L or more in your stomach and intestines.";
+                achievementMessage = "Mucho Texto: Have a total of 12L or more in your stomach and intestines.";
                 rewardMessage = "Reward: intestines fill up 33% quicker";
                 flowRate = 0.4f;
                 break;
             case 4:
-                achievementMessage = "Take That, Triple Finish: Get filled with the maximum amount of batter.";
+                achievementMessage = "Take That, Triple Finish: Get filled with the maximum amount of baby batter.";
                 rewardMessage = "Reward: womb tattoo";
                 wombTattoo.GetComponent<SpriteRenderer>().enabled = true;
                 break;
@@ -476,12 +477,14 @@ public class MainLoop : MonoBehaviour
                 break;
             case 7:
                 achievementMessage = "Elastigirl: Reach the highest possible stretching multiplier.";
+                rewardMessage = "Reward: internal stat display";
+                statsView.SetActive(true);
                 break;
             case 8:
                 achievementMessage = "That's No Moon: Reach the largest possible belly size.";
                 break;
             case 9:
-                achievementMessage = "Queen of Kebabs: Earn a total of $2000 through streaming.";
+                achievementMessage = "Queen of Kebabs: Earn a total of $1000 through streaming.";
                 rewardMessage = "Reward: stream every day";
                 break;
             case 10:
@@ -526,17 +529,17 @@ public class MainLoop : MonoBehaviour
                     break;
                 case 2:
                     achievementName = "Miss Piggy";
-                    achievementDescription = "Digest 6000 calories in one day.";
+                    achievementDescription = "Digest 8000 calories in one day.";
                     rewardMessage = "-1 digestion delay";
                     break;
                 case 3:
                     achievementName = "Mucho Texto";
-                    achievementDescription = "Have a total of 7L or more in your stomach and intestines.";
+                    achievementDescription = "Have a total of 12L or more in your stomach and intestines.";
                     rewardMessage = "+33% flow rate";
                     break;
                 case 4:
                     achievementName = "Take That, Triple Finish";
-                    achievementDescription = "Get filled with the maximum amount of batter.";
+                    achievementDescription = "Get filled with the maximum amount of baby batter.";
                     rewardMessage = "womb tattoo";
                     break;
                 case 5:
@@ -552,7 +555,7 @@ public class MainLoop : MonoBehaviour
                 case 7:
                     achievementName = "Elastigirl";
                     achievementDescription = "Reach the highest possible stretching multiplier.";
-                    rewardMessage = "--";
+                    rewardMessage = "internal stat display";
                     break;
                 case 8:
                     achievementName = "That's No Moon";
@@ -561,7 +564,7 @@ public class MainLoop : MonoBehaviour
                     break;
                 case 9:
                     achievementName = "Queen of Kebabs";
-                    achievementDescription = "Earn a total of $2000 through streaming.";
+                    achievementDescription = "Earn a total of $1000 through streaming.";
                     rewardMessage = "stream every day";
                     break;
                 case 10:
@@ -622,7 +625,7 @@ public class MainLoop : MonoBehaviour
         foodText.text = "You feel your contractions starting.";
         timeText.text = currentTime + ":00 | Day " + actualDays;
         faces.SetCounterTo(5);
-        float babyVolume = wombContents / fetusCount;
+        float babyVolume = (wombContents - 5) / fetusCount;
 
         string babyDescriptor = "";
 
@@ -636,6 +639,8 @@ public class MainLoop : MonoBehaviour
         yield return new WaitForSeconds(1f);
         faces.SetCounterTo(5);
         yield return new WaitForSeconds(1f);
+
+        float amountToDecrement = wombContents / fetusCount;
 
         while (fetusCount > 0)
         {
@@ -656,10 +661,13 @@ public class MainLoop : MonoBehaviour
             faces.SetCounterTo(5);
 
             fetusCount--;
-            wombContents -= babyVolume;
+            wombContents -= amountToDecrement;
+            if (wombContents < 0) wombContents = 0;
             foodText.text = "You give birth to a " + babyDescriptor + "baby.";
             PrintStats();
         }
+        wombContents = 0f;
+        wombContentsBar.localScale = new Vector3(wombContents / 2, wombContentsBar.localScale.y, 1);
         yield return new WaitForSeconds(1f);
         faces.SetCounterTo(0);
     }
@@ -670,11 +678,13 @@ public class MainLoop : MonoBehaviour
         bool ateThisTurn;
         PrintStats();
         caloriesText.text = Mathf.Round(dailyCalories) + " / " + (2000 + fetusCount * (pregnancyDays >= 20 ? 400 : 0));
+        //caloriesText.color = Mathf.Round(dailyCalories) >= (2000 + fetusCount * (pregnancyDays >= 20 ? 400 : 0)) ? Color.yellow : Color.white;
         timeText.text = currentTime + ":00 | Day " + actualDays;
         hungerModifier = 1f + (hungerTimer * 0.2f) + (0.2f * munchiesConsumed);
         hungerText.text = "Hunger multiplier: " + hungerModifier + "x";
         moneyText.text = "$" + money;
         wombTattoo.GetComponent<SpriteRenderer>().enabled = achievements[4];
+        statsView.SetActive(achievements[7]);
 
         RefreshTouchColliders();
         sexFace.enabled = fetusCount == 0;
@@ -689,11 +699,11 @@ public class MainLoop : MonoBehaviour
             ateThisTurn = false;
             if (stomachContents > stomachCapacity * trainingModifier)
             {
-                trainingModifier += Mathf.Round((stomachContents - (stomachCapacity * trainingModifier)) * (isAsleep ? 30 : 10)) / 1000;
+                trainingModifier += Mathf.Round((stomachContents - (stomachCapacity * trainingModifier)) * (isAsleep ? 20 : 10)) / 1000;
                 //if (imageIndex > 3) gurglePlayer.PlayRandom();
-                if (trainingModifier >= 2f)
+                if (trainingModifier >= 3f)
                 {
-                    trainingModifier = 2f;
+                    trainingModifier = 3f;
                     if (!achievements[7]) UpdateAchievements(7);
                 }
             }
@@ -707,7 +717,6 @@ public class MainLoop : MonoBehaviour
             
 
 
-            PrintStats();
             //stomachCapacityBar.localScale = new Vector3(stomachCapacity * trainingModifier, stomachCapacityBar.localScale.y, 1);
             //intestineCapacityBar.localScale = new Vector3(intestineCapacity * intestineMultiplier * trainingModifier, intestineCapacityBar.localScale.y, 1);
 
@@ -789,10 +798,11 @@ public class MainLoop : MonoBehaviour
                 fetusCount = 1 + Mathf.Min((int)sexMinigame.amountReleased, 200) / 100;
                 //Debug.Log(sexMinigame.amountReleased);
                 sexMinigame.amountReleased = 0;
-                wombCapacityBar.localScale = new Vector3(fetusCount * 2f, wombCapacityBar.localScale.y, 1);
+                wombCapacityBar.localScale = new Vector3((2.5f + fetusCount), wombCapacityBar.localScale.y, 1);
                 minigameUI.SetActive(false);
                 overrideFace.enabled = false;
             }
+            PrintStats();
             UpdateMedicineText();
 
             achievementButton.GetComponent<Collider2D>().enabled = !isAsleep;
@@ -900,22 +910,22 @@ public class MainLoop : MonoBehaviour
                         if (fedDuringStream)
                         {
                             float digestiveContents = stomachContents + intestineContents;
-                            if (digestiveContents > 6f)
+                            if (digestiveContents >= 8f)
                             {
                                 foodDescription = "You struggle to cram one more burger into your greedy, gigantic belly, panting heavily as your overfilled stomach pushes up against your lungs.";
 
                             }
-                            else if (digestiveContents > 4f)
+                            else if (digestiveContents >= 6f)
                             {
                                 foodDescription = "You manage to force down another burger, but you are starting to feel overwhelmed by the mountain of food now sitting in your enormously stuffed belly.";
 
                             }
-                            else if (digestiveContents > 2f)
+                            else if (digestiveContents >= 4f)
                             {
                                 foodDescription = "Although you feel unimaginably full, you continue eating, motivated purely by the desire to make your belly as huge and round as possible.";
 
                             }
-                            else if (digestiveContents > 1f)
+                            else if (digestiveContents >= 2f)
                             {
                                 foodDescription = "Your full belly is starting to round out nicely, but you continue eating at the same pace.";
 
@@ -979,7 +989,7 @@ public class MainLoop : MonoBehaviour
                     recordButton.GetComponent<Collider2D>().enabled = false;
                     startingSize = imageIndex;
                     deltaSize = 0;
-                    StartCoroutine(musicPlayer.ChangeTrackTo(2, 2f));
+                    StartCoroutine(musicPlayer.ChangeTrackTo(2, 1.5f));
                     donationsText.text = "Donations: $" + streamEarnings;
                     UpdateMedicineText();
                 }
@@ -1086,8 +1096,9 @@ public class MainLoop : MonoBehaviour
                 if (clickedButtonName == "laxative" && intestineContents > 0f)
                 {
                     dailyCalories += Mathf.Round(intestineContents * 1000);
-                    if (!achievements[2] && (int)dailyCalories >= 6000) UpdateAchievements(2);
+                    if (!achievements[2] && (int)dailyCalories >= 8000) UpdateAchievements(2);
                     caloriesText.text = Mathf.Round(dailyCalories) + " / " + (2000 + fetusCount * (pregnancyDays >= 20 ? 400 : 0));
+                    //caloriesText.color = Mathf.Round(dailyCalories) >= (2000 + fetusCount * (pregnancyDays >= 20 ? 400 : 0)) ? Color.yellow : Color.white;
                     intestineContents = 0f;
                     disposalTimer = 0;
                     money -= medicinePrices[2];
@@ -1095,10 +1106,10 @@ public class MainLoop : MonoBehaviour
                     UpdateMedicineText();
                 }
 
-                if (clickedButtonName == "folate" && wombContents < fetusCount * 0.05f * pregnancyDays)
+                if (clickedButtonName == "folate" && wombContents < (fetusCount + 2.5) * 0.05f * pregnancyDays)
                 {
-                    wombContents += fetusCount * 0.04f;
-                    wombContents = Mathf.Round(wombContents * 1000) / 1000;
+                    wombContents += (fetusCount + 2.5f) * 0.04f;
+                    wombContents = Mathf.Round(wombContents * 10000) / 10000;
                     money -= medicinePrices[3];
                     PrintStats();
                     UpdateMedicineText();
@@ -1138,15 +1149,18 @@ public class MainLoop : MonoBehaviour
                 yield return null;
             }
             if (!isAsleep) achievementText.text = "";
+            bool canceledStream = false;
             if (isStreaming)
             {
                 money += streamEarnings;
                 cumulativeEarnings += streamEarnings;
+                if (streamEarnings == 0) canceledStream = true;
+                foodButton.SetActive(true);
                 //Debug.Log(cumulativeEarnings);
-                if (!achievements[9] && cumulativeEarnings >= 2000) UpdateAchievements(9);
+                if (!achievements[9] && cumulativeEarnings >= 1000) UpdateAchievements(9);
                 moneyText.text = "$" + money;
-                StartCoroutine(musicPlayer.ChangeTrackTo(1, 2f));
-                daysUntilNextStream = achievements[9] ? 1 : 2;
+                StartCoroutine(musicPlayer.ChangeTrackTo(1, 1.5f));
+                if (!canceledStream) daysUntilNextStream = achievements[9] ? 1 : 2;
             }
             recordButton.ForceState(false);
             isStreaming = false;
@@ -1165,16 +1179,17 @@ public class MainLoop : MonoBehaviour
             topHeavyAtStart = stomachContents > intestineContents;
 
             if (!ateThisTurn && (hungerModifier - 0.2f * munchiesConsumed) <= 1f) foodDescription = "";
-            if (stomachContents >= adjustedStomachCapacity)
+            if (stomachContents >= adjustedStomachCapacity && !isAsleep && (hungerModifier - 0.2f * munchiesConsumed) > 1.01f)
             {
-                if (!isAsleep && (hungerModifier - 0.2f * munchiesConsumed) > 1.01f)
-                {
-                    foodDescription = "The adrenaline from your feeding frenzy wears off, and the intense sensation of fullness hits you all at once.";
-                }            
-                else
-                {
-                    foodDescription = "";
-                }
+                foodDescription = "The adrenaline from your feeding frenzy wears off, and the intense sensation of fullness hits you all at once.";
+            }
+            else if (canceledStream)
+            {
+                foodDescription = "You quickly shut off your stream before anyone notices that you were live.";
+            }
+            else
+            {
+                foodDescription = "";
             }
 
             if (foodDescription == "" && fetusCount > 0 && pregnancyDays >= 20 && Random.Range(0, 55 - pregnancyDays) == 1)
@@ -1300,8 +1315,9 @@ public class MainLoop : MonoBehaviour
                 if (disposalTimer > disposalReq && (!isAsleep || sleepCountdown == 1))
                 {
                     dailyCalories += Mathf.Round(intestineContents * 1000);
-                    if (!achievements[2] && (int)dailyCalories >= 6000) UpdateAchievements(2);
+                    if (!achievements[2] && (int)dailyCalories >= 8000) UpdateAchievements(2);
                     caloriesText.text = Mathf.Round(dailyCalories) + " / " + (2000 + fetusCount * (pregnancyDays >= 20 ? 400 : 0));
+                    //caloriesText.color = Mathf.Round(dailyCalories) >= (2000 + fetusCount * (pregnancyDays >= 20 ? 400 : 0)) ? Color.yellow : Color.white;
                     intestineContents = 0f;
                     disposalTimer = 0;
                 }
@@ -1338,22 +1354,22 @@ public class MainLoop : MonoBehaviour
                 //Debug.Log(pregnancyDays);
                 if (pregnancyDays < 20)
                 {
-                    wombContents += fetusCount * ((dailyCalories >= 2000) ? 0.05f : 0.01f);
+                    wombContents += (2.5f + fetusCount) * ((dailyCalories >= 2000) ? 0.05f : 0.01f);
                 }
                 else if (pregnancyDays <= 40) 
                 {
-                    wombContents += fetusCount * ((dailyCalories >= 2000 + fetusCount * 400) ? 0.05f : 0.01f); //Mathf.Clamp(0.025f * ((dailyCalories - 2000) / fetusCount) / 400, 0f, 0.025f));
+                    wombContents += (2.5f + fetusCount) * ((dailyCalories >= 2000 + fetusCount * 400) ? 0.05f : 0.01f); //Mathf.Clamp(0.025f * ((dailyCalories - 2000) / fetusCount) / 400, 0f, 0.025f));
                 }
                 else
                 {
                     StartCoroutine(musicPlayer.GraduallyMute(2f));
-                    stomachCapacityBar.localScale = new Vector3(stomachCapacity * trainingModifier, stomachCapacityBar.localScale.y, 1);
-                    intestineCapacityBar.localScale = new Vector3(intestineCapacity * intestineMultiplier * trainingModifier, intestineCapacityBar.localScale.y, 1);
+                    stomachCapacityBar.localScale = new Vector3(stomachCapacity * trainingModifier / 2, stomachCapacityBar.localScale.y, 1);
+                    intestineCapacityBar.localScale = new Vector3(intestineCapacity * intestineMultiplier * trainingModifier / 2, intestineCapacityBar.localScale.y, 1);
                     yield return StartCoroutine(AnimateBirth());
                     wombContents = 0;
                     pregnancyDays = 0;
                     actualDays = 0;
-                    wombCapacityBar.localScale = new Vector3(fetusCount * 2f, wombCapacityBar.localScale.y, 1);
+                    wombCapacityBar.localScale = new Vector3((2.5f + fetusCount), wombCapacityBar.localScale.y, 1);
                 }
                 //if (dailyCalories >= 2000 + fetusCount * 800) wombContents += fetusCount * 0.025f;
                 //Mathf.Clamp(wombContents, 0f, fetusCount * pregnancyDays * 0.05f);
@@ -1363,6 +1379,8 @@ public class MainLoop : MonoBehaviour
                 //Debug.Log("banked calories: " + bankedCalories);
                 dailyCalories = 0;
                 caloriesText.text = Mathf.Round(dailyCalories) + " / " + (2000 + fetusCount * (pregnancyDays >= 20 ? 400 : 0));
+                //caloriesText.color = Mathf.Round(dailyCalories) >= (2000 + fetusCount * (pregnancyDays >= 20 ? 400 : 0)) ? Color.yellow : Color.white;
+
             }
 
             if (isAsleep && sleepCountdown == 0)
@@ -1400,7 +1418,7 @@ public class MainLoop : MonoBehaviour
     {
         string bellyDescription = "You feel like a variable hasn't been assigned.";
         float totalBellyContents = stomachContents + intestineContents + wombContents;
-        float digestiveContents = stomachContents + intestineContents;
+        float digestiveContents = Mathf.Round((stomachContents + intestineContents) * 1000) / 1000;
         switch (Mathf.Floor(digestiveContents))
         {
             case 0:
@@ -1445,39 +1463,36 @@ public class MainLoop : MonoBehaviour
                 }
                 break;
             case 1:
-                if (digestiveContents >= 1.5f)
-                {
-                    bellyDescription = "You feel overwhelmingly full.";
-                }
-                else
-                {
-                    bellyDescription = "You feel comfortably full.";
-                }
+                bellyDescription = "You feel comfortably full.";
                 break;
             case 2:
-                if (digestiveContents > 2.5f)
-                {
-                    bellyDescription = "Your swollen, tightly stretched belly is so densely packed that it feels like a boulder. Your arms can barely reach your belly button.";
-                }
-                else
-                {
-                    bellyDescription = "Your belly is so enormously stuffed that you can barely stand upright.";
-                }
+                bellyDescription = "You feel overwhelmingly full.";
                 break;
             case 3:
-                bellyDescription = "Your belly, stuffed beyond the limits of what should be possible, is so massively engorged that stretch marks are starting to form.";
+                bellyDescription = "Your belly is so enormously stuffed that you can barely stand upright.";
                 break;
             case 4:
-                bellyDescription = "Your huge, food-packed belly is even larger than the size of a full-term pregnancy. The overwhelming sensation of fullness threatens to shut down your brain.";
+                bellyDescription = "You can feel your immensely stuffed belly stretching to accomodate the tremendous amount of food packed inside of it.";
                 break;
             case 5:
-                bellyDescription = "The sensations of pleasure from your ridiculous belly, now rivaling the size of the rest of your body, are laced with streaks of pain as you approach the physical limit of how much food you can cram into yourself.";
+                bellyDescription = "Your hugely swollen belly is so thoroughly stuffed that it feels like a boulder. Your arms can barely reach your belly button.";
                 break;
             case 6:
-                bellyDescription = "Your gigantic belly has gone far beyond the limit of what the human body is meant to withstand. By volume, you are almost more food than girl at this point and you feel your consciousness slipping away as your brain is bombarded with intense sensations of orgasmic pleasure and pain from your overstretched skin, abdominal muscles, and tightly stuffed guts.";
+                bellyDescription = "The weight of your massively engorged belly makes you feel like you are carrying an extra baby inside. You are so full that it is getting difficult to breathe.";
+                break;
+            case 7:
+                bellyDescription = "The incredible amount of food in your enormous belly has expanded it to be even larger than a full-term pregnancy. The overwhelming sensation of fullness threatens to shut down your brain.";
+                break;
+            case 8:
+            case 9:
+                bellyDescription = "The signals of immense fullness from your ridiculously huge belly are laced with streaks of pain as you approach the physical limit of how much food you can cram into yourself.";
+                break;
+            case 10:
+            case 11:
+                bellyDescription = "Your gigantic belly has gone far beyond the limit of what the human body is meant to withstand. You feel your consciousness slipping away as your brain is bombarded with intense sensations of orgasmic pleasure and pain from your tightly stretched skin, abdominal muscles, and overstuffed guts.";
                 break;
             default:
-                bellyDescription = "Every inch of your digestive tract is thoroughly stuffed and your belly feels as huge as it can possibly get. You cannot even burp, as a burp would imply the existence of a pocket of air trapped somewhere in your enormously distended abdomen, and every last bit of space relieved by previous burps has already been crammed with even more food. Your massive belly easily contains more than your own body weight and feels like it might burst if you force down one more bite.";
+                bellyDescription = "Every inch of your digestive tract is stretched like a balloon and your belly feels as huge as it can possibly get. You cannot even burp, as a burp would imply the existence of a pocket of air trapped somewhere in your enormously distended abdomen, and every last bit of space relieved by previous burps has already been crammed with even more food. By volume, you are almost more food than girl at this point and you feel like you might burst if you force down one more bite.";
                 if (!achievements[3]) UpdateAchievements(3);
                 break;
 
@@ -1487,54 +1502,55 @@ public class MainLoop : MonoBehaviour
             case 0:
                 if (totalBellyContents > 0.5f)
                 {
-                    imageIndex = 2;
+                    imageIndex = 1;
                 }
-                else if (totalBellyContents <= 0f)
+                else
                 {
                     imageIndex = 0;
                 }
-                else
-                {
-                    imageIndex = 1;
-                }
                 break;
             case 1:
-                if (totalBellyContents >= 1.5f)
-                {
-                    imageIndex = 4;
-                }
-                else
-                {
-                    imageIndex = 3;
-                }
+                imageIndex = 2;
                 break;
             case 2:
-                if (totalBellyContents > 2.5f)
-                {
-                    imageIndex = 6;
-                }
-                else
-                {
-                    imageIndex = 5;
-                }
+                imageIndex = 3;
                 break;
             case 3:
-                imageIndex = 7;
-                break;
             case 4:
-                imageIndex = 8;
+                imageIndex = 4;
                 break;
             case 5:
-                imageIndex = 9;
-                break;
             case 6:
-                imageIndex = 10;
+                imageIndex = 5;
                 break;
             case 7:
+            case 8:
+                imageIndex = 6;
+                break;
+            case 9:
+            case 10:
+                imageIndex = 7;
+                break;
+            case 11:
+            case 12:
+                imageIndex = 8;
+                break;
+            case 13:
+            case 14:
+                imageIndex = 9;
+                break;
+            case 15:
+            case 16:
+                imageIndex = 10;
+                break;
+            case 17:
+            case 18:
+            case 19:
                 imageIndex = 11;
                 break;
-            case 8:
-            case 9:
+            case 20:
+            case 21:
+            case 22:
                 imageIndex = 12;
                 break;
             default:
@@ -1561,19 +1577,22 @@ public class MainLoop : MonoBehaviour
         //Debug.Log("Total belly contents: " + (stomachContents + intestineContents) + " | " + bellyDescription);
         bellyText.text = bellyDescription;
 
-        //stomachContents = Mathf.Round(stomachContents * 1000) / 1000;
-        //intestineContents = Mathf.Round(intestineContents * 1000) / 1000;
-        wombContents = Mathf.Round(wombContents * 100) / 100;
+        stomachContents = Mathf.Round(stomachContents * 10000) / 10000;
+        intestineContents = Mathf.Round(intestineContents * 10000) / 10000;
+        wombContents = Mathf.Round(wombContents * 10000) / 10000;
         trainingModifier = Mathf.Round(trainingModifier * 1000) / 1000;
 
-        stomachCapacityBar.localScale = new Vector3(stomachCapacity * trainingModifier, stomachCapacityBar.localScale.y, 1);
-        stomachContentsBar.localScale = new Vector3(stomachContents, stomachContentsBar.localScale.y, 1);
-        intestineCapacityBar.localScale = new Vector3(intestineCapacity * intestineMultiplier * trainingModifier, intestineCapacityBar.localScale.y, 1);
-        intestineContentsBar.localScale = new Vector3(intestineContents, intestineContentsBar.localScale.y, 1);
-        wombContentsBar.localScale = new Vector3(wombContents, intestineContentsBar.localScale.y, 1);
-        wombCapacityBar.localScale = new Vector3(fetusCount * 2f, wombCapacityBar.localScale.y, 1);
-        //Debug.Log("poop timer: " + disposalTimer);
-        Debug.Log("Time: " + currentTime + ":00 | stomach: " + (Mathf.Round(stomachContents * 1000) / 1000) + "L / " + (stomachCapacity * trainingModifier) + "L | intestines: " + (Mathf.Round(intestineContents * 1000) / 1000) + "L / " + (intestineCapacity * intestineMultiplier * trainingModifier) + "L | hunger modifier = " + hungerModifier);
+        stomachCapacityBar.localScale = new Vector3(stomachCapacity * trainingModifier / 2, stomachCapacityBar.localScale.y, 1);
+        stomachContentsBar.localScale = new Vector3(stomachContents / 2, stomachContentsBar.localScale.y, 1);
+        contentsText[0].text = Mathf.Round(stomachContents * 100) / 100 + "L / " + Mathf.Round(stomachCapacity * trainingModifier * 100) / 100 + "L";
+        intestineCapacityBar.localScale = new Vector3(intestineCapacity * intestineMultiplier * trainingModifier / 2, intestineCapacityBar.localScale.y, 1);
+        intestineContentsBar.localScale = new Vector3(intestineContents / 2 , intestineContentsBar.localScale.y, 1);
+        contentsText[1].text = Mathf.Round(intestineContents * 100) / 100 + "L / " + Mathf.Round(intestineCapacity * intestineMultiplier * trainingModifier * 100) / 100 + "L";
+        wombContentsBar.localScale = new Vector3(wombContents / 2, wombContentsBar.localScale.y, 1);
+        wombCapacityBar.localScale = new Vector3((2.5f + fetusCount), wombCapacityBar.localScale.y, 1);
+        contentsText[2].text = Mathf.Round(wombContents * 100) / 100 + "L / " + Mathf.Round((2 * fetusCount + 5) * 100) / 100 + "L";
+
+        //Debug.Log("Time: " + currentTime + ":00 | stomach: " + (Mathf.Round(stomachContents * 1000) / 1000) + "L / " + (stomachCapacity * trainingModifier) + "L | intestines: " + (Mathf.Round(intestineContents * 1000) / 1000) + "L / " + (intestineCapacity * intestineMultiplier * trainingModifier) + "L | hunger modifier = " + hungerModifier);
 
     }
 
