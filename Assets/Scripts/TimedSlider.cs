@@ -8,7 +8,7 @@ public class TimedSlider : MonoBehaviour
     private float value;
     private float volume;
     private float climax;
-    [SerializeField] private float maxVolume;
+    private float maxVolume;
 
     [SerializeField] private Transform volumeTransform;
     [SerializeField] private SpriteRenderer screenFlash;
@@ -18,7 +18,7 @@ public class TimedSlider : MonoBehaviour
     [SerializeField] private SpriteRenderer previewBG;
     [SerializeField] private Sprite[] previewSprites = new Sprite[3];
 
-    [SerializeField] private DigitCounter backdropFace;
+    //[SerializeField] private DigitCounter backdropFace;
     [SerializeField] private DigitCounter previewFace;
 
     [SerializeField] private Canvas canvas;
@@ -30,7 +30,8 @@ public class TimedSlider : MonoBehaviour
     //[SerializeField] private AudioPlayer coomPlayer;
     [SerializeField] private AudioClip orgasmMoan;
     [SerializeField] private AudioClip nutBuster;
-
+    [SerializeField] private Text volumeText;
+    [SerializeField] private Text volumeValue;
 
     //[SerializeField] private Text climaxText;
     [SerializeField] private Transform climaxTransform;
@@ -79,6 +80,7 @@ public class TimedSlider : MonoBehaviour
             volumeTransform.localScale = new Vector3(volume / 100f, volumeTransform.localScale.y, 1);
             climaxTransform.localScale = new Vector3(climax / 100f, climaxTransform.localScale.y, 1);
             StartCoroutine(mainLoop.Bounce(0.1f));
+            StartCoroutine(mainLoop.BellyJiggle(false));
             plapsPlayer.PlayRandom();
             sexualMoansPlayer.PlayRandom();
         }
@@ -93,20 +95,21 @@ public class TimedSlider : MonoBehaviour
             sexualMoansPlayer.PlayRandom();
         }
         screenFlash.color = new Color(screenFlash.color.r, screenFlash.color.g, screenFlash.color.b, climax / 1000f);
-
+        volumeText.text = "VOLUME:           L / " + Mathf.Min(2f, (Mathf.Round(maxVolume * 100) / 10000)) + "L";
+        volumeValue.text = (Mathf.Round(volume * 100) / 10000).ToString();
     }
 
-    public IEnumerator Oscillate(int currentIndex)
+    public IEnumerator Oscillate(bool startPregnancy, float volumeLimit)
     {
         previewBG.enabled = false;
         pregnancyPreview.enabled = false;
         sleepingHead.enabled = true;
-        backdropFace.enabled = true;
+        //backdropFace.enabled = true;
 
         amountReleased = 0f;
         canvas.enabled = false;
         buttons.SetActive(false);
-
+        maxVolume = volumeLimit * 100;
         while (climax < 200f)
         {
             clickedThisCycle = false;
@@ -126,7 +129,7 @@ public class TimedSlider : MonoBehaviour
                 transform.localScale = new Vector3((value / 10f), transform.localScale.y, 1);
                 yield return null;
                 previewFace.SetCounterTo(Mathf.CeilToInt(climax / 100f));
-                backdropFace.SetCounterTo(Mathf.CeilToInt(climax / 100f));
+                //backdropFace.SetCounterTo(Mathf.CeilToInt(climax / 100f));
             }
             while (value > 0)
             {
@@ -142,7 +145,7 @@ public class TimedSlider : MonoBehaviour
                 transform.localScale = new Vector3((value / 10f), transform.localScale.y, 1);
                 yield return null;
                 previewFace.SetCounterTo(Mathf.CeilToInt(climax / 100f));
-                backdropFace.SetCounterTo(Mathf.CeilToInt(climax / 100f));
+                //backdropFace.SetCounterTo(Mathf.CeilToInt(climax / 100f));
             }
             if (!clickedThisCycle)
             {
@@ -153,6 +156,7 @@ public class TimedSlider : MonoBehaviour
                 climaxTransform.localScale = new Vector3(climax / 100f, climaxTransform.localScale.y, 1);
             }
         }
+        mainLoop.StopCoroutine("BellyJiggle");
         StartCoroutine(mainLoop.BellyJiggle(true));
         value = 0f;
         transform.localScale = new Vector3(0f, transform.localScale.y, 1f);
@@ -160,32 +164,17 @@ public class TimedSlider : MonoBehaviour
         amountReleased = volume;
         
         //if (amountReleased > 200) amountReleased = 200;
-        pregnancyPreview.sprite = previewSprites[Mathf.Min((int)amountReleased, 200) / 100];
-        /*int previewPregnancyIndex = 0;
-        switch (amountReleased / 100)
+        if (startPregnancy)
         {
-            case 0:
-                previewPregnancyIndex = 5;
-                break;
-            case 1:
-                previewPregnancyIndex = 8;
-                break;
-            case 2:
-                previewPregnancyIndex = 10;
-                break;
-            default:
-                previewPregnancyIndex = 0;
-                break;
-        }*/
+            pregnancyPreview.sprite = previewSprites[Mathf.Min((int)amountReleased, 200) / 100];
+            pregnancyPreview.enabled = true;
+            previewBG.enabled = true;
+            pregnancyPreview.color = new Color(pregnancyPreview.color.r, pregnancyPreview.color.g, pregnancyPreview.color.b, 0.2f);
+        }
 
-        pregnancyPreview.enabled = true;
-        //sleepingHead.enabled = true;
-        previewBG.enabled = true;
-        //Debug.Log(volume);
-        pregnancyPreview.color = new Color(pregnancyPreview.color.r, pregnancyPreview.color.g, pregnancyPreview.color.b, 0.2f);
         //previewBG.color = new Color(previewBG.color.r, previewBG.color.g, previewBG.color.b, 0.2f);
         previewFace.SetCounterTo(2);
-        backdropFace.SetCounterTo(2);
+        //backdropFace.SetCounterTo(2);
 
         plapsPlayer.PlayCustom(nutBuster, 0.4f);
         sexualMoansPlayer.PlayCustom(orgasmMoan);
@@ -212,11 +201,11 @@ public class TimedSlider : MonoBehaviour
         }
         yield return new WaitForSeconds(1.5f);
         previewFace.SetCounterTo(0);
-        backdropFace.SetCounterTo(0);
+        //backdropFace.SetCounterTo(0);
         pregnancyPreview.enabled = false;
         sleepingHead.enabled = false;
         previewBG.enabled = false;
-        backdropFace.enabled = false;
+        //backdropFace.enabled = false;
         value = 0;
         volume = 0;
         climax = 0;
@@ -226,6 +215,6 @@ public class TimedSlider : MonoBehaviour
         canvas.enabled = true;
         buttons.SetActive(true);
 
-        if (amountReleased >= maxVolume && !mainLoop.achievements[4]) mainLoop.UpdateAchievements(4);
+        if (amountReleased >= 300 && !mainLoop.achievements[4]) mainLoop.UpdateAchievements(4);
     }
 }

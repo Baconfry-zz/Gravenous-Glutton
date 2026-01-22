@@ -7,6 +7,8 @@ public class SaveData
 {
     public float stomachContents;
     public float intestineContents;
+    public float coomContents;
+    public float coomStorage;
     public int digestionTimer;
     public int hungerTimer;
     public float trainingModifier;
