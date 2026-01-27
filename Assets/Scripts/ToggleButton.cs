@@ -42,6 +42,7 @@ public class ToggleButton : MonoBehaviour
                 foreach (AudioSource source in sources)
                 {
                     source.mute = !isActive;
+                    if (source.gameObject.name == "Stream_Digestion" && !mainLoop.playingDigestionSounds) source.mute = true;
                 }
                 //objectToToggle.GetComponent<AudioSource>().mute = !isActive;
             }

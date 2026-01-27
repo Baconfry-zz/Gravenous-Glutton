@@ -16,6 +16,7 @@ public class AudioPlayer : MonoBehaviour
     private float startingVolume = 1f;
 
     private bool isTransitioning;
+    public bool constantPlaying = false;
     
     void Awake()
     {
@@ -25,6 +26,7 @@ public class AudioPlayer : MonoBehaviour
     void Start()
     {
         startingVolume = source.volume;
+        if (constantPlaying) StartCoroutine(PlayConstantly());
     }
 
     // Update is called once per frame
@@ -39,12 +41,27 @@ public class AudioPlayer : MonoBehaviour
 
     }
 
+    public void Mute(bool state)
+    {
+        source.mute = state;
+    }
+
     public void PlayAtIndex(int index)
     {
         internalVolume = startingVolume;
         previousClipIndex = index;
         source.clip = audioClips[index];
         source.Play();
+    }
+
+    public IEnumerator PlayConstantly()
+    {
+        while (true)
+        {
+            PlayRandom();
+            while (source.isPlaying) yield return null;
+            yield return new WaitForSeconds(1f);
+        }
     }
 
     public void PlayRandom()

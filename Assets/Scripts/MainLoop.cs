@@ -30,6 +30,7 @@ public class MainLoop : MonoBehaviour
     [SerializeField] private AudioClip hungrySound;
     [SerializeField] private AudioClip lastBirthSound;
     [SerializeField] private AudioClip hiccupSound;
+    [SerializeField] private AudioPlayer streamDigestionSounds;
 
     [SerializeField] private AudioPlayer achievementPlayer;
     [SerializeField] private AudioPlayer gaspPlayer;
@@ -59,6 +60,7 @@ public class MainLoop : MonoBehaviour
     [SerializeField] private GameObject weedButton;
     [SerializeField] private GameObject foodButton;
     [SerializeField] private GameObject sexButton;
+    [SerializeField] private GameObject chatButton;
     [SerializeField] private GameObject tattooToggle;
     [SerializeField] private GameObject deleteSaveButton;
     [SerializeField] private ToggleButton alwaysEatButton;
@@ -69,6 +71,8 @@ public class MainLoop : MonoBehaviour
     [SerializeField] private DigitCounter faces;
     [SerializeField] private DigitCounter weedStockCounter;
     [SerializeField] private DigitCounter wombTattoo;
+
+    [SerializeField] private string[] messageList;
 
     public bool[] achievements = new bool[12];
     [SerializeField] private GameObject[] medicineButtons = new GameObject[7];
@@ -170,6 +174,7 @@ public class MainLoop : MonoBehaviour
     public bool alwaysUseEatingAnimation = false;
     public bool jiggledDuringStream = false;
     public int daysUntilNextStream = 0;
+    public bool playingDigestionSounds = false;
 
     int imageIndex = 0;
     int startingSize = 0;
@@ -441,7 +446,7 @@ public class MainLoop : MonoBehaviour
         }
         achievementButton.GetComponent<Collider2D>().enabled = initialButtonState;
 
-        holdFaceDuration = 0.6f;
+        if (useDefaultBehavior) holdFaceDuration = 0.6f;
         isPlayingJiggleAnim = false;
     }
 
@@ -924,17 +929,25 @@ public class MainLoop : MonoBehaviour
             int foodEaten = 0;
             int maxSize = imageIndex;
             deltaSize = 0;
+            bool[] alreadySeenInteractions = new bool[7] {false, false, false, false, false, false, false};
+            bool[] eligibleInteractions = new bool[7] {true, true, true, true, true, true, true};
+            bool[] alreadyMentionedStreamers = new bool[8] { false, false, false, false, false, false, false, false};
+            bool babiesKicking = false;
+            float kickTimer = 0f;
+
+            
+
             while (!Input.GetKeyDown(KeyCode.Return) && clickedButtonName != "skip_time_button" && !isAsleep)
             {
                 foodButton.SetActive(!isStreaming);
                 maxSize = Mathf.Max(imageIndex, maxSize);
                 streamEarnings = (int)(foodEaten * Mathf.Pow(1.5f, deltaSize) + (jiggledDuringStream ? maxSize : 0));
                 donationsText.text = "Donations: $" + streamEarnings;
-                if (Input.GetKeyDown(KeyCode.Delete) && Input.GetKey(KeyCode.Backspace))
+                /*if (Input.GetKeyDown(KeyCode.Delete) && Input.GetKey(KeyCode.Backspace))
                 {
                     WipeSaveData();
                     SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-                }
+                }*/
                 adjustedStomachCapacity = stomachCapacity * hungerModifier * trainingModifier;
 
                 bool fedDuringStream = false;
@@ -957,6 +970,10 @@ public class MainLoop : MonoBehaviour
 
                     if (stomachContents < adjustedStomachCapacity)
                     {
+                        babiesKicking = false;
+                        kickTimer = 0f;
+                        playingDigestionSounds = false;
+                        streamDigestionSounds.Mute(true);
                         if (fedDuringStream || alwaysUseEatingAnimation)
                         {
                             achievementButton.GetComponent<Collider2D>().enabled = false;
@@ -979,6 +996,8 @@ public class MainLoop : MonoBehaviour
                         {
                             if (foodEaten <= plates.Length) plates[foodEaten].SetActive(true);
                             foodEaten++;
+                            chatButton.GetComponent<Collider2D>().enabled = true;
+                            chatButton.GetComponent<SpriteRenderer>().color = Color.white;
                         }
                         holdFaceDuration = 0f;
                         gulpPlayer.PlayRandom();
@@ -1103,18 +1122,210 @@ public class MainLoop : MonoBehaviour
                     StartCoroutine(Bounce(0.3f));
                     yield return StartCoroutine(BellyJiggle(true));
                 }
-                if (holdFaceDuration > 0f) holdFaceDuration -= Time.deltaTime;
-                if (holdFaceDuration <= 0f)
+                if (holdFaceDuration > 0f)
                 {
-                    holdFaceDuration = 0;
-                    //overrideFace.enabled = isAsleep;
-                    //if (isAsleep) faces.SetCounterTo(0);
-                    faces.SetCounterTo(BellyToFaceIndex(false));
+                    holdFaceDuration -= Time.deltaTime;
+                    if (holdFaceDuration <= 0f)
+                    {
+                        holdFaceDuration = 0;
+                        //overrideFace.enabled = isAsleep;
+                        //if (isAsleep) faces.SetCounterTo(0);
+                        if (babiesKicking)
+                        {
+                            faces.SetCounterTo(1);
+                        }
+                        else if (!streamDigestionSounds.GetComponent<AudioSource>().mute)
+                        {
+                            faces.SetCounterTo(0);
+                        }
+                        else
+                        {
+                            faces.SetCounterTo(BellyToFaceIndex(false));
+                        }
+                    }
                 }
+
 
                 if (clickedButtonName == "sex_button")
                 {
                     yield return StartCoroutine(SexMinigame(false));
+                }
+
+                if (clickedButtonName == "chat_button")
+                {
+                    chatButton.GetComponent<Collider2D>().enabled = false;
+                    chatButton.GetComponent<SpriteRenderer>().color = new Color(0.2f, 0.2f, 0.2f, 1f);
+
+                    eligibleInteractions[5] = pregnancyDays >= 20;
+                    eligibleInteractions[6] = stomachContents > stomachCapacity * trainingModifier * hungerModifier;
+
+                    int interactionIndex = Random.Range(0, 7);
+                    while (!eligibleInteractions[interactionIndex]) interactionIndex = Random.Range(0, 7);
+
+                    string subMessage = "";
+                    string subMessage2 = "";
+
+                    switch (interactionIndex)
+                    {
+                        case 0://elbows
+                            subMessage = "You touch your elbows together without much difficulty.";
+                            if (imageIndex > 4) subMessage = "It's a struggle, but you barely manage to bring your elbows together.";
+                            if (imageIndex > 7) subMessage = "You try bringing your elbows together, but it's impossible for obvious reasons.";
+                            bellyText.text = "\"can you touch your elbows together?\"\n\n" + (alreadySeenInteractions[0] ? "You're not falling for that again." : (subMessage + " What was that all about?"));
+                            if (alreadySeenInteractions[0]) eligibleInteractions[0] = false;
+                            faces.SetCounterTo(1);
+                            break;
+                        case 1://other streamer
+                            int streamerIndex = Random.Range(0, 8);
+                            bool allMentioned = true;
+                            for (int i = 0; i < alreadyMentionedStreamers.Length; i++) { if (!alreadyMentionedStreamers[i]) allMentioned = false; }
+                            while (alreadyMentionedStreamers[streamerIndex] && !allMentioned) streamerIndex = Random.Range(0, 8);
+                            switch (streamerIndex)
+                            {
+                                case 0:
+                                    subMessage = "Ayume";
+                                    subMessage2 = "stuffing";
+                                    break;
+                                case 1:
+                                    subMessage = "Roxanne";
+                                    subMessage2 = "stuffing";
+                                    break;
+                                case 2:
+                                    subMessage = "Emmie";
+                                    subMessage2 = "stuffing";
+                                    break;
+                                case 3:
+                                    subMessage = "Hazumi";
+                                    subMessage2 = "pregnancy";
+                                    break;
+                                case 4:
+                                    subMessage = "Leah";
+                                    subMessage2 = "pregnancy";
+                                    break;
+                                case 5:
+                                    subMessage = "Marie";
+                                    subMessage2 = "pregnancy";
+                                    break;
+                                case 6:
+                                    subMessage = "Mikami";
+                                    subMessage2 = "pregnancy";
+                                    break;
+                                case 7:
+                                    subMessage = "Mina";
+                                    subMessage2 = "stuffing";
+                                    break;
+                            }
+                            alreadyMentionedStreamers[streamerIndex] = true;
+                            if (allMentioned)
+                            {
+                                bellyText.text = "\"does anyone know any other streamers who do similar content\"\n\n" + "You tell the chatter that you've already mentioned all the belly content creators that you know of.";
+                            }
+                            else
+                            {
+                                bellyText.text = "\"does anyone know any other streamers who do similar content\"\n\n" + "You playfully admonish the chatter for thinking about other girls, but mention that you know a girl named " + subMessage + " who does " + subMessage2 + " content.";
+                            }
+                            faces.SetCounterTo(1);
+                            break;
+                        case 2://digestion sounds
+                            bellyText.text = "\"can you do tummy noises pls\"\n\nYou oblige and hold the microphone against your belly.";
+                            faces.SetCounterTo(0);
+                            playingDigestionSounds = true;
+                            streamDigestionSounds.Mute(!GameObject.Find("toggle_SFX").GetComponent<ToggleButton>().isActive);
+                            break;
+                        case 3://how much more
+                            int amount = (int)Mathf.Ceil(((stomachCapacity * trainingModifier * hungerModifier) - stomachContents) / 0.4f);
+                            if (achievements[1]) amount++;
+                            if (stomachContents < stomachCapacity * trainingModifier * hungerModifier)
+                            {
+                                subMessage = "You estimate that you can probably fit " + (amount == 1 ? "1 more plate " : amount + " more plates ") + "of food in your belly." + (amount > 9 ? " Some of your newer viewers don't seem to believe you." : "");
+                            }
+                            else
+                            {
+                                subMessage = "You tell them that you are stuffed to the limit, " + ((hungerModifier == 4f && intestineContents >= intestineCapacity * trainingModifier) ? "and it is physically impossible to stuff your overstretched belly any further." : "but you might be able to force yourself to eat more with some encouragement from chat.");
+                                if (intestineContents < intestineCapacity * trainingModifier * intestineMultiplier)
+                                {
+                                    subMessage2 = "\n\nMaybe you can free up more space in your stomach if some food were to flow into your lower belly.";
+                                }
+                                else if (hungerTimer < 10)
+                                {
+                                    subMessage2 = "\n\nMaybe taking some appetite-increasing drugs would also help.";
+                                }
+                                else if (munchiesConsumed < 5)
+                                {
+                                    subMessage2 = "\n\nYou might be able to gulp down more food if you had some more weed in your system.";
+                                }
+                            }
+                            bellyText.text = "\"How much more do you think you can eat?\"\n\n" + subMessage + subMessage2;
+                            faces.SetCounterTo(1);
+                            break;
+                        case 4://guess how many babies
+                            subMessage = "\"Oh, you're pregnant? Congratulations!!!\"";
+                            float totalBellyContents = stomachContents + intestineContents + wombContents + coomContents;
+                            if (totalBellyContents >= 3f) subMessage = "\"She definitely looks pregnant. Imagine if she was just trolling us with a food baby though\"";
+                            if (totalBellyContents >= 7f) subMessage = "\"I thought she was already in her third trimester. is this a trick question?\"";
+                            if (totalBellyContents >= 9f) subMessage = "\"She's way too big for a single pregnancy. I think maybe twins?\"";
+                            if (totalBellyContents >= 11f) subMessage = "\"she's fucking HUGE!! is she having triplets?\"";
+                            if (totalBellyContents >= 13f) subMessage = "\"guys I did the math, based on her size she looks like she's carrying " + (int)((totalBellyContents - 5) / 2) + " babies, full term\"";
+
+                            subMessage2 = "You tell them to look forward to how much bigger you'll be when the stream ends.";
+                            if (stomachContents + intestineContents + coomContents > 1f)
+                            {
+                                subMessage2 = "The rest is all food." + (coomContents >= 0.4f ? " (You decide not to tell them what else is in there.)" : "");
+                            }
+                            string trimester = "first";
+                            if (pregnancyDays > 13) trimester = "second";
+                            if (pregnancyDays > 26) trimester = "third";
+                            bellyText.text = "You ask some newly-joined viewers to guess how many babies you are carrying right now.\n\n" + subMessage + (alreadySeenInteractions[4] ? "\n\nYou let other members of chat tell the newcomers what's really inside your belly." : "\n\nAfter a while, you reveal the truth: you are carrying " + fetusCount + (fetusCount == 1 ? " baby" : " babies") + " and are in roughly your " + trimester + " trimester. " + subMessage2);
+                            faces.SetCounterTo(1);
+                            break;
+                        case 5://babies kicking
+                            if (stomachContents + intestineContents > 2f) subMessage = (stomachContents > stomachCapacity * trainingModifier) ? "overstuffed " : "full ";
+                            bellyText.text = "Your " + (fetusCount == 1 ? "baby starts" : "babies start") + " kicking and squirming inside your " + subMessage + "belly. You turn towards the camera to present your viewers with the best possible view.";
+                            faces.SetCounterTo(1);
+                            //StartCoroutine(BellyJiggle(false));
+                            babiesKicking = true;
+                            if (!achievements[5]) UpdateAchievements(5);
+                            break;
+                        case 6://dishes
+                            subMessage = "Your round tummy presses into the counter, leaving you without much room to work with";
+                            if (imageIndex > 5) subMessage = "You have to rest your huge belly on the edge of the sink to make room";
+                            if (imageIndex > 7) subMessage = "You have to lean forward with your enormous belly pressed against the front of the counter in order to reach the sink";
+                            if (intestineContents < intestineCapacity * intestineMultiplier * trainingModifier)
+                            {
+                                topHeavyAtStart = stomachContents > intestineContents + wombContents + coomContents;
+                                if (stomachContents >= flowRate && (intestineContents + flowRate) <= intestineCapacity * intestineMultiplier * trainingModifier)
+                                {
+                                    stomachContents -= flowRate;
+                                    intestineContents += flowRate;
+                                }
+                                else if (intestineContents < (intestineCapacity * intestineMultiplier * trainingModifier) && (intestineContents + flowRate) > intestineCapacity * intestineMultiplier * trainingModifier)
+                                {
+                                    stomachContents -= ((intestineCapacity * intestineMultiplier * trainingModifier) - intestineContents);
+                                    intestineContents = intestineCapacity * intestineMultiplier * trainingModifier;
+                                }
+                                else if (stomachContents < flowRate)
+                                {
+                                    intestineContents += stomachContents;
+                                    stomachContents = 0f;
+                                }
+                                else
+                                {
+                                    Debug.Log("should not reach this point");
+                                }
+                                PrintStats();
+                                if (stomachContents <= (intestineContents + wombContents + coomContents) && topHeavyAtStart && imageIndex > 3)
+                                {
+                                    gurglePlayer.PlayRandom();
+                                    topHeavyAtStart = false;
+                                }
+                                subMessage2 = "\n\nWhile you wash the dishes, you feel some food flowing into the lower parts of your belly.";
+                            }
+                            bellyText.text = "You are too full to eat another bite, so you decide it's a good time to take a break and wash some dishes. " + subMessage + ", but you manage to make some decent progress." + subMessage2;
+                            faces.SetCounterTo(1);
+                            break;
+                    }
+
+                    alreadySeenInteractions[interactionIndex] = true;
                 }
 
                 if (clickedButtonName == "record_button" && !isStreaming)
@@ -1287,9 +1498,19 @@ public class MainLoop : MonoBehaviour
                     UpdateMedicineText();
                 }
 
+                if (babiesKicking && kickTimer <= 0f)
+                {
+                    StartCoroutine(BellyJiggle(false));
+                    faces.SetCounterTo(1);
+                    kickTimer = Random.Range(2.5f, 5f);
+                }
+                if (babiesKicking && kickTimer > 0f) kickTimer -= Time.deltaTime;
+
                 yield return null;
             }
             if (!isAsleep) achievementText.text = "";
+            playingDigestionSounds = false;
+            streamDigestionSounds.Mute(true);
             bool canceledStream = false;
             if (isStreaming)
             {
