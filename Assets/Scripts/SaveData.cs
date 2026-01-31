@@ -28,6 +28,8 @@ public class SaveData
     public bool tookCaffeine;
     public bool isStreaming;
     public bool jiggledDuringStream;
+    public bool tookLaxative;
+    public bool usedPlug;
     public int daysUntilNextStream;
 
     public int sleepCountdown;
