@@ -340,92 +340,98 @@ public class MainLoop : MonoBehaviour
 
     void UpdateEligibleMessages(int foodEaten, bool[] seenInteractions)
     {
-        eligibleMessages[0] = imageIndex < 4;
-        eligibleMessages[1] = imageIndex < 4;
+        eligibleMessages[0] = imageIndex < 7;
+        eligibleMessages[1] = imageIndex < 7;
         eligibleMessages[2] = true;
-        eligibleMessages[3] = imageIndex < 4;
+        eligibleMessages[3] = imageIndex < 7;
         eligibleMessages[4] = true;
         eligibleMessages[5] = true;
         eligibleMessages[6] = true;
         eligibleMessages[7] = true;
-        eligibleMessages[8] = imageIndex > 3 && imageIndex < 7;
-        eligibleMessages[9] = imageIndex > 3 && foodEaten > 3;
+        eligibleMessages[8] = imageIndex > 4 && imageIndex < 10;
+        eligibleMessages[9] = imageIndex > 4 && foodEaten > 3;
         eligibleMessages[10] = foodEaten > 10;
-        eligibleMessages[11] = imageIndex > 5;
+        eligibleMessages[11] = imageIndex > 8;
         eligibleMessages[12] = true;
         eligibleMessages[13] = foodEaten > 1;
-        eligibleMessages[14] = imageIndex > 3 && foodEaten > 3;
+        eligibleMessages[14] = imageIndex > 5 && foodEaten > 3;
         eligibleMessages[15] = true;
-        eligibleMessages[16] = imageIndex > 3;
+        eligibleMessages[16] = imageIndex > 5;
         eligibleMessages[17] = foodEaten > 6;
         eligibleMessages[18] = true;
-        eligibleMessages[19] = imageIndex > 3;
+        eligibleMessages[19] = imageIndex > 5;
         eligibleMessages[20] = foodEaten > 6;
         eligibleMessages[21] = foodEaten > 15;
         eligibleMessages[22] = foodEaten > 3;
-        eligibleMessages[23] = imageIndex > 3 && foodEaten > 0;
+        eligibleMessages[23] = imageIndex > 4 && foodEaten > 0;
         eligibleMessages[24] = foodEaten > 3;
         eligibleMessages[25] = foodEaten > 6;
         eligibleMessages[26] = foodEaten > 3;
-        eligibleMessages[27] = imageIndex > 5;
+        eligibleMessages[27] = imageIndex > 8;
         eligibleMessages[28] = foodEaten > 9;
-        eligibleMessages[29] = imageIndex > 3 && imageIndex < 7;
+        eligibleMessages[29] = imageIndex > 4 && imageIndex < 13;
         eligibleMessages[30] = foodEaten > 15;
-        eligibleMessages[31] = imageIndex > 5;
-        eligibleMessages[32] = imageIndex > 3 && foodEaten > 0;
-        eligibleMessages[33] = imageIndex > 3 && foodEaten > 0;
-        eligibleMessages[34] = imageIndex > 7 && foodEaten > 3;
-        eligibleMessages[35] = imageIndex > 9;
+        eligibleMessages[31] = imageIndex > 10;
+        eligibleMessages[32] = imageIndex > 4 && foodEaten > 0;
+        eligibleMessages[33] = imageIndex > 4 && foodEaten > 0;
+        eligibleMessages[34] = imageIndex > 20 && foodEaten > 3;
+        eligibleMessages[35] = imageIndex > 18;
         eligibleMessages[36] = true;
         eligibleMessages[37] = true;
         eligibleMessages[38] = true;
-        eligibleMessages[39] = imageIndex > 3 && foodEaten > 3;
+        eligibleMessages[39] = imageIndex > 5 && foodEaten > 3;
         eligibleMessages[40] = foodEaten > 9;
-        eligibleMessages[41] = imageIndex > 3;
-        eligibleMessages[42] = imageIndex > 3 && foodEaten > 3;
+        eligibleMessages[41] = imageIndex > 5;
+        eligibleMessages[42] = imageIndex > 5 && foodEaten > 3;
         eligibleMessages[43] = foodEaten > 15;
         eligibleMessages[44] = foodEaten > 9;
-        eligibleMessages[45] = imageIndex > 3;
-        eligibleMessages[46] = imageIndex > 3 && foodEaten > 3;
+        eligibleMessages[45] = imageIndex > 5;
+        eligibleMessages[46] = imageIndex > 4 && foodEaten > 3;
         eligibleMessages[47] = fetusCount > 2 && seenInteractions[4];
-        eligibleMessages[48] = imageIndex > 3 && foodEaten > 0;
+        eligibleMessages[48] = imageIndex > 4 && foodEaten > 1;
         eligibleMessages[49] = true;
         eligibleMessages[50] = foodEaten > 6 && foodEaten < 10;
-        eligibleMessages[51] = imageIndex > 4;
+        eligibleMessages[51] = imageIndex > 12;
         eligibleMessages[52] = foodEaten > 15;
         eligibleMessages[53] = fetusCount > 1 && seenInteractions[4] && foodEaten > 15;
         eligibleMessages[54] = wombContents > 3f && cumulativeEarnings > 0;
         eligibleMessages[55] = foodEaten > 9;
         eligibleMessages[56] = foodEaten > 6;
-        eligibleMessages[57] = imageIndex > 3 && foodEaten > 3;
+        eligibleMessages[57] = imageIndex > 8 && foodEaten > 3;
         eligibleMessages[58] = true;
         eligibleMessages[59] = true;
         eligibleMessages[60] = foodEaten < 6;
-        eligibleMessages[61] = foodEaten > 3 && imageIndex > 4;
+        eligibleMessages[61] = foodEaten > 3 && imageIndex > 11;
         eligibleMessages[62] = foodEaten > 9;
         eligibleMessages[63] = foodEaten > 5;
         eligibleMessages[64] = true;
-        eligibleMessages[65] = imageIndex > 6;
+        eligibleMessages[65] = imageIndex > 20;
         eligibleMessages[66] = true;
         eligibleMessages[67] = fetusCount > 3 && pregnancyDays >= 20 && seenInteractions[4];
         eligibleMessages[68] = foodEaten > 3;
-        eligibleMessages[69] = imageIndex > 5 && foodEaten > 9;
+        eligibleMessages[69] = imageIndex > 16 && foodEaten > 9;
         eligibleMessages[70] = foodEaten > 9;
         eligibleMessages[71] = foodEaten < 6;
-        eligibleMessages[72] = imageIndex > 6;
+        eligibleMessages[72] = imageIndex > 10;
         eligibleMessages[73] = currentTime < 4;
         eligibleMessages[74] = currentTime > 7 && currentTime < 12 && foodEaten < 15;
         eligibleMessages[75] = foodEaten > 9;
         eligibleMessages[76] = true;
         eligibleMessages[77] = false;
-        eligibleMessages[78] = imageIndex > 3;
+        eligibleMessages[78] = imageIndex > 4;
         eligibleMessages[79] = foodEaten > 30;
-        eligibleMessages[80] = imageIndex > 6;
-        eligibleMessages[81] = imageIndex > 8;
-        eligibleMessages[82] = imageIndex > 6;
+        eligibleMessages[80] = imageIndex > 20;
+        eligibleMessages[81] = imageIndex > 16;
+        eligibleMessages[82] = imageIndex > 20;
         eligibleMessages[83] = pregnancyDays >= 20;
-        eligibleMessages[84] = imageIndex > 4;
-        eligibleMessages[85] = imageIndex > 8;
+        eligibleMessages[84] = imageIndex > 10;
+        eligibleMessages[85] = imageIndex > 16;
+        eligibleMessages[86] = tattooToggle.GetComponent<ToggleButton>().isActive && imageIndex > 20;
+        eligibleMessages[87] = foodEaten > 5;
+        eligibleMessages[88] = imageIndex > 4;
+        eligibleMessages[89] = imageIndex > 4 && imageIndex < 10;
+        eligibleMessages[90] = foodEaten > 20;
+        eligibleMessages[91] = foodEaten > 9 && imageIndex > 6 && imageIndex < 16;
     }
 
     int BellyToFaceIndex(bool isJiggling)
@@ -435,26 +441,22 @@ public class MainLoop : MonoBehaviour
         switch (Mathf.Floor(foodAndCoomContents))
         {
             case 0:
-                reactionFaceIndex = isJiggling ? 0 : (imageIndex < 5 ? 7 : 2);
+                reactionFaceIndex = isJiggling ? 0 : (imageIndex < 6 ? 7 : 2);
                 break;
             case 1:
             case 2:
             case 3:
             case 4:
-                reactionFaceIndex = isJiggling ? (imageIndex < 5 ? 2 : 1) : (imageIndex < 5 ? 7 : 2);
+                reactionFaceIndex = isJiggling ? (imageIndex < 6 ? 2 : 1) : (imageIndex < 6 ? 7 : 2);
                 break;
             case 5:
             case 6:
             case 7:
             case 8:
-                reactionFaceIndex = isJiggling ? 3 : 2;
-                break;
-            case 9:
-            case 10:
-                reactionFaceIndex = isJiggling ? 4 : 3;
+                reactionFaceIndex = isJiggling ? 3 : 8;
                 break;
             default:
-                reactionFaceIndex = 4;
+                reactionFaceIndex = isJiggling ? 9 : 3;
                 break;
         }
         if (isAsleep) reactionFaceIndex = 0;
@@ -478,7 +480,7 @@ public class MainLoop : MonoBehaviour
             if (Mathf.Floor(Mathf.Round((stomachContents + intestineContents + coomContents) * 1000) / 1000) >= 5)
             {
                 if (!isAsleep) stuffedMoansPlayer.PlayRandom();
-                if (stomachContents + intestineContents > 1.5f && Random.Range(0, Mathf.Max(0, 10 - imageIndex)) == 0) gurglePlayer.PlayRandom();
+                if (stomachContents + intestineContents > 1.5f && Random.Range(0, Mathf.Max(0, 8 - imageIndex)) == 0) gurglePlayer.PlayRandom();
             }
 
 
@@ -496,16 +498,16 @@ public class MainLoop : MonoBehaviour
         spriteRenderer.sprite = topHeavy ? characterSpritesTop[imageIndex] : characterSpritesBtm[imageIndex];
         UpdateWombTattoo(topHeavy);
         yield return new WaitForSeconds(baseJiggleRate * 2);
-        if (imageIndex >= 4)
+        if (imageIndex >= 6)
         {
             if (isStreaming && lastJiggledSize < imageIndex)
             {
                 jiggledDuringStream = true;
                 lastJiggledSize = imageIndex;
                 string bellyDescriptor = "swollen ";
-                if (imageIndex > 5) bellyDescriptor = "huge ";
-                if (imageIndex > 7) bellyDescriptor = "enormous ";
-                if (imageIndex > 9) bellyDescriptor = "gigantic ";
+                if (imageIndex > 7) bellyDescriptor = "huge ";
+                if (imageIndex > 13) bellyDescriptor = "enormous ";
+                if (imageIndex > 18) bellyDescriptor = "gigantic ";
                 foodDescription = "A few extra donations roll in as your " + bellyDescriptor + "belly jiggles in front of the camera.";
                 if (!sentMessages[77])
                 {
@@ -605,7 +607,7 @@ public class MainLoop : MonoBehaviour
                 rewardMessage = "Reward: digestion starts 1 hour sooner";
                 break;
             case 3:
-                achievementMessage = "Mucho Texto: Have a total of 12L or more in your stomach and intestines.";
+                achievementMessage = "Mucho Texto: Have a total of 18L or more in your stomach and intestines.";
                 rewardMessage = "Reward: intestines fill up 33% quicker";
                 flowRate = 0.4f;
                 break;
@@ -631,7 +633,7 @@ public class MainLoop : MonoBehaviour
                 achievementMessage = "That's No Moon: Reach the largest possible belly size.";
                 break;
             case 9:
-                achievementMessage = "Queen of Kebabs: Earn a total of $1000 through streaming.";
+                achievementMessage = "Queen of Kebabs: Earn a total of $10000 through streaming.";
                 rewardMessage = "Reward: stream every day";
                 break;
             case 10:
@@ -685,7 +687,7 @@ public class MainLoop : MonoBehaviour
                     break;
                 case 3:
                     achievementName = "Mucho Texto";
-                    achievementDescription = "Have a total of 12L or more in your stomach and intestines.";
+                    achievementDescription = "Have a total of 18L or more in your stomach and intestines.";
                     rewardMessage = "+33% flow rate";
                     break;
                 case 4:
@@ -715,7 +717,7 @@ public class MainLoop : MonoBehaviour
                     break;
                 case 9:
                     achievementName = "Queen of Kebabs";
-                    achievementDescription = "Earn a total of $1000 through streaming.";
+                    achievementDescription = "Earn a total of $10000 through streaming.";
                     rewardMessage = "stream every day";
                     break;
                 case 10:
@@ -743,12 +745,12 @@ public class MainLoop : MonoBehaviour
 
     void UpdateWombTattoo()
     {
-        wombTattoo.SetCounterTo(imageIndex + (stomachContents > intestineContents + wombContents + coomContents ? 0 : 14));
+        wombTattoo.SetCounterTo(imageIndex + (stomachContents > intestineContents + wombContents + coomContents ? 0 : 27));
     }
 
     void UpdateWombTattoo(bool isTopHeavy)
     {
-        wombTattoo.SetCounterTo(imageIndex + (isTopHeavy ? 0 : 14));
+        wombTattoo.SetCounterTo(imageIndex + (isTopHeavy ? 0 : 27));
     }
 
     public IEnumerator Bounce(float bounceDuration)
@@ -919,7 +921,7 @@ public class MainLoop : MonoBehaviour
                     if (!achievements[7]) UpdateAchievements(7);
                 }
             }
-            if (hungerTimer > 7 && trainingModifier > 1f)
+            if (hungerTimer > 5 && trainingModifier > 1f)
             {
                 trainingModifier -= 0.05f;
                 if (trainingModifier < 1f) trainingModifier = 1f;
@@ -1084,7 +1086,7 @@ public class MainLoop : MonoBehaviour
                         {
                             if (foodEaten <= plates.Length) plates[foodEaten].SetActive(true);
                             foodEaten++;
-                            streamEarnings += (int)(Mathf.Pow(1.42f, imageIndex));
+                            streamEarnings += (int)(Mathf.Pow(1.19f, imageIndex));
                             chatButton.GetComponent<Collider2D>().enabled = true;
                             chatButton.GetComponent<SpriteRenderer>().color = Color.white;
                         }
@@ -1119,7 +1121,7 @@ public class MainLoop : MonoBehaviour
                             {
                                 if (foodEaten <= plates.Length) plates[foodEaten].SetActive(true);
                                 foodEaten++;
-                                streamEarnings += (int)(Mathf.Pow(1.42f, imageIndex));
+                                streamEarnings += (int)(Mathf.Pow(1.19f, imageIndex));
                             }
                             gulpPlayer.PlayRandom();
                         }
@@ -1289,8 +1291,8 @@ public class MainLoop : MonoBehaviour
                     {
                         case 0://elbows
                             subMessage = "You touch your elbows together without much difficulty.";
-                            if (imageIndex > 4) subMessage = "It's a struggle, but you barely manage to bring your elbows together.";
-                            if (imageIndex > 7) subMessage = "You try bringing your elbows together, but it's impossible for obvious reasons.";
+                            if (imageIndex > 6) subMessage = "It's a struggle, but you barely manage to bring your elbows together.";
+                            if (imageIndex > 12) subMessage = "You try bringing your elbows together, but it's impossible for obvious reasons.";
                             bellyText.text = "\"can you touch your elbows together?\"\n\n" + (alreadySeenInteractions[0] ? "You're not falling for that again." : (subMessage + " What was that all about?"));
                             if (!alreadySeenInteractions[0])
                             {
@@ -1447,9 +1449,9 @@ public class MainLoop : MonoBehaviour
                                 jiggledDuringStream = true;
                                 lastJiggledSize = imageIndex;
                                 string bellyDescriptor = "swollen ";
-                                if (imageIndex > 5) bellyDescriptor = "huge ";
-                                if (imageIndex > 7) bellyDescriptor = "enormous ";
-                                if (imageIndex > 9) bellyDescriptor = "gigantic ";
+                                if (imageIndex > 7) bellyDescriptor = "huge ";
+                                if (imageIndex > 13) bellyDescriptor = "enormous ";
+                                if (imageIndex > 18) bellyDescriptor = "gigantic ";
                                 foodDescription = "A few extra donations roll in as your " + bellyDescriptor + "belly jiggles in front of the camera.";
                                 if (!sentMessages[77])
                                 {
@@ -1462,8 +1464,8 @@ public class MainLoop : MonoBehaviour
                             break;
                         case 6://dishes
                             subMessage = "Your round tummy presses into the counter, leaving you without much room to work with";
-                            if (imageIndex > 5) subMessage = "You have to rest your huge belly on the edge of the sink to make room";
-                            if (imageIndex > 7) subMessage = "You have to lean forward with your enormous belly pressed against the front of the counter in order to reach the sink";
+                            if (imageIndex > 7) subMessage = "You have to rest your huge belly on the edge of the sink to make room";
+                            if (imageIndex > 13) subMessage = "You have to lean forward with your enormous belly pressed against the front of the counter in order to reach the sink";
                             if (intestineContents < intestineCapacity * intestineMultiplier * trainingModifier)
                             {
                                 topHeavyAtStart = stomachContents > intestineContents + wombContents + coomContents;
@@ -1629,7 +1631,7 @@ public class MainLoop : MonoBehaviour
                     }
                     money -= medicinePrices[1];
                     PrintStats();
-                    if (stomachContents <= (intestineContents + wombContents + coomContents) && topHeavyAtStart && imageIndex > 3)
+                    if (stomachContents <= (intestineContents + wombContents + coomContents) && topHeavyAtStart && imageIndex > 4)
                     {
                         gurglePlayer.PlayRandom();
                         topHeavyAtStart = false;
@@ -1723,7 +1725,7 @@ public class MainLoop : MonoBehaviour
                 if (streamEarnings == 0 && !interactedWithChat) canceledStream = true;
                 foodButton.SetActive(true);
                 //Debug.Log(cumulativeEarnings);
-                if (!achievements[9] && cumulativeEarnings >= 1000) UpdateAchievements(9);
+                if (!achievements[9] && cumulativeEarnings >= 10000) UpdateAchievements(9);
                 moneyText.text = "$" + money;
                 StartCoroutine(musicPlayer.ChangeTrackTo(1, 1.5f));
                 if (!canceledStream) daysUntilNextStream = achievements[9] ? 1 : 2;
@@ -1989,7 +1991,7 @@ public class MainLoop : MonoBehaviour
             //intestineContents = Mathf.Round(intestineContents * 1000) / 1000;
             //wombContents = Mathf.Round(wombContents * 1000) / 1000;
             //trainingModifier = Mathf.Round(trainingModifier * 1000) / 1000;
-            if (stomachContents <= (intestineContents + wombContents + coomContents) && topHeavyAtStart && imageIndex > 3) gurglePlayer.PlayRandom();
+            if (stomachContents <= (intestineContents + wombContents + coomContents) && topHeavyAtStart && imageIndex > 4) gurglePlayer.PlayRandom();
             PrintStats();
 
             if (actualDays == 40 && currentTime == 23 && !achievements[11]) UpdateAchievements(11);
@@ -2013,11 +2015,11 @@ public class MainLoop : MonoBehaviour
         switch (Mathf.Floor(digestiveContents))
         {
             case 0:
-                if (digestiveContents > 0.5f)
+                if (digestiveContents > 0f)
                 {
-                    bellyDescription = "You feel satisfied.";
+                    bellyDescription = "You feel like you can eat more.";
                 }
-                else if (digestiveContents <= 0f)
+                else
                 {
                     bellyDescription = "Your belly is empty";
                     switch (hungerTimer)
@@ -2048,39 +2050,42 @@ public class MainLoop : MonoBehaviour
                             break;
                     }
                 }
-                else
-                {
-                    bellyDescription = "You feel like you can eat more.";
-                }
                 break;
             case 1:
-                bellyDescription = "You feel comfortably full.";
+                bellyDescription = "You feel satisfied.";
                 break;
             case 2:
-                bellyDescription = "You feel overwhelmingly full.";
-                break;
             case 3:
-                bellyDescription = "Your belly is so enormously stuffed that you can barely stand upright.";
+                bellyDescription = "You feel comfortably full.";
                 break;
             case 4:
-                bellyDescription = "You can feel your immensely stuffed belly stretching to accomodate the tremendous amount of food packed inside of it.";
+                bellyDescription = "You feel overwhelmingly full.";
                 break;
             case 5:
-                bellyDescription = "Your hugely swollen belly is so thoroughly stuffed that it feels like a boulder. " + (imageIndex < 7 ? "Your arms can barely reach your belly button." : "Your arms can no longer reach your belly button.");
+                bellyDescription = "Your belly is so enormously stuffed that you can barely stand upright.";
                 break;
             case 6:
-                bellyDescription = "The equivalent of an entire family-sized Thanksgiving feast now sits inside your massively engorged belly. You are so full that it is getting difficult to breathe.";
-                break;
             case 7:
-                bellyDescription = "The incredible amount of food in your belly " + (wombContents <= 7f ? "has expanded it beyond the size of a full-term pregnancy." : "feels as heavy as the weight of the " + IntToNumberofBabies(fetusCount) + " resting inside your distended womb.") + " The overwhelming sensation of fullness threatens to shut down your brain.";
-
+                bellyDescription = "You can feel your immensely stuffed belly stretching to accomodate the tremendous amount of food packed inside of it.";
                 break;
             case 8:
             case 9:
-                bellyDescription = "The signals of immense fullness from your ridiculously huge belly are laced with streaks of pain as you approach the physical limit of how much food you can cram into yourself.";
+                bellyDescription = "Your hugely swollen belly is so thoroughly stuffed that it feels like a boulder. " + (imageIndex < 13 ? "Your arms can barely reach your belly button." : "Your arms can no longer reach your belly button.");
                 break;
             case 10:
             case 11:
+                bellyDescription = "The equivalent of an entire family-sized Thanksgiving feast now sits inside your massively engorged belly. You are so full that it is getting difficult to breathe.";
+                break;
+            case 12:
+            case 13:
+                bellyDescription = "The incredible amount of food in your belly " + (wombContents <= 7f ? "has expanded it beyond the size of a full-term pregnancy." : "feels as heavy as the weight of the " + IntToNumberofBabies(fetusCount) + " resting inside your distended womb.") + " The overwhelming sensation of fullness threatens to shut down your brain.";
+                break;
+            case 14:
+            case 15:
+                bellyDescription = "The signals of immense fullness from your ridiculously huge belly are laced with streaks of pain as you approach the physical limit of how much food you can cram into yourself.";
+                break;
+            case 16:
+            case 17:
                 bellyDescription = "Your gigantic belly has gone far beyond the limit of what the human body is meant to withstand. You feel your consciousness slipping away as your brain is bombarded with intense sensations of orgasmic pleasure and pain from your tightly stretched skin, abdominal muscles, and overstuffed guts.";
                 break;
             default:
@@ -2089,8 +2094,9 @@ public class MainLoop : MonoBehaviour
                 break;
 
         }
-        
-        switch (Mathf.Floor(totalBellyContents))
+        imageIndex = (int) Mathf.Min(characterSpritesBtm.Length - 1, Mathf.Floor(totalBellyContents));
+        if (!achievements[8] && imageIndex == characterSpritesBtm.Length - 1) UpdateAchievements(8);
+        /*switch (Mathf.Floor(totalBellyContents))
         {
             case 0:
                 if (totalBellyContents > 0.5f)
@@ -2150,7 +2156,7 @@ public class MainLoop : MonoBehaviour
                 imageIndex = 13;
                 if (!achievements[8]) UpdateAchievements(8);
                 break;
-        }
+        }*/
         /*if (isStreaming)
         {
             lastJiggledSize = imageIndex - startingSize;

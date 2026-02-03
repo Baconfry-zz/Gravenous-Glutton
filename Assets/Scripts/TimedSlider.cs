@@ -95,7 +95,7 @@ public class TimedSlider : MonoBehaviour
             sexualMoansPlayer.PlayRandom();
         }
         screenFlash.color = new Color(screenFlash.color.r, screenFlash.color.g, screenFlash.color.b, climax / 1000f);
-        volumeText.text = "VOLUME:           L / " + Mathf.Min(2f, (Mathf.Round(maxVolume * 100) / 10000)) + "L";
+        volumeText.text = "VOLUME:           L / " + (Mathf.Round(maxVolume * 100) / 10000) + "L";
         volumeValue.text = (Mathf.Round(volume * 100) / 10000).ToString();
     }
 
