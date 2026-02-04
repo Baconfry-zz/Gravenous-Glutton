@@ -36,6 +36,8 @@ public class SaveData
     public bool isAsleep;
     public bool[] achievements;
     public bool alwaysUseEatingAnimation;
+    public bool tattooToggledOn;
+    public bool xRayToggledOn;
 
     // Start is called before the first frame update
     void Start()
