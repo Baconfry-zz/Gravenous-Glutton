@@ -26,6 +26,7 @@ public class SaveData
     public int actualDays;
     public int currentTime;
     public bool tookCaffeine;
+    public bool isNauseous;
     public bool isStreaming;
     public bool jiggledDuringStream;
     public bool tookLaxative;

@@ -181,6 +181,7 @@ public class MainLoop : MonoBehaviour
     bool isBouncing = false;
     bool didElbows = false;
     public bool tookCaffeine = false; //save
+    public bool isNauseous = false; //save
     public bool isStreaming = false; //save
     public bool alwaysUseEatingAnimation = false; //save
     public bool tattooToggledOn = false; //save
@@ -222,6 +223,7 @@ public class MainLoop : MonoBehaviour
         saveData.actualDays = actualDays;
         saveData.currentTime = currentTime;
         saveData.tookCaffeine = tookCaffeine;
+        saveData.isNauseous = isNauseous;
         saveData.isStreaming = isStreaming;
         saveData.jiggledDuringStream = jiggledDuringStream;
         saveData.tookLaxative = tookLaxative;
@@ -263,6 +265,7 @@ public class MainLoop : MonoBehaviour
         actualDays = 0;
         currentTime = 8;
         tookCaffeine = false;
+        isNauseous = false;
         isStreaming = false;
         jiggledDuringStream = false;
         tookLaxative = false;
@@ -301,6 +304,7 @@ public class MainLoop : MonoBehaviour
         saveData.actualDays = 0;
         saveData.currentTime = 8;
         saveData.tookCaffeine = false;
+        saveData.isNauseous = false;
         saveData.isStreaming = false;
         saveData.jiggledDuringStream = false;
         saveData.tookLaxative = false;
@@ -1089,7 +1093,7 @@ public class MainLoop : MonoBehaviour
                 {
                     achievementText.text = "";
 
-                    if (stomachContents < adjustedStomachCapacity)
+                    if (stomachContents < adjustedStomachCapacity && !isNauseous)
                     {
                         babiesKicking = false;
                         kickTimer = 0f;
@@ -1126,6 +1130,8 @@ public class MainLoop : MonoBehaviour
                         gulpPlayer.PlayRandom();
                         if (achievements[1] && stomachContents >= adjustedStomachCapacity)
                         {
+                            foodDescription = "You're not done yet...";
+                            foodText.text = foodDescription;
                             PrintStats();
                             if (fedDuringStream || alwaysUseEatingAnimation)
                             {
@@ -1230,13 +1236,23 @@ public class MainLoop : MonoBehaviour
 
                         //if (stomachContents > adjustedStomachCapacity && hungerModifier <= 1) stomachContents = adjustedStomachCapacity //restrict overstuffing if not unlocked
                     }
+                    else if (isNauseous)
+                    {
+                        foodDescription = "You feel too nauseous to eat anything right now.";
+                        faces.SetCounterTo(6);
+                        holdFaceDuration = 1.5f;
+                    }
                     else if (hungerModifier <= 1f)
                     {
                         foodDescription = "You feel too full to eat another bite.";
                     }
-                    else
+                    else if (stomachContents < 12f)
                     {
-                        foodDescription = "You try to force down even more food, but the pressure in your overfilled stomach is so immense that swallowing has become physically impossible.";
+                        foodDescription = "Despite your enhanced appetite, the sensation of fullness in your overstuffed belly is too intense and you are unable to eat any more.";
+                    }
+                    else 
+                    {
+                        foodDescription = "You try to force down even more food, but your overfilled stomach is unable to stretch any further, and swallowing has become physically impossible.";
                     }
                     //Debug.Log(foodDescription);
                     
@@ -1544,18 +1560,27 @@ public class MainLoop : MonoBehaviour
 
                 if (clickedButtonName == "record_button" && !isStreaming)
                 {
-                    achievementText.text = "";
-                    isStreaming = true;
-                    recordButton.GetComponent<Collider2D>().enabled = false;
-                    sexButton.GetComponent<Collider2D>().enabled = false;
-                    sexButton.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.2f);
-                    chatButton.GetComponent<Collider2D>().enabled = true;
-                    chatButton.GetComponent<SpriteRenderer>().color = Color.white;
-                    startingSize = imageIndex;
-                    lastJiggledSize = 0;
-                    StartCoroutine(musicPlayer.ChangeTrackTo(2, 1.5f));
-                    donationsText.text = "Donations: $" + streamEarnings;
-                    UpdateMedicineText();
+                    if (isNauseous)
+                    {
+                        foodDescription = "You feel nauseous. Doing a mukbang stream doesn't seem like a good idea.";
+                        faces.SetCounterTo(6);
+                        holdFaceDuration = 1.5f;
+                    }
+                    else
+                    {
+                        achievementText.text = "";
+                        isStreaming = true;
+                        recordButton.GetComponent<Collider2D>().enabled = false;
+                        sexButton.GetComponent<Collider2D>().enabled = false;
+                        sexButton.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.2f);
+                        chatButton.GetComponent<Collider2D>().enabled = true;
+                        chatButton.GetComponent<SpriteRenderer>().color = Color.white;
+                        startingSize = imageIndex;
+                        lastJiggledSize = 0;
+                        StartCoroutine(musicPlayer.ChangeTrackTo(2, 1.5f));
+                        donationsText.text = "Donations: $" + streamEarnings;
+                        UpdateMedicineText();
+                    }
                 }
 
                 if (clickedButtonName == "always_eat_button") alwaysUseEatingAnimation = !alwaysUseEatingAnimation;
@@ -1786,7 +1811,12 @@ public class MainLoop : MonoBehaviour
             {
                 foodDescription = "You quickly shut off your stream before anyone notices that you were live.";
             }
-            else
+            else if (isNauseous && currentTime == 11)
+            {
+                foodDescription = "Your nausea wears off and you feel like you can eat again.";
+                isNauseous = false;
+            }
+            else 
             {
                 foodDescription = "";
             }
@@ -1968,6 +1998,7 @@ public class MainLoop : MonoBehaviour
                     if (achievements[0] && weedStock < 5) weedStock++;
                 }
                 pregnancyDays++;
+                if (pregnancyDays > 4 && pregnancyDays < 16 && Random.Range(0, Mathf.Max(0, 9 - fetusCount)) == 0) isNauseous = true;
                 if (daysUntilNextStream > 0) daysUntilNextStream--;
                 //Debug.Log(pregnancyDays);
                 if (pregnancyDays < 20)

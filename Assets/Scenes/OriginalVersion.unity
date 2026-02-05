@@ -610,8 +610,11 @@ MonoBehaviour:
   sleepCountdown: 0
   isAsleep: 0
   tookCaffeine: 0
+  isNauseous: 0
   isStreaming: 0
   alwaysUseEatingAnimation: 0
+  tattooToggledOn: 0
+  xRayToggledOn: 0
   jiggledDuringStream: 0
   tookLaxative: 0
   usedPlug: 0
@@ -3249,7 +3252,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 139097c55314fd8488af23d5cbebad1e, type: 3}
   - {fileID: 21300000, guid: 2e298df52d66f6548aa6db1f7d78c3da, type: 3}
   - {fileID: 21300000, guid: c67f22da5f44dd54c8c52c363547716f, type: 3}
-  - {fileID: 21300000, guid: c423b4b97d25f3940883dd919de5846a, type: 3}
+  - {fileID: 21300000, guid: 50d0d144a2564d243b51b25a5eaf2a8b, type: 3}
   - {fileID: 21300000, guid: f16602951a0a2e34d9c601f61eb40395, type: 3}
   - {fileID: 21300000, guid: fec93db0066febb40bfce961bd3db987, type: 3}
   - {fileID: 21300000, guid: 44f911949b6be9448b873c3d4dd636ed, type: 3}

@@ -32,7 +32,7 @@ public class ToggleButton : MonoBehaviour
             spriteRenderer.color = new Color(0.2f, 0.2f, 0.2f, spriteRenderer.color.a);
         }*/
 
-        if (mainLoop.clickedButtonName == this.gameObject.name && timer <= 0f)
+        if (mainLoop.clickedButtonName == this.gameObject.name && timer <= 0f && !(this.gameObject.name == "record_button" && mainLoop.isNauseous))
         {
             isActive = !isActive;
             spriteRenderer.color = new Color(spriteRenderer.color.r, spriteRenderer.color.g, spriteRenderer.color.b, isActive ? 1f : 0.2f);
