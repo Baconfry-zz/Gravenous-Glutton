@@ -4,13 +4,16 @@ TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
   fontSize: 16
-  forceTextureCase: -1
+  forceTextureCase: -2
   characterSpacing: 0
   characterPadding: 1
   includeFontData: 1
   fontNames:
   - Pixellari
-  fallbackFontReferences: []
+  - Arial Unicode MS
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 7fb2c1c857f2f1c4cad118c44a4e2014, type: 3}
+  - {fileID: 12800000, guid: 3bf1ad058e334664e91e78ae6d4ea687, type: 3}
   customCharacters: 
   fontRenderingMode: 0
   ascentCalculationMode: 1
