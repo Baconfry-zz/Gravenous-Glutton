@@ -530,6 +530,7 @@ MonoBehaviour:
   - i wanna be the next to put some babies in her
   - it's all over the screen!!!!
   - so many empty plates
+  - I am not parasocial. I am not parasocial. I am not parasocial.
   achievements: 0000000000000000000000
   medicineButtons:
   - {fileID: 632376413}
@@ -626,7 +627,6 @@ MonoBehaviour:
   alwaysUseEatingAnimation: 0
   tattooToggledOn: 0
   xRayToggledOn: 0
-  jiggledDuringStream: 0
   tookLaxative: 0
   usedPlug: 0
   daysUntilNextStream: 0
@@ -2999,7 +2999,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 1
+  m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: 9364d1249c34c894d887aa6989eaddb7, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -3288,6 +3288,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: fec93db0066febb40bfce961bd3db987, type: 3}
   - {fileID: 21300000, guid: 44f911949b6be9448b873c3d4dd636ed, type: 3}
   - {fileID: 21300000, guid: c2ff7e558b25f1f46ac188bd6d0c9e76, type: 3}
+  - {fileID: 21300000, guid: bb7a42fc8fc3a1449ae95cf44ae9fec0, type: 3}
   spriteRenderer: {fileID: 326876339}
 --- !u!1 &349038804
 GameObject:
@@ -4602,7 +4603,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 8
+  m_SortingOrder: 11
   m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -5445,6 +5446,7 @@ GameObject:
   - component: {fileID: 530398548}
   - component: {fileID: 530398550}
   - component: {fileID: 530398549}
+  - component: {fileID: 530398551}
   m_Layer: 5
   m_Name: mouth
   m_TagString: Untagged
@@ -5542,7 +5544,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 7
+  m_SortingOrder: 6
   m_Sprite: {fileID: 21300000, guid: 9364d1249c34c894d887aa6989eaddb7, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -5554,6 +5556,22 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &530398551
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 530398547}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99edb2fd9b9214942bd10db62af41e1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  digits:
+  - {fileID: 21300000, guid: 9364d1249c34c894d887aa6989eaddb7, type: 3}
+  - {fileID: 21300000, guid: 3fc7ff36342ae194394468d1f532d21a, type: 3}
+  spriteRenderer: {fileID: 530398550}
 --- !u!1 &535108023
 GameObject:
   m_ObjectHideFlags: 0
@@ -6354,7 +6372,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 3015c5bef881db44aa47ecdc844652a9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0.2}
   m_FlipX: 0
@@ -16314,7 +16332,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 3015c5bef881db44aa47ecdc844652a9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -19444,7 +19462,7 @@ Transform:
   m_GameObject: {fileID: 2098486151}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -55, y: -201.1, z: -5399.9995}
+  m_LocalPosition: {x: -97.5, y: -201.1, z: -5399.9995}
   m_LocalScale: {x: 24, y: 24, z: 60}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -20348,7 +20366,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Always play eating animation
+  m_Text: Slower eating animation
 --- !u!222 &2143824801
 CanvasRenderer:
   m_ObjectHideFlags: 0
