@@ -24,6 +24,7 @@ public class TimedSlider : MonoBehaviour
     [SerializeField] private Canvas canvas;
     [SerializeField] private GameObject buttons;
     [SerializeField] private MainLoop mainLoop;
+    [SerializeField] private Transform sexMoverTransform;
 
     [SerializeField] private AudioPlayer sexualMoansPlayer;
     [SerializeField] private AudioPlayer plapsPlayer;
@@ -41,7 +42,6 @@ public class TimedSlider : MonoBehaviour
     private bool clickedThisCycle = false;
 
     public float amountReleased;
-
     
     void Awake()
     {
@@ -110,6 +110,7 @@ public class TimedSlider : MonoBehaviour
         canvas.enabled = false;
         buttons.SetActive(false);
         maxVolume = volumeLimit * 100;
+        Vector3 startPosition = sexMoverTransform.localPosition;
         while (climax < 200f)
         {
             clickedThisCycle = false;
@@ -127,6 +128,7 @@ public class TimedSlider : MonoBehaviour
                 }
                 //valueText.text = value.ToString();
                 transform.localScale = new Vector3((value / 10f), transform.localScale.y, 1);
+                sexMoverTransform.localPosition = new Vector3(startPosition.x, startPosition.y + (value / 100), startPosition.z);
                 yield return null;
                 previewFace.SetCounterTo(Mathf.CeilToInt(climax / 100f));
                 //backdropFace.SetCounterTo(Mathf.CeilToInt(climax / 100f));
@@ -143,6 +145,7 @@ public class TimedSlider : MonoBehaviour
                 }
                 //valueText.text = value.ToString();
                 transform.localScale = new Vector3((value / 10f), transform.localScale.y, 1);
+                sexMoverTransform.localPosition = new Vector3(startPosition.x, startPosition.y + (value / 100), startPosition.z);
                 yield return null;
                 previewFace.SetCounterTo(Mathf.CeilToInt(climax / 100f));
                 //backdropFace.SetCounterTo(Mathf.CeilToInt(climax / 100f));
@@ -156,7 +159,10 @@ public class TimedSlider : MonoBehaviour
                 climaxTransform.localScale = new Vector3(climax / 100f, climaxTransform.localScale.y, 1);
             }
         }
+        sexMoverTransform.position = startPosition;
+        StartCoroutine(mainLoop.Bounce(0.3f));
         mainLoop.StopCoroutine("BellyJiggle");
+        mainLoop.isPlayingJiggleAnim = false;
         StartCoroutine(mainLoop.BellyJiggle(true));
         value = 0f;
         transform.localScale = new Vector3(0f, transform.localScale.y, 1f);
