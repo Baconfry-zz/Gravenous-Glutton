@@ -202,6 +202,8 @@ public class MainLoop : MonoBehaviour
     public bool usedPlug = false; //save
     public int daysUntilNextStream = 0; //save
     public bool playingDigestionSounds = false;
+    public bool ampmMode = false;
+    public bool nopanMode = false;
     bool sodaMode = false;
 
     float displayedStomachContents;
@@ -257,11 +259,26 @@ public class MainLoop : MonoBehaviour
         saveData.alwaysUseEatingAnimation = alwaysUseEatingAnimation;
         saveData.tattooToggledOn = tattooToggle.GetComponent<ToggleButton>().isActive;
         saveData.xRayToggledOn = xRayToggle.GetComponent<ToggleButton>().isActive;
+        saveData.ampmMode = ampmMode;
+        saveData.nopanMode = nopanMode;
 
         string json = JsonUtility.ToJson(saveData);
         File.WriteAllText(Application.persistentDataPath + "/savedGame.json", json);
         //Debug.Log(Application.persistentDataPath);
         //Debug.Log(json);
+    }
+
+    public void SaveOnlySettings()
+    {
+        SaveData oldSaveData = JsonUtility.FromJson<SaveData>(File.ReadAllText(Application.persistentDataPath + "/savedGame.json"));
+        oldSaveData.alwaysUseEatingAnimation = alwaysUseEatingAnimation;
+        oldSaveData.tattooToggledOn = tattooToggle.GetComponent<ToggleButton>().isActive;
+        oldSaveData.xRayToggledOn = xRayToggle.GetComponent<ToggleButton>().isActive;
+        oldSaveData.ampmMode = ampmMode;
+        oldSaveData.nopanMode = nopanMode;
+
+        string json = JsonUtility.ToJson(oldSaveData);
+        File.WriteAllText(Application.persistentDataPath + "/savedGame.json", json);
     }
 
     public void LoadBlankSaveData()
@@ -300,6 +317,8 @@ public class MainLoop : MonoBehaviour
         alwaysUseEatingAnimation = false;
         tattooToggledOn = false;
         xRayToggledOn = false;
+        ampmMode = false;
+        nopanMode = false;
     }
 
     public void WipeSaveData()
@@ -340,6 +359,8 @@ public class MainLoop : MonoBehaviour
         saveData.alwaysUseEatingAnimation = false;
         saveData.tattooToggledOn = false;
         saveData.xRayToggledOn = false;
+        saveData.ampmMode = false;
+        saveData.nopanMode = false;
 
         string json = JsonUtility.ToJson(saveData);
         File.WriteAllText(Application.persistentDataPath + "/savedGame.json", json);
@@ -379,6 +400,7 @@ public class MainLoop : MonoBehaviour
         xRayToggle.SetActive(achievements[5]);
         tattooToggle.GetComponent<ToggleButton>().ForceState(achievements[4] && tattooToggledOn);
         tattooToggle.SetActive(achievements[4]);
+        nopan.GetComponent<SpriteRenderer>().enabled = nopanMode;
         PrintAchievementBoard();
         StartCoroutine(MainRoutine());
     }
@@ -534,6 +556,7 @@ public class MainLoop : MonoBehaviour
         if (imageIndex < 2) yield break;
         float frameDelay = 0.03f;
         bool isTopHeavy = stomachContents + gasContents > intestineContents + wombContents + coomContents;
+        int trueImageIndex = (int)(stomachContents + gasContents + intestineContents + wombContents + coomContents);
         faces.SetCounterTo(10);
         if (!isTopHeavy)
         {
@@ -542,15 +565,15 @@ public class MainLoop : MonoBehaviour
             yield return new WaitForSeconds(frameDelay);
         }
         Vector3 startPosForSuck = xRayWomb.localPosition;
-        spriteRenderer.sprite = characterSpritesTop[imageIndex - 1];
-        wombTattoo.SetCounterTo(imageIndex - 1);
-        nopan.SetCounterTo(imageIndex - 1);
+        spriteRenderer.sprite = characterSpritesTop[(int)Mathf.Min(characterSpritesTop.Length - 1, trueImageIndex - 1)];
+        wombTattoo.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length - 1, trueImageIndex - 1));
+        nopan.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length - 1, trueImageIndex - 1));
         xRayWomb.localPosition = startPosForSuck + new Vector3(0f, 0.1f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0f) + new Vector3(0.04f, 0.06f, 0f);
         coomWomb.localPosition = xRayWomb.localPosition;
         yield return new WaitForSeconds(frameDelay);
-        spriteRenderer.sprite = characterSpritesTop[imageIndex - 2];
-        wombTattoo.SetCounterTo(imageIndex - 2);
-        nopan.SetCounterTo(imageIndex - 2);
+        spriteRenderer.sprite = characterSpritesTop[(int)Mathf.Min(characterSpritesTop.Length - 1, trueImageIndex - 2)];
+        wombTattoo.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length - 1, trueImageIndex - 2));
+        nopan.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length - 1, trueImageIndex - 2));
         xRayWomb.localPosition = startPosForSuck + new Vector3(0f, 0.1f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0f) + new Vector3(0.08f, 0.12f, 0f);
         coomWomb.localPosition = xRayWomb.localPosition;
         yield return new WaitForSeconds(frameDelay);
@@ -561,9 +584,9 @@ public class MainLoop : MonoBehaviour
         faces.SetCounterTo(gasContents > 0f ? 10 : BellyToFaceIndex(true));
         if (stomachContents + intestineContents > 3f) gurglePlayer.PlayRandom();
         if ((int)(stomachContents + intestineContents) >= 5 && gasContents == 0f) stuffedMoansPlayer.PlayRandom();
-        spriteRenderer.sprite = characterSpritesTop[imageIndex - 1];
-        wombTattoo.SetCounterTo(imageIndex - 1);
-        nopan.SetCounterTo(imageIndex - 1);
+        spriteRenderer.sprite = characterSpritesTop[(int)Mathf.Min(characterSpritesTop.Length - 1, trueImageIndex - 1)];
+        wombTattoo.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length - 1, trueImageIndex - 1));
+        nopan.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length - 1, trueImageIndex - 1));
         xRayWomb.localPosition = startPosForSuck + new Vector3(0f, 0.1f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0f) + new Vector3(0.04f, 0.06f, 0f);
         coomWomb.localPosition = xRayWomb.localPosition;
         yield return new WaitForSeconds(frameDelay);
@@ -1026,11 +1049,33 @@ public class MainLoop : MonoBehaviour
         }
     }
 
+    string ConvertToAMPM(int time)
+    {
+        string convertedTime = "";
+        if (time == 0)
+        {
+            convertedTime = "12:00 AM";
+        }
+        else if (time < 12)
+        {
+            convertedTime = time + ":00 AM";
+        }
+        else if (time == 12)
+        {
+            convertedTime = "12:00 PM";
+        }
+        else
+        {
+            convertedTime = (time - 12) + ":00 PM";
+        }
+        return convertedTime;
+    }
+
     IEnumerator AnimateBirth()
     {
         if (fetusCount == 0) yield break;
         foodText.text = "You feel your contractions starting.";
-        timeText.text = currentTime + ":00 | Day " + actualDays;
+        timeText.text = (ampmMode ? (ConvertToAMPM(currentTime)) : ((currentTime < 10 ? "0" : "") + currentTime + ":00")) + " | Day " + actualDays;
         faces.SetCounterTo(5);
         float babyVolume = (wombContents - 6) / fetusCount;
 
@@ -1134,7 +1179,7 @@ public class MainLoop : MonoBehaviour
         minigameUI.SetActive(false);
         //overrideFace.enabled = false;
         faces.SetCounterTo(BellyToFaceIndex(false));
-        sexButton.GetComponent<Collider2D>().enabled = (coomStorage >= 1f && !isAsleep);
+        //sexButton.GetComponent<Collider2D>().enabled = (coomStorage >= 1f && !isAsleep);
         sexButton.GetComponent<SpriteRenderer>().color = ((coomStorage >= 1f && !isAsleep) ? Color.white : new Color(1f, 1f, 1f, 0.2f));
         PrintStats();
     }
@@ -1145,7 +1190,7 @@ public class MainLoop : MonoBehaviour
         bool ateThisTurn;
         faces.SetCounterTo(BellyToFaceIndex(false));
         PrintStats();
-        timeText.text = currentTime + ":00 | Day " + actualDays;
+        timeText.text = (ampmMode ? (ConvertToAMPM(currentTime)) : ((currentTime < 10 ? "0" : "") + currentTime + ":00")) + " | Day " + actualDays;
         hungerModifier = 1f + (hungerTimer * 0.2f) + (0.2f * munchiesConsumed);
         hungerText.text = "Hunger multiplier: " + hungerModifier + "x";
         moneyText.text = "$" + money;
@@ -1271,7 +1316,7 @@ public class MainLoop : MonoBehaviour
 
             achievementButton.GetComponent<Collider2D>().enabled = !isAsleep;
             pillButton.GetComponent<Collider2D>().enabled = !isAsleep;
-            sexButton.GetComponent<Collider2D>().enabled = (coomStorage >= 1f && !isAsleep && !isStreaming);
+            //sexButton.GetComponent<Collider2D>().enabled = (coomStorage >= 1f && !isAsleep && !isStreaming);
             sexButton.GetComponent<SpriteRenderer>().color = ((coomStorage >= 1f && !isAsleep && !isStreaming) ? Color.white : new Color(1f, 1f, 1f, 0.2f));
             recordButton.GetComponent<Collider2D>().enabled = !isAsleep && daysUntilNextStream <= 0;
             recordButton.Brighten(daysUntilNextStream <= 0);
@@ -1298,7 +1343,7 @@ public class MainLoop : MonoBehaviour
                 maxSize = Mathf.Max(imageIndex, maxSize);
                 if (Input.GetMouseButtonDown(0) && Input.GetKey(KeyCode.Backspace))
                 {
-                    intestineMultiplier = 2f;
+                    /*intestineMultiplier = 2f;
                     trainingModifier = 3f;
                     money = 99999;
                     dailyCalories = Mathf.Max(dailyCalories, 2000 + fetusCount * (pregnancyDays >= 20 ? 500 : 0));
@@ -1307,7 +1352,8 @@ public class MainLoop : MonoBehaviour
                         if (!achievements[i]) UpdateAchievements(i);
                     }
                     achievementText.text = "";
-                    PrintStats();
+                    PrintStats();*/
+                    yield return StartCoroutine(SuckItIn());
                 }
                 adjustedStomachCapacity = stomachCapacity * hungerModifier * trainingModifier;
 
@@ -1621,11 +1667,13 @@ public class MainLoop : MonoBehaviour
                         if (mouseHeldDuration < 1f && mouseHeldDuration + Time.deltaTime >= 1f)
                         {
                             nopan.GetComponent<SpriteRenderer>().enabled = !nopan.GetComponent<SpriteRenderer>().enabled;
+                            nopanMode = nopan.GetComponent<SpriteRenderer>().enabled;
+                            SaveOnlySettings();
                         }
                         mouseHeldDuration += Time.deltaTime;
                         yield return null;
                     }
-                    if (mouseHeldDuration < 1f) yield return StartCoroutine(SexMinigame(false));
+                    if (mouseHeldDuration < 1f && coomStorage >= 1f && !isAsleep && !isStreaming) yield return StartCoroutine(SexMinigame(false));
                 }
 
                 if (clickedButtonName == "chat_button")
@@ -1910,7 +1958,7 @@ public class MainLoop : MonoBehaviour
                         foodButton.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.5f);
                         isStreaming = true;
                         recordButton.GetComponent<Collider2D>().enabled = false;
-                        sexButton.GetComponent<Collider2D>().enabled = false;
+                        //sexButton.GetComponent<Collider2D>().enabled = false;
                         sexButton.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.2f);
                         chatButton.GetComponent<Collider2D>().enabled = true;
                         chatButton.GetComponent<SpriteRenderer>().color = Color.white;
@@ -1941,6 +1989,7 @@ public class MainLoop : MonoBehaviour
                             }
                             achievementText.text = "";
                             PrintStats();
+                            UpdateMedicineText();
                         }
                         mouseHeldDuration += Time.deltaTime;
                         yield return null;
@@ -1959,7 +2008,12 @@ public class MainLoop : MonoBehaviour
                     while (!Input.GetMouseButtonDown(0) || clickedButtonName == "always_eat_button" || clickedButtonName == "toggle_tattoo")
                     {
                         yield return null;
-                        if (clickedButtonName == "always_eat_button") alwaysUseEatingAnimation = alwaysEatButton.isActive;
+                        if (clickedButtonName == "always_eat_button")
+                        {
+                            alwaysUseEatingAnimation = alwaysEatButton.isActive;
+                            SaveOnlySettings();
+                        }
+                        if (clickedButtonName == "toggle_tattoo") SaveOnlySettings();
                         if (clickedButtonName == "delete_save_button")
                         {
                             GameObject.Find("delete_save_text").GetComponent<Text>().text = "Press again to confirm";
@@ -1991,6 +2045,15 @@ public class MainLoop : MonoBehaviour
                     clickedButtonName = "toggle_achievement";
                     //achievementButton.GetComponent<ToggleButton>().ForceState(false);
                 }
+
+                if (clickedButtonName == "toggle_time")
+                {
+                    ampmMode = !ampmMode;
+                    timeText.text = (ampmMode ? (ConvertToAMPM(currentTime)) : ((currentTime < 10 ? "0" : "") + currentTime + ":00")) + " | Day " + actualDays;
+                    SaveOnlySettings();
+                }
+
+                if (clickedButtonName == "toggle_xray") SaveOnlySettings();
 
                 if (clickedButtonName == "relaxant")// && intestineMultiplier < 2f)
                 {
@@ -2403,7 +2466,7 @@ public class MainLoop : MonoBehaviour
                 if (!achievements[1] && eligibleForAchievement) UpdateAchievements(1);
             }
 
-            sexButton.GetComponent<Collider2D>().enabled = (coomStorage >= 1f && !isAsleep);
+            //sexButton.GetComponent<Collider2D>().enabled = (coomStorage >= 1f && !isAsleep);
             sexButton.GetComponent<SpriteRenderer>().color = ((coomStorage >= 1f && !isAsleep) ? Color.white : new Color(1f, 1f, 1f, 0.2f));
 
 
@@ -2482,7 +2545,7 @@ public class MainLoop : MonoBehaviour
                 //overrideFace.enabled = isAsleep;
                 faces.SetCounterTo(0);
             }
-            timeText.text = currentTime + ":00 | Day " + actualDays;
+            timeText.text = (ampmMode ? (ConvertToAMPM(currentTime)) : ((currentTime < 10 ? "0" : "") + currentTime + ":00")) + " | Day " + actualDays;
             hungerText.text = "Hunger multiplier: " + hungerModifier + "x";
 
             //stomachContents = Mathf.Round(stomachContents * 1000) / 1000;

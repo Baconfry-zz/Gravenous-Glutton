@@ -41,6 +41,8 @@ public class SaveData
     public bool alwaysUseEatingAnimation;
     public bool tattooToggledOn;
     public bool xRayToggledOn;
+    public bool ampmMode;
+    public bool nopanMode;
 
     // Start is called before the first frame update
     void Start()
