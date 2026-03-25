@@ -70,7 +70,7 @@ public class TimedSlider : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space)) && !clickedThisCycle && !mainLoop.clickedButtonName.StartsWith("toggle"))
+        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space) || (value == 10f && Input.GetKey(KeyCode.LeftShift))) && !clickedThisCycle && !mainLoop.clickedButtonName.StartsWith("toggle"))
         {
             clickedThisCycle = true;
             volume += value;
@@ -79,7 +79,7 @@ public class TimedSlider : MonoBehaviour
             if (volume > maxVolume) volume = maxVolume;
             volumeTransform.localScale = new Vector3(volume / 100f, volumeTransform.localScale.y, 1);
             climaxTransform.localScale = new Vector3(climax / 100f, climaxTransform.localScale.y, 1);
-            StartCoroutine(mainLoop.Bounce(0.1f));
+            if (climax < 200f) StartCoroutine(mainLoop.Bounce(0.2f));
             StartCoroutine(mainLoop.BellyJiggle(false));
             plapsPlayer.PlayRandom();
             sexualMoansPlayer.PlayRandom();
@@ -90,7 +90,7 @@ public class TimedSlider : MonoBehaviour
             if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) { volume = maxVolume; volumeTransform.localScale = new Vector3(volume / 100f, volumeTransform.localScale.y, 1); }
             climax = 200f;
             climaxTransform.localScale = new Vector3(climax / 100f, climaxTransform.localScale.y, 1);
-            StartCoroutine(mainLoop.Bounce(0.1f));
+            if (climax < 200f) StartCoroutine(mainLoop.Bounce(0.2f));
             plapsPlayer.PlayRandom();
             sexualMoansPlayer.PlayRandom();
         }
