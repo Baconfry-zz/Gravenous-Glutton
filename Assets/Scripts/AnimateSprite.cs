@@ -6,13 +6,18 @@ public class AnimateSprite : MonoBehaviour
 {
     private enum animationState { blinking, glowing };
     [SerializeField] private animationState currentState;
-    private SpriteRenderer spriteRenderer;
+    [SerializeField] private SpriteRenderer[] spriteRenderers;
     public float animationDuration = 1f;
     private float timer;
+
+    private Color newColor;
+    //[SerializeField] private Color minColor;
+    //[SerializeField] private Color maxColor;
+    //[SerializeField] private float pulseRate;
     // Start is called before the first frame update
     void Start()
     {
-        spriteRenderer = GetComponent<SpriteRenderer>();
+        //spriteRenderer = GetComponent<SpriteRenderer>();
         timer = 0f;
     }
 
@@ -25,19 +30,35 @@ public class AnimateSprite : MonoBehaviour
             if (timer > animationDuration)
             {
                 timer = 0f;
-                spriteRenderer.enabled = !spriteRenderer.enabled;
+                foreach (SpriteRenderer spr in spriteRenderers)
+                {
+                    spr.enabled = !spr.enabled;
+                }
+                
             }
         }
         else if (currentState == animationState.glowing)
         {
-
+            foreach (SpriteRenderer spr in spriteRenderers)
+            {
+                if (spr.enabled)
+                {
+                    newColor = Color.Lerp(new Color(spr.color.r, spr.color.g, spr.color.b, 0f), new Color(spr.color.r, spr.color.g, spr.color.b, 1f), Mathf.PingPong(Time.time, animationDuration));
+                    spr.color = newColor;
+                }
+            }
         }
 
     }
 
     void OnDisable()
     {
-        spriteRenderer.enabled = true;
+        foreach (SpriteRenderer spr in spriteRenderers)
+        {
+            spr.enabled = true;
+            spr.color = new Color(spr.color.r, spr.color.g, spr.color.b, 1f);
+        }
+        
         timer = 0f;
     }
 }

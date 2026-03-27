@@ -22,6 +22,7 @@ public class SaveData
     public float flowRate;
     public int disposalTimer;
     public float dailyCalories;
+    public int bankedCalories;
     public float wombContents;
     public int fetusCount;
     public int pregnancyDays;

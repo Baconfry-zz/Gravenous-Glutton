@@ -17,6 +17,7 @@ public class TimedSlider : MonoBehaviour
     //[SerializeField] private SpriteRenderer sleepingHeadBackdrop;
     [SerializeField] private SpriteRenderer previewBG;
     [SerializeField] private Sprite[] previewSprites = new Sprite[3];
+    [SerializeField] private ToggleButton autoButton;
 
     //[SerializeField] private DigitCounter backdropFace;
     [SerializeField] private DigitCounter previewFace;
@@ -40,7 +41,7 @@ public class TimedSlider : MonoBehaviour
     public float speedMultiplier;
     //[SerializeField] private float initialFrameRate;
     private bool clickedThisCycle = false;
-
+    private bool autoMode = false;
     public float amountReleased;
     
     void Awake()
@@ -70,7 +71,7 @@ public class TimedSlider : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space) || (value == 10f && Input.GetKey(KeyCode.LeftShift))) && !clickedThisCycle && !mainLoop.clickedButtonName.StartsWith("toggle"))
+        if (((Input.GetMouseButtonDown(0) && mainLoop.clickedButtonName != "auto") || Input.GetKeyDown(KeyCode.Space) || (value == 10f && autoMode)) && !clickedThisCycle && !mainLoop.clickedButtonName.StartsWith("toggle"))
         {
             clickedThisCycle = true;
             volume += value;
@@ -83,6 +84,10 @@ public class TimedSlider : MonoBehaviour
             StartCoroutine(mainLoop.BellyJiggle(false));
             plapsPlayer.PlayRandom();
             sexualMoansPlayer.PlayRandom();
+        }
+        else if (Input.GetMouseButtonDown(0) && mainLoop.clickedButtonName == "auto")
+        {
+            autoMode = !autoMode;
         }
         if (Input.GetKeyDown(KeyCode.Return) && climax < 200f && amountReleased == 0f)
         {
@@ -101,6 +106,8 @@ public class TimedSlider : MonoBehaviour
 
     public IEnumerator Oscillate(bool startPregnancy, float volumeLimit)
     {
+        autoButton.ForceState(false);
+        autoMode = false;
         previewBG.enabled = false;
         pregnancyPreview.enabled = false;
         sleepingHead.enabled = true;
