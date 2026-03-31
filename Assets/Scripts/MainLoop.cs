@@ -19,6 +19,7 @@ public class MainLoop : MonoBehaviour
     [SerializeField] private Text moneyText;
     [SerializeField] private Text donationsText;
     [SerializeField] private Text[] contentsText;
+    [SerializeField] private Text deleteSaveText;
 
     [SerializeField] private Text achievementBoard;
     [SerializeField] private Text achievementRewards;
@@ -72,6 +73,7 @@ public class MainLoop : MonoBehaviour
     [SerializeField] private GameObject chatButton;
     [SerializeField] private GameObject tattooToggle;
     [SerializeField] private GameObject xRayToggle;
+    [SerializeField] private GameObject sideviewToggle;
     [SerializeField] private GameObject deleteSaveButton;
     [SerializeField] private GameObject autoSexButton;
     [SerializeField] private ToggleButton alwaysEatButton;
@@ -148,7 +150,7 @@ public class MainLoop : MonoBehaviour
 
     public float wombContents = 0f; //save
     public int fetusCount; //save
-    int maxFetusCount = 7;
+    int maxFetusCount = 3;
     public int pregnancyDays = 0; //save
     public int actualDays = 0; //save
     string foodDescription = "";
@@ -172,6 +174,8 @@ public class MainLoop : MonoBehaviour
     public bool playingDigestionSounds = false;
     public bool ampmMode = false;
     public bool nopanMode = false;
+    public bool transparentSideview = true;
+    Color oldColor = new Color(1f, 1f, 1f, 0.1019608f);
     bool sodaMode = false;
 
     float displayedStomachContents;
@@ -230,6 +234,7 @@ public class MainLoop : MonoBehaviour
         saveData.xRayToggledOn = xRayToggle.GetComponent<ToggleButton>().isActive;
         saveData.ampmMode = ampmMode;
         saveData.nopanMode = nopanMode;
+        saveData.transparentSideview = transparentSideview;
 
         string json = JsonUtility.ToJson(saveData);
         File.WriteAllText(Application.persistentDataPath + "/savedGame.json", json);
@@ -245,6 +250,7 @@ public class MainLoop : MonoBehaviour
         oldSaveData.xRayToggledOn = xRayToggle.GetComponent<ToggleButton>().isActive;
         oldSaveData.ampmMode = ampmMode;
         oldSaveData.nopanMode = nopanMode;
+        oldSaveData.transparentSideview = transparentSideview;
 
         string json = JsonUtility.ToJson(oldSaveData);
         File.WriteAllText(Application.persistentDataPath + "/savedGame.json", json);
@@ -284,11 +290,12 @@ public class MainLoop : MonoBehaviour
         sleepCountdown = 0;
         isAsleep = false;
         achievements = new bool[12];
-        alwaysUseEatingAnimation = false;
+        //alwaysUseEatingAnimation = false;
         tattooToggledOn = false;
         xRayToggledOn = false;
-        ampmMode = false;
+        //ampmMode = false;
         nopanMode = false;
+        transparentSideview = true;
     }
 
     public void WipeSaveData()
@@ -332,6 +339,7 @@ public class MainLoop : MonoBehaviour
         saveData.xRayToggledOn = false;
         saveData.ampmMode = false;
         saveData.nopanMode = false;
+        saveData.transparentSideview = true;
 
         string json = JsonUtility.ToJson(saveData);
         File.WriteAllText(Application.persistentDataPath + "/savedGame.json", json);
@@ -352,7 +360,7 @@ public class MainLoop : MonoBehaviour
             }
             catch { }
         }
-        deleteSaveButton.SetActive(Settings.SaveEnabled);
+        //deleteSaveButton.SetActive(Settings.SaveEnabled);
         if (achievements.Length < 12)
         {
             bool[] updatedAchievements = new bool[12];
@@ -372,6 +380,8 @@ public class MainLoop : MonoBehaviour
         xRayToggle.SetActive(achievements[5]);
         tattooToggle.GetComponent<ToggleButton>().ForceState(achievements[4] && tattooToggledOn);
         tattooToggle.SetActive(achievements[4]);
+        sideviewTop.GetComponent<SpriteRenderer>().color = transparentSideview ? oldColor : Color.white;
+        sideviewBottom.GetComponent<SpriteRenderer>().color = transparentSideview ? oldColor : Color.white;
         nopan.GetComponent<SpriteRenderer>().enabled = nopanMode;
         PrintAchievementBoard();
         StartCoroutine(MainRoutine());
@@ -492,6 +502,8 @@ public class MainLoop : MonoBehaviour
         eligibleMessages[109] = fetusCount == 1 && foodEaten > 15;
         eligibleMessages[110] = false;
         eligibleMessages[111] = false;
+        eligibleMessages[112] = largeBreastMode;
+        eligibleMessages[113] = imageIndex > 11;
     }
 
     string GetBellyDescriptor()
@@ -646,7 +658,7 @@ public class MainLoop : MonoBehaviour
         {
             if (isStreaming && lastJiggledSize < imageIndex)
             {
-                streamEarnings += 2 * (imageIndex - lastJiggledSize);
+                streamEarnings += 5 * (imageIndex - lastJiggledSize);
                 lastJiggledSize = imageIndex;
                 foodDescription = "A few extra donations roll in as your " + GetBellyDescriptor() + " belly jiggles in front of the camera.";
                 if (!sentMessages[77])
@@ -792,6 +804,12 @@ public class MainLoop : MonoBehaviour
 
     public void UpdateMedicineText()
     {
+        int numberOfAchievements = 0;
+        for (int i = 0; i < achievements.Length; i++)
+        {
+            if (achievements[i]) numberOfAchievements++;
+        }
+        maxFetusCount = 3 + (numberOfAchievements / 3);
         medicineButtons[0].SetActive(intestineMultiplier < 2f);
         medicineButtons[1].SetActive(stomachContents > 0f && intestineContents < (intestineCapacity * intestineMultiplier * trainingModifier));
         medicineButtons[2].SetActive(isStreaming ? (storedSoda > 0 && stomachContents + gasContents < 14f) : (intestineContents > 0f && !tookLaxative));
@@ -1146,7 +1164,7 @@ public class MainLoop : MonoBehaviour
         achievementButton.Brighten(true);
         achievementButton.GetComponent<Collider2D>().enabled = true;
         StartCoroutine(musicPlayer.ChangeTrackTo(1, 3f));
-        if (fetusCount == 0)
+        if (fetusCount == 0 && sexMinigame.amountReleased > 0)
         {
             fetusCount = 1 + Mathf.Min((int)sexMinigame.amountReleased, 200) / 100;
             if (currentTime < 8) actualDays = 1;
@@ -1157,7 +1175,7 @@ public class MainLoop : MonoBehaviour
         //Debug.Log(sexMinigame.amountReleased);
         //coomStorage -= sexMinigame.amountReleased / 100;
         //coomStorage = Mathf.Round(coomStorage * 10000) / 10000;
-        coomStorage = 0f;
+        if (sexMinigame.amountReleased > 0) coomStorage = 0f;
         sexMinigame.amountReleased = 0;
         wombCapacityBar.localScale = new Vector3((6f + 2 * fetusCount) * barRatio, wombCapacityBar.localScale.y, 1);
         minigameUI.SetActive(false);
@@ -1165,7 +1183,7 @@ public class MainLoop : MonoBehaviour
         faces.SetCounterTo(BellyToFaceIndex(false));
         //sexButton.GetComponent<Collider2D>().enabled = (coomStorage >= 1f && !isAsleep);
         sexButton.GetComponent<AnimateSprite>().enabled = coomStorage >= 2f && !isAsleep && fetusCount == 0;
-        sexButton.GetComponent<SpriteRenderer>().color = ((coomStorage >= 1f && !isAsleep) ? Color.white : new Color(1f, 1f, 1f, 0.2f));
+        if (!sexButton.GetComponent<AnimateSprite>().enabled) sexButton.GetComponent<SpriteRenderer>().color = ((coomStorage >= 1f && !isAsleep) ? Color.white : new Color(1f, 1f, 1f, 0.2f));
         timeText.text = (ampmMode ? (ConvertToAMPM(currentTime)) : ((currentTime < 10 ? "0" : "") + currentTime + ":00")) + " | Day " + (fetusCount > 0 ? actualDays : "--");
         PrintStats();
     }
@@ -1187,8 +1205,9 @@ public class MainLoop : MonoBehaviour
         //sexFace.enabled = fetusCount == 0;
         //musicPlayer.PlayAtIndex(fetusCount == 0 ? 0 : 1);
         musicPlayer.PlayAtIndex(1);
+        StartCoroutine(musicPlayer.GraduallyUnmute(2f));
         bool eligibleForAchievement = true;
-        bool topHeavyAtStart = false;
+        bool topHeavyAtStart = false;       
 
         displayedStomachContents = stomachContents;
         displayedIntestineContents = intestineContents;
@@ -1307,7 +1326,7 @@ public class MainLoop : MonoBehaviour
             pillButton.GetComponent<Collider2D>().enabled = !isAsleep;
             //sexButton.GetComponent<Collider2D>().enabled = (coomStorage >= 1f && !isAsleep && !isStreaming);     
             sexButton.GetComponent<AnimateSprite>().enabled = coomStorage >= 2f && !isAsleep && fetusCount == 0;
-            sexButton.GetComponent<SpriteRenderer>().color = ((coomStorage >= 1f && !isAsleep && !isStreaming) ? Color.white : new Color(1f, 1f, 1f, 0.2f));
+            if (!sexButton.GetComponent<AnimateSprite>().enabled) sexButton.GetComponent<SpriteRenderer>().color = ((coomStorage >= 1f && !isAsleep && !isStreaming) ? Color.white : new Color(1f, 1f, 1f, 0.2f));
             recordButton.GetComponent<Collider2D>().enabled = !isAsleep && daysUntilNextStream <= 0;
             recordButton.Brighten(daysUntilNextStream <= 0);
             streamEarnings = 0;
@@ -1365,6 +1384,7 @@ public class MainLoop : MonoBehaviour
                         yield return null;
                     }
                     fedDuringStream = cursor.GetColliderName(5) == "mouth";
+                    if (fedDuringStream && stomachContents + gasContents >= adjustedStomachCapacity) cursor.DropFood();
                     streamFoodIcon.enabled = true;
                     cursor.GetComponent<SpriteRenderer>().sprite = null;
                 }
@@ -1422,7 +1442,7 @@ public class MainLoop : MonoBehaviour
                         {
                             if (foodEaten <= plates.Length) plates[foodEaten].SetActive(true);
                             foodEaten++;
-                            streamEarnings += (int)(Mathf.Pow(1.19f, imageIndex));
+                            streamEarnings += (int)((1 + 2 * (stomachContents + intestineContents + wombContents + gasContents + coomContents)) * Mathf.Pow(1.013f, foodEaten));
                             chatButton.GetComponent<Collider2D>().enabled = true;
                             chatButton.GetComponent<SpriteRenderer>().color = Color.white;
                         }
@@ -1472,7 +1492,7 @@ public class MainLoop : MonoBehaviour
                             {
                                 if (foodEaten <= plates.Length) plates[foodEaten].SetActive(true);
                                 foodEaten++;
-                                streamEarnings += (int)(Mathf.Pow(1.19f, imageIndex));
+                                streamEarnings += (int)((3 + 2 * (stomachContents + intestineContents + wombContents + gasContents + coomContents)) * Mathf.Pow(1.013f, foodEaten));
                             }
                             gulpPlayer.PlayRandom();
                         }
@@ -1591,14 +1611,17 @@ public class MainLoop : MonoBehaviour
                 if (clickedButtonName == "toggle_sideview_fullscreen")
                 {
                     pillButton.ForceState(false);
-                    GameObject.Find("toggle_sideview").GetComponent<Collider2D>().enabled = false;
+                    sideviewToggle.GetComponent<Collider2D>().enabled = false;
                     pillButton.GetComponent<Collider2D>().enabled = false;
                     recordButton.GetComponent<Collider2D>().enabled = false;
+                                      
+                    sideviewTop.GetComponent<SpriteRenderer>().color = Color.white;
+                    sideviewBottom.GetComponent<SpriteRenderer>().color = Color.white;
                     Vector3 originalPosition = sideview.position;
                     Vector3 originalScale = sideview.localScale;
-                    sideview.position = new Vector3(0f, 0.28f, 0f);
-                    sideview.localScale = originalScale * 2;
-                    yield return null;
+                    sideview.position = new Vector3(0.2f, 0.25f, 0f);
+                    sideview.localScale = originalScale * 1.9f;
+                    while (!Input.GetMouseButtonUp(0)) yield return null;
                     while (!Input.GetMouseButtonDown(0) || (Input.GetMouseButtonDown(0) && (clickedButtonName == this.gameObject.name || cursor.GetColliderName(4) == "sideview_base")))
                     {
                         if (cursor.GetColliderName(4) == "sideview_base" && Input.GetMouseButton(0) && !isPlayingJiggleAnim)
@@ -1658,17 +1681,19 @@ public class MainLoop : MonoBehaviour
                     sideviewBase.enabled = false;
                     sideview.position = originalPosition;
                     sideview.localScale = originalScale;
+                    sideviewTop.GetComponent<SpriteRenderer>().color = transparentSideview ? oldColor : Color.white;
+                    sideviewBottom.GetComponent<SpriteRenderer>().color = transparentSideview ? oldColor : Color.white;
                     pillButton.GetComponent<Collider2D>().enabled = !isAsleep;
                     recordButton.GetComponent<Collider2D>().enabled = !isStreaming && !isAsleep && daysUntilNextStream <= 0;
-                    GameObject.Find("toggle_sideview").GetComponent<Collider2D>().enabled = true;
+                    sideviewToggle.GetComponent<Collider2D>().enabled = true;
                 }
-                if (cursor.GetColliderName(4) == "sideview_base" && Input.GetMouseButton(0))
+                if (cursor.GetColliderName(4) == "sideview_base" && Input.GetMouseButtonDown(0))
                 {
-                    sideviewBase.enabled = true;
-                }
-                else
-                {
-                    sideviewBase.enabled = false;
+                    //sideviewBase.enabled = true;
+                    transparentSideview = !transparentSideview;
+                    sideviewTop.GetComponent<SpriteRenderer>().color = transparentSideview ? oldColor : Color.white;
+                    sideviewBottom.GetComponent<SpriteRenderer>().color = transparentSideview ? oldColor : Color.white;
+                    SaveOnlySettings();
                 }
 
                 if (clickedButtonName == "weed_button")
@@ -1781,8 +1806,8 @@ public class MainLoop : MonoBehaviour
                     {
                         case 0://elbows
                             subMessage = "You touch your elbows together without much difficulty.";
-                            if (imageIndex > 6) subMessage = "It's a struggle, but you barely manage to bring your elbows together.";
-                            if (imageIndex > 12) subMessage = "You try bringing your elbows together, but it's impossible for obvious reasons.";
+                            if (imageIndex > 6 ^ largeBreastMode) subMessage = "It's a struggle, but you barely manage to bring your elbows together.";
+                            if (imageIndex > 12 || (imageIndex > 6 && largeBreastMode)) subMessage = "You try bringing your elbows together, but it's impossible for obvious reasons.";
                             bellyText.text = "\"can you touch your elbows together?\"\n\n" + (alreadySeenInteractions[0] ? "You're not falling for that again." : (subMessage + " What was that all about?"));
                             if (!alreadySeenInteractions[0])
                             {
@@ -1910,9 +1935,9 @@ public class MainLoop : MonoBehaviour
                             if (pregnancyDays > 13) trimester = "are in roughly your second trimester. ";
                             if (pregnancyDays > 26) trimester = "are in roughly your third trimester. ";
                             if (pregnancyDays > 39) trimester = "your pregnancy has reached full term. ";
-                            if (fetusCount > 0)
+                            if (pregnancyDays > 4)
                             {
-                                bellyText.text = "You ask some newly-joined viewers to guess how many babies you are carrying right now.\n\n" + subMessage + (alreadySeenInteractions[4] ? ("\n\nYou let the other chatters tell the newcomers about the " + (fetusCount == 1 ? "single baby" : (fetusCount + " babies")) + (foodBabyCount > 0 ? (" (and " + foodBabyCount + " food bab" + (foodBabyCount == 1 ? "y)" : "ies)")) : "") + " in your belly.") : "\n\nAfter a while, you reveal the truth: you are carrying " + fetusCount + (fetusCount == 1 ? " baby" : " babies") + " and " + trimester + subMessage2);                       
+                                bellyText.text = "You ask some newly-joined viewers to guess how many babies you are carrying right now.\n\n" + subMessage + (alreadySeenInteractions[4] ? ("\n\nYou let the other chatters tell the newcomers about the " + (fetusCount == 1 ? "single baby" : (fetusCount + " babies")) + (foodBabyCount > 0 ? (" (and " + foodBabyCount + " food bab" + (foodBabyCount == 1 ? "y)" : "ies)")) : "") + " in your belly.") : "\n\nAfter a while, you reveal that you are carrying " + fetusCount + (fetusCount == 1 ? " baby" : " babies") + " and " + trimester + subMessage2);                       
                                 faces.SetCounterTo(1);
                                 if (!alreadySeenInteractions[4] && fetusCount > 1)
                                 {
@@ -1941,11 +1966,14 @@ public class MainLoop : MonoBehaviour
                                     //if (fetusCount == 3) commentGenerator.GenerateComment("oh baby a triple!!!");
                                 }
                             }
+                            else if (pregnancyDays > 0)
+                            {
+                                bellyText.text = "You ask some newly-joined viewers to guess how many babies you are carrying right now.\n\n" + subMessage + (alreadySeenInteractions[4] ? ("\n\nYou let the other chatters tell the newcomers that you are still in the early stages of pregnancy, and your " + GetBellyDescriptor() + " belly is the result of the " + (foodBabyCount > 1 ? (foodBabyCount + " food babies resting inside.") : "food baby resting inside.")) : ("\n\nAfter a while, you reveal that " + (wombContents >= 1f ? "while it's still early, " : "") + "you're pretty sure that you are pregnant, " + (wombContents >= 1f ? "most likely with multiples based on how fast your belly is growing." : "but it's too early to tell how many.") + " The " + GetBellyDescriptor() + " belly that they're seeing is the result of the " + (foodBabyCount > 1 ? (foodBabyCount + " food babies resting inside.") : "food baby resting inside.")));
+
+                            }
                             else
                             {
-                                //foodBabyCount = (int)Mathf.Max(1, (totalBellyContents - 6) / 2);
-                                bellyText.text = "You ask some newly-joined viewers to guess how many babies you are carrying right now.\n\n" + subMessage + (alreadySeenInteractions[4] ? ("\n\nYou let the other chatters tell the newcomers that you are not pregnant, and your " + GetBellyDescriptor() + " belly is the result of the " + (foodBabyCount > 1 ? (foodBabyCount + " food babies resting inside.") : "food baby resting inside.")) : ("\n\nAfter a while, you reveal the truth: you are not pregnant (yet), and the " + GetBellyDescriptor() + " belly that they're seeing is the result of the " + (foodBabyCount > 1 ? (foodBabyCount + " food babies resting inside.") : "food baby resting inside.")));
-
+                                bellyText.text = "You ask some newly-joined viewers to guess how many babies you are carrying right now.\n\n" + subMessage + (alreadySeenInteractions[4] ? ("\n\nYou let the other chatters tell the newcomers that you are not pregnant, and your " + GetBellyDescriptor() + " belly is the result of the " + (foodBabyCount > 1 ? (foodBabyCount + " food babies resting inside.") : "food baby resting inside.")) : ("\n\nAfter a while, you reveal that you are not pregnant (yet), and the " + GetBellyDescriptor() + " belly that they're seeing is the result of the " + (foodBabyCount > 1 ? (foodBabyCount + " food babies resting inside.") : "food baby resting inside.")));
                             }
                             break;
                         case 5://babies kicking
@@ -2092,9 +2120,12 @@ public class MainLoop : MonoBehaviour
                     PrintAchievementBoard();
                     recordButton.GetComponent<Collider2D>().enabled = false;
                     pillButton.GetComponent<Collider2D>().enabled = false;
+                    sideviewToggle.GetComponent<Collider2D>().enabled = false;
+                    skipTime.GetComponent<Collider2D>().enabled = false;                   
+                    deleteSaveText.text = (Settings.SaveEnabled ? "Delete save data" : "Resume old save");
                     yield return null;
                     //while (clickedButtonName != "toggle_achievement") yield return null;
-                    while (!Input.GetMouseButtonDown(0) || clickedButtonName == "always_eat_button" || clickedButtonName == "toggle_tattoo")
+                    while (!(Input.GetMouseButtonDown(0) && !cursor.GetAllColliderNames(4).Contains("achievementTextBackdrop")) || clickedButtonName == "always_eat_button" || clickedButtonName == "toggle_tattoo")
                     {
                         yield return null;
                         if (clickedButtonName == "always_eat_button")
@@ -2105,32 +2136,42 @@ public class MainLoop : MonoBehaviour
                         if (clickedButtonName == "toggle_tattoo") SaveOnlySettings();
                         if (clickedButtonName == "delete_save_button")
                         {
-                            GameObject.Find("delete_save_text").GetComponent<Text>().text = "Press again to confirm";
-                            clickedButtonName = "";
-                            yield return null;
-                            while (!Input.GetMouseButtonDown(0))
+                            if (Settings.SaveEnabled)
                             {
+                                deleteSaveText.text = "Press again to confirm";
+                                clickedButtonName = "";
                                 yield return null;
-                            }
-                            if (clickedButtonName == "delete_save_button")
-                            {
-                                WipeSaveData();
-                                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                                while (!Input.GetMouseButtonDown(0))
+                                {
+                                    yield return null;
+                                }
+                                if (clickedButtonName == "delete_save_button")
+                                {
+                                    WipeSaveData();
+                                    SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                                }
+                                else
+                                {
+                                    deleteSaveText.text = "Delete save data";
+                                }
                             }
                             else
                             {
-                                GameObject.Find("delete_save_text").GetComponent<Text>().text = "Delete save data";
+                                Settings.SaveEnabled = true;
+                                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
                             }
                         }
                         if (clickedButtonName == "restart_button")
                         {
-                            LoadBlankSaveData();
+                            //LoadBlankSaveData();
                             Settings.SaveEnabled = false;
                             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
                         }
                     }
                     recordButton.GetComponent<Collider2D>().enabled = !isAsleep && daysUntilNextStream <= 0;
                     pillButton.GetComponent<Collider2D>().enabled = !isAsleep;
+                    sideviewToggle.GetComponent<Collider2D>().enabled = !isAsleep;
+                    skipTime.GetComponent<Collider2D>().enabled = true;
                     clickedButtonName = "toggle_achievement";
                     //achievementButton.GetComponent<ToggleButton>().ForceState(false);
                 }
@@ -2562,8 +2603,9 @@ public class MainLoop : MonoBehaviour
 
             //sexButton.GetComponent<Collider2D>().enabled = (coomStorage >= 1f && !isAsleep);          
             sexButton.GetComponent<AnimateSprite>().enabled = coomStorage >= 2f && !isAsleep && fetusCount == 0;
-            if (fetusCount > 0 || coomStorage < 2f || isAsleep) sexButton.GetComponent<SpriteRenderer>().color = ((coomStorage >= 1f && !isAsleep) ? Color.white : new Color(1f, 1f, 1f, 0.2f));
+            if (!sexButton.GetComponent<AnimateSprite>().enabled) sexButton.GetComponent<SpriteRenderer>().color = ((coomStorage >= 1f && !isAsleep) ? Color.white : new Color(1f, 1f, 1f, 0.2f));
 
+            if (currentTime == 16 && achievements[0] && weedStock < 5) weedStock++;
 
             if (currentTime == 4)
             {
@@ -2572,7 +2614,10 @@ public class MainLoop : MonoBehaviour
                 if (weedStock < 5)
                 {
                     weedStock++;
-                    if (achievements[0] && weedStock < 5) weedStock++;
+                    weedButton.SetActive(weedStock > 0);
+                    weedStockCounter.SetCounterTo(weedStock);
+                    weedStockCounter.SetAltColor(weedStock >= 5);
+                    //if (achievements[0] && weedStock < 5) weedStock++;
                 }
                 if (fetusCount > 0) pregnancyDays++;
                 if (pregnancyDays > 4 && pregnancyDays < 16 && Random.Range(0, Mathf.Max(0, 9 - fetusCount)) == 0) isNauseous = true;
@@ -2612,7 +2657,7 @@ public class MainLoop : MonoBehaviour
                 //Mathf.Clamp(wombContents, 0f, fetusCount * pregnancyDays * 0.05f);
 
                 if (fetusCount > 0) bankedCalories += (int)dailyCalories - (2000 + (500 * fetusCount * (pregnancyDays >= 20 ? 1 : 0)));
-                bankedCalories -= fetusCount > 0 ? (300 - (pregnancyDays >= 20 ? (fetusCount * 100) : 0)) : 10000;
+                bankedCalories -= fetusCount > 0 ? (600 - (pregnancyDays >= 20 ? (fetusCount * 300) : 0)) : 10000;
                 bankedCalories = Mathf.Clamp(bankedCalories, 0, 100000);
                 //Debug.Log("banked calories: " + bankedCalories);
                 dailyCalories = 0;
@@ -2624,10 +2669,10 @@ public class MainLoop : MonoBehaviour
                 if (!achievements[6] && stomachContents > stomachCapacity * trainingModifier) UpdateAchievements(6);
                 if (!isNauseous && pregnancyDays > 3)
                 {
-                    if (Random.Range(0, 3) == 0)
+                    if (Random.Range(0, 100) < (30 + 3 * fetusCount))
                     {
                         munchiesConsumed++;
-                        if (Random.Range(0, 3) == 0)
+                        if (Random.Range(0, 100) < (30 + 3 * fetusCount))
                         {
                             munchiesConsumed++;
                             foodDescription = "You wake up with intense cravings for food.";
@@ -2833,9 +2878,9 @@ public class MainLoop : MonoBehaviour
         }
         else
         {
-            wombSprites.SetCounterTo(Mathf.Min(maxFetusCount, fetusCount));
+            wombSprites.SetCounterTo(Mathf.Min(7, fetusCount));
         }
-        caloriesText.text = Mathf.Round(displayedCalories) + " / " + (2000 + fetusCount * (pregnancyDays >= 20 ? 500 : 0));
+        caloriesText.text = Mathf.Round(displayedCalories) + " / " + (fetusCount > 0 ? (2000 + fetusCount * (pregnancyDays >= 20 ? 500 : 0)) : "----");
         caloriesText.color = (Mathf.Round(dailyCalories) >= (2000 + fetusCount * (pregnancyDays >= 20 ? 500 : 0)) && fetusCount > 0) ? new Color(0.5058824f, 1f, 0.3803922f, 1f) : Color.white;
         RefreshTouchColliders();
         UpdateWombTattoo(stomachContents + gasContents > intestineContents + wombContents + coomContents);
@@ -2904,7 +2949,7 @@ public class MainLoop : MonoBehaviour
             {
                 displayedCalories += (int)Mathf.Sign(dailyCalories - displayedCalories);
             }
-            caloriesText.text = Mathf.Round(displayedCalories) + " / " + (2000 + fetusCount * (pregnancyDays >= 20 ? 500 : 0));
+            caloriesText.text = Mathf.Round(displayedCalories) + " / " + (fetusCount > 0 ? (2000 + fetusCount * (pregnancyDays >= 20 ? 500 : 0)) : "----");
             yield return null;
         }
     }

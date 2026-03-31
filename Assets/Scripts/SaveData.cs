@@ -44,6 +44,7 @@ public class SaveData
     public bool xRayToggledOn;
     public bool ampmMode;
     public bool nopanMode;
+    public bool transparentSideview;
 
     // Start is called before the first frame update
     void Start()

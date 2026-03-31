@@ -5,6 +5,7 @@ using UnityEngine;
 public class Cursor : MonoBehaviour
 {
     [SerializeField] private MainLoop mainLoop;
+    [SerializeField] private GameObject droppedFood;
     private SpriteRenderer spriteRenderer;
     // Start is called before the first frame update
     void Start()
@@ -44,6 +45,13 @@ public class Cursor : MonoBehaviour
 
         spriteRenderer.color = new Color(spriteRenderer.color.r, spriteRenderer.color.g, spriteRenderer.color.b, GetColliderName(5) == "mouth" ? 0.6f : 1f);
 
+    }
+
+    public void DropFood()
+    {
+        GameObject newFood = Instantiate(droppedFood, transform.position, Quaternion.identity);
+        newFood.GetComponent<SpriteRenderer>().sprite = spriteRenderer.sprite;
+        Destroy(newFood, 1f);
     }
 
     public string GetColliderName(int mask)
