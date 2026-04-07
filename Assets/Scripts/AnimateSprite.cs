@@ -4,11 +4,12 @@ using UnityEngine;
 
 public class AnimateSprite : MonoBehaviour
 {
-    private enum animationState { blinking, glowing };
+    private enum animationState { blinking, glowing, none };
     [SerializeField] private animationState currentState;
     [SerializeField] private SpriteRenderer[] spriteRenderers;
     public float animationDuration = 1f;
     private float timer;
+    public bool playAnimations;
 
     private Color newColor;
     //[SerializeField] private Color minColor;
@@ -24,7 +25,7 @@ public class AnimateSprite : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (currentState == animationState.blinking)
+        if (currentState == animationState.blinking && playAnimations)
         {
             timer += Time.deltaTime;
             if (timer > animationDuration)
@@ -37,7 +38,7 @@ public class AnimateSprite : MonoBehaviour
                 
             }
         }
-        else if (currentState == animationState.glowing)
+        else if (currentState == animationState.glowing && playAnimations)
         {
             foreach (SpriteRenderer spr in spriteRenderers)
             {
@@ -49,6 +50,32 @@ public class AnimateSprite : MonoBehaviour
             }
         }
 
+    }
+
+    public void SetAllColors(Color newColor)
+    {
+        foreach (SpriteRenderer spr in spriteRenderers)
+        {
+            if (spr.enabled)
+            {
+                spr.color = newColor;
+            }
+        }
+    }
+
+    public void EnableAnimations(bool state)
+    {
+        playAnimations = state;
+        if (!state)
+        {
+            foreach (SpriteRenderer spr in spriteRenderers)
+            {
+                spr.enabled = true;
+                spr.color = new Color(spr.color.r, spr.color.g, spr.color.b, 1f);
+            }
+
+            timer = 0f;
+        }
     }
 
     void OnDisable()

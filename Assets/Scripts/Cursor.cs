@@ -7,6 +7,7 @@ public class Cursor : MonoBehaviour
     [SerializeField] private MainLoop mainLoop;
     [SerializeField] private GameObject droppedFood;
     private SpriteRenderer spriteRenderer;
+    public Prey heldPrey = null;
     // Start is called before the first frame update
     void Start()
     {
@@ -17,6 +18,8 @@ public class Cursor : MonoBehaviour
     void Update()
     {
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        mousePos.x = Mathf.Clamp(mousePos.x, -8f, 8f);
+        mousePos.y = Mathf.Clamp(mousePos.y, -5f, 5f);
         mousePos.z = 0f;
         transform.position = mousePos;
 
@@ -59,6 +62,26 @@ public class Cursor : MonoBehaviour
         int layerMask = 1 << mask;
         Collider2D collider = Physics2D.OverlapCircle(transform.position, 0.01f, layerMask);
         return collider != null ? collider.gameObject.name : "";
+    }
+
+    public List<GameObject> GetAllGameObjectsWithColliders(int mask)
+    {
+        int layerMask = 1 << mask;
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, 0.01f, layerMask);
+        List<GameObject> objects = new List<GameObject>();
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            objects.Add(colliders[i].gameObject);
+        }
+
+        /*layerMask = 1 << 3;
+        Collider2D otherCollider = Physics2D.OverlapCircle(transform.position, 0.01f, layerMask);
+        if (otherCollider != null)
+        {
+            names.Add(otherCollider.transform.parent.gameObject.name);
+        }*/
+
+        return objects;
     }
 
     public List<string> GetAllColliderNames(int mask)

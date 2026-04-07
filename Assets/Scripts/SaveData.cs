@@ -25,6 +25,7 @@ public class SaveData
     public int bankedCalories;
     public float wombContents;
     public int fetusCount;
+    public int fertilityBonus;
     public int pregnancyDays;
     public int actualDays;
     public int currentTime;
@@ -39,6 +40,7 @@ public class SaveData
     public int sleepCountdown;
     public bool isAsleep;
     public bool[] achievements;
+    public int[] preyHealth;
     public bool alwaysUseEatingAnimation;
     public bool tattooToggledOn;
     public bool xRayToggledOn;
