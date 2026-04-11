@@ -101,7 +101,7 @@ public class MainLoop : MonoBehaviour
     private bool[] eligibleMessages;
     private bool[] sentMessages;
     private bool doingSpecialMessage = false;
-
+    private bool givingBirth = false;
     public bool[] achievements = new bool[12];
     [SerializeField] private GameObject[] medicineButtons = new GameObject[7];
     [SerializeField] private GameObject[] plates = new GameObject[50];
@@ -122,6 +122,7 @@ public class MainLoop : MonoBehaviour
     float barRatio = 0.45f;
     public bool isPlayingJiggleAnim = false;
     public bool largeBreastMode = false;
+    bool maintainEmptyBellyMessage = false;
 
     float stomachCapacity = 1.0f;
     public float stomachContents = 0f; //save
@@ -161,6 +162,7 @@ public class MainLoop : MonoBehaviour
     int maxFertilityBonus = 3;
     public int pregnancyDays = 0; //save
     public int actualDays = 0; //save
+    public int lastSeenEmptyBelly = 0; //save
     string foodDescription = "";
 
     public int currentTime = 8; //save
@@ -228,6 +230,7 @@ public class MainLoop : MonoBehaviour
         saveData.fertilityBonus = fertilityBonus;
         saveData.pregnancyDays = pregnancyDays;
         saveData.actualDays = actualDays;
+        saveData.lastSeenEmptyBelly = lastSeenEmptyBelly;
         saveData.currentTime = currentTime;
         saveData.tookCaffeine = tookCaffeine;
         saveData.isNauseous = isNauseous;
@@ -291,6 +294,7 @@ public class MainLoop : MonoBehaviour
         fertilityBonus = 0;
         pregnancyDays = 0;
         actualDays = 0;
+        lastSeenEmptyBelly = 0;
         currentTime = 8;
         tookCaffeine = false;
         isNauseous = false;
@@ -337,6 +341,7 @@ public class MainLoop : MonoBehaviour
         saveData.fertilityBonus = 0;
         saveData.pregnancyDays = 0;
         saveData.actualDays = 0;
+        saveData.lastSeenEmptyBelly = 0;
         saveData.currentTime = 8;
         saveData.tookCaffeine = false;
         saveData.isNauseous = false;
@@ -573,6 +578,7 @@ public class MainLoop : MonoBehaviour
                 break;
         }
         if (isAsleep) reactionFaceIndex = 0;
+        if (babiesKicking) reactionFaceIndex = 11;
         return reactionFaceIndex;
     }
 
@@ -581,7 +587,15 @@ public class MainLoop : MonoBehaviour
         if (imageIndex < 2) yield break;
         float frameDelay = 0.03f;
         bool isTopHeavy = stomachContents + gasContents > intestineContents + wombContents + coomContents;
-        int trueImageIndex = imageIndex;//(int)(stomachContents + gasContents + intestineContents + wombContents + coomContents);
+        int trueImageIndex;
+        if (imageIndex <= 20)
+        {
+            trueImageIndex = imageIndex;
+        }
+        else
+        {
+            trueImageIndex = (int)(20 + (stomachContents + intestineContents + gasContents + wombContents + coomContents + 0.001f - 20) / 2);
+        }//(int)(stomachContents + gasContents + intestineContents + wombContents + coomContents);
         faces.SetCounterTo(10);
         if (!isTopHeavy)
         {
@@ -728,10 +742,101 @@ public class MainLoop : MonoBehaviour
 
         if (useDefaultBehavior) holdFaceDuration = (gasContents > 0f ? 0.9f : 0.6f);
         isPlayingJiggleAnim = false;
-        if (babiesKicking || preyInside > 0)
+        if ((babiesKicking || preyInside > 0) && !givingBirth)
         {
             if (useDefaultBehavior) yield return new WaitForSeconds(holdFaceDuration);
-            faces.SetCounterTo(doingSpecialMessage ? 12 : 11);
+            faces.SetCounterTo(doingSpecialMessage ? 12 : (playingDigestionSounds ? 0 : BellyToFaceIndex(false)));
+        }
+    }
+
+    public IEnumerator BellyJiggle(bool useDefaultBehavior, float speedMultiplier)
+    {
+        while (isPlayingJiggleAnim) yield return null;
+        isPlayingJiggleAnim = true;
+        //bool initialState = overrideFace.enabled;
+        bool initialButtonState = achievementButton.GetComponent<Collider2D>().enabled;
+
+        achievementButton.GetComponent<Collider2D>().enabled = false;
+        recordButton.GetComponent<Collider2D>().enabled = false;
+
+        if (!minigameUI.activeInHierarchy)
+        {
+            if (useDefaultBehavior)
+            {
+                //overrideFace.enabled = true;
+
+                if (Mathf.Floor(Mathf.Round((stomachContents + intestineContents + gasContents) * 1000) / 1000) >= 5)
+                {
+                    if (!isAsleep && gasContents == 0f) stuffedMoansPlayer.PlayRandom();
+                    if (stomachContents + intestineContents > 1.5f && Random.Range(0, Mathf.Max(0, 8 - imageIndex)) == 0) gurglePlayer.PlayRandom();
+                }
+
+
+                faces.SetCounterTo(gasContents > 0f ? 10 : BellyToFaceIndex(true));
+            }
+            else if (gasContents > 0f)
+            {
+                faces.SetCounterTo(10);
+            }
+            if (doingSpecialMessage) faces.SetCounterTo(12);
+        }
+
+
+        float baseJiggleRate = 0.1f;
+        baseJiggleRate *= 1 + ((float)imageIndex / 20);
+
+        bool topHeavy = stomachContents + gasContents > intestineContents + wombContents + coomContents;
+        SetBellySprites(!topHeavy, imageIndex);
+        UpdateWombTattoo(!topHeavy);
+        yield return new WaitForSeconds(baseJiggleRate * speedMultiplier);
+        SetBellySprites(topHeavy, imageIndex);
+        UpdateWombTattoo(topHeavy);
+        yield return new WaitForSeconds(baseJiggleRate * 2 * speedMultiplier);
+        if (imageIndex >= 6)
+        {
+            if (isStreaming && lastJiggledSize < imageIndex)
+            {
+                streamEarnings += 5 * (imageIndex - lastJiggledSize);
+                lastJiggledSize = imageIndex;
+                foodDescription = "A few extra donations roll in as your " + GetBellyDescriptor() + " belly jiggles in front of the camera.";
+                if (!sentMessages[77])
+                {
+                    commentGenerator.GenerateComment(messageList[77]);
+                    sentMessages[77] = true;
+                }
+            }
+            SetBellySprites(!topHeavy, imageIndex);
+            UpdateWombTattoo(!topHeavy);
+            yield return new WaitForSeconds(baseJiggleRate * speedMultiplier);
+            SetBellySprites(topHeavy, imageIndex);
+            UpdateWombTattoo(topHeavy);
+        }
+        recordButton.GetComponent<Collider2D>().enabled = !isStreaming && !isAsleep && daysUntilNextStream <= 0;
+
+        if (!minigameUI.activeInHierarchy && !isAsleep)
+        {
+            if (gasContents > 0f)
+            {
+                yield return new WaitForSeconds(0.2f);
+                StartCoroutine(gaspPlayer.PlayCustomWaitFor(burpSounds[gasContents > 0.5f ? 1 : 0], stuffedMoansPlayer.GetComponent<AudioSource>()));
+                StartCoroutine(ChangeFaceDuringClip(stuffedMoansPlayer, burpSounds[gasContents > 0.5f ? 1 : 0].length + 0.1f, 0.08f));
+                gasContents = 0f;
+                PrintStats();
+            }
+            else if (useDefaultBehavior && stomachContents + intestineContents > 2f && Random.Range(0, Mathf.Max(3, 10 - imageIndex)) == 0)
+            {
+                StartCoroutine(gaspPlayer.PlayCustomWaitFor(hiccupSound, stuffedMoansPlayer.GetComponent<AudioSource>()));
+                StartCoroutine(ChangeFaceDuringClip(stuffedMoansPlayer, 0.2f, 0.08f));
+            }
+        }
+        achievementButton.GetComponent<Collider2D>().enabled = initialButtonState;
+
+        if (useDefaultBehavior) holdFaceDuration = (gasContents > 0f ? 0.9f : 0.6f);
+        isPlayingJiggleAnim = false;
+        if ((babiesKicking || preyInside > 0) && !givingBirth)
+        {
+            if (useDefaultBehavior) yield return new WaitForSeconds(holdFaceDuration);
+            faces.SetCounterTo(doingSpecialMessage ? 12 : (playingDigestionSounds ? 0 : BellyToFaceIndex(false)));
         }
     }
 
@@ -1107,6 +1212,7 @@ public class MainLoop : MonoBehaviour
     IEnumerator AnimateBirth()
     {
         if (fetusCount == 0) yield break;
+        givingBirth = true;
         foodText.text = "You feel your contractions starting.";
         timeText.text = (ampmMode ? (ConvertToAMPM(currentTime)) : ((currentTime < 10 ? "0" : "") + currentTime + ":00")) + " | Day " + (fetusCount > 0 ? actualDays : "--");
         faces.SetCounterTo(5);
@@ -1158,6 +1264,43 @@ public class MainLoop : MonoBehaviour
         //wombContentsBar.localScale = new Vector3(wombContents / 2, wombContentsBar.localScale.y, 1);
         yield return new WaitForSeconds(1f);
         faces.SetCounterTo(0);
+        givingBirth = false;
+    }
+
+    string IntToWord(int number)
+    {
+        string word = "";
+        switch (number)
+        {
+            case 0:
+                word = "zero";
+                break;
+            case 1:
+                word = "one";
+                break;
+            case 2:
+                word = "two";
+                break;
+            case 3:
+                word = "three";
+                break;
+            case 4:
+                word = "four";
+                break;
+            case 5:
+                word = "five";
+                break;
+            case 6:
+                word = "six";
+                break;
+            case 7:
+                word = "seven";
+                break;
+            default:
+                word = number.ToString();
+                break;
+        }
+        return word;
     }
 
     string IntToNumberofBabies(int babyCount)
@@ -1248,7 +1391,7 @@ public class MainLoop : MonoBehaviour
         faces.SetCounterTo(12);
         for (int i = 0; i < 3; i++)
         {
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(1f + 0.04f * stomachContents);
             prey.IncrementSwallowingStage();
             gulpPlayer.PlayRandom();
             StartCoroutine(Bounce(0.3f));
@@ -1529,7 +1672,16 @@ public class MainLoop : MonoBehaviour
                     achievementText.text = "";
                     PrintStats();*/
                     //Debug.Log(Time.deltaTime);
-                    yield return StartCoroutine(SuckItIn());
+                    //yield return StartCoroutine(SuckItIn());
+                    faces.SetCounterTo(4);
+                    stuffedMoansPlayer.PlayRandom();
+                    gurglePlayer.PlayRandom();
+                    yield return StartCoroutine(BellyJiggle(false, 0.3f));
+                    yield return StartCoroutine(BellyJiggle(false, 0.2f));
+                    faces.SetCounterTo(3);
+                    yield return StartCoroutine(BellyJiggle(false, 0.8f));
+                    yield return new WaitForSeconds(0.4f);
+                    faces.SetCounterTo(BellyToFaceIndex(false));
                 }
                 adjustedStomachCapacity = stomachCapacity * hungerModifier * trainingModifier;
 
@@ -1541,6 +1693,8 @@ public class MainLoop : MonoBehaviour
                     foodButton.GetComponent<DigitCounter>().SetCounterTo(sodaMode ? 0 : 1);
                     streamFoodIcon.GetComponent<DigitCounter>().SetCounterTo(sodaMode ? 1 : 0);
                 }
+
+                if (clickedButtonName == "mouth") yield return StartCoroutine(SuckItIn());
 
                 if (isStreaming && clickedButtonName == "streaming_food")
                 {
@@ -1560,7 +1714,7 @@ public class MainLoop : MonoBehaviour
                 {
                     achievementText.text = "";
 
-                    if (stomachContents + gasContents < adjustedStomachCapacity && !isNauseous)
+                    if (stomachContents + gasContents < adjustedStomachCapacity - 0.0001f && !isNauseous)
                     {
                         babiesKicking = false;
                         suckingItIn = false;
@@ -1792,7 +1946,23 @@ public class MainLoop : MonoBehaviour
                             streamDigestionSounds.Mute(true);
                             doingSpecialMessage = true;
                             yield return StartCoroutine(Swallow(cursor.heldPrey));
-                            foodDescription = "You swallow your prey whole.";
+                            switch (preyInside)
+                            {
+                                case 0:
+                                case 1:
+                                    foodDescription = "You swallow your prey whole.";
+                                    break;
+                                case 2:
+                                    foodDescription = "You swallow your second prey.";
+                                    break;
+                                case 3:
+                                    foodDescription = "You manage to swallow your third prey.";
+                                    break;
+                                default:
+                                    foodDescription = "You're not supposed to be able to swallow more than 3. What happened??";
+                                    break;
+                            }
+
                             //add more descriptions depending on stomach contents
                             if (isStreaming)
                             {
@@ -1821,6 +1991,8 @@ public class MainLoop : MonoBehaviour
                         {
                             foodDescription = "Your prey manages to escape from you this time.";
                             cursor.heldPrey.TossInRandomDirection(0.1f);
+                            faces.SetCounterTo(6);
+                            holdFaceDuration = 0.6f;
                         }
                     }
                     else
@@ -1854,9 +2026,9 @@ public class MainLoop : MonoBehaviour
                     sideview.position = new Vector3(0.2f, 0.25f, 0f);
                     sideview.localScale = originalScale * 1.9f;
                     while (!Input.GetMouseButtonUp(0)) yield return null;
-                    while (!Input.GetMouseButtonDown(0) || (Input.GetMouseButtonDown(0) && (clickedButtonName == this.gameObject.name || cursor.GetColliderName(4) == "sideview_base")))
+                    while (!Input.GetMouseButtonDown(0) || (Input.GetMouseButtonDown(0) && (clickedButtonName == this.gameObject.name || cursor.GetColliderName(4) == "sideview_base") || clickedButtonName == "mouth"))
                     {
-                        if (cursor.GetColliderName(4) == "sideview_base" && Input.GetMouseButton(0) && !isPlayingJiggleAnim)
+                        if (cursor.GetColliderName(4) == "sideview_base" && Input.GetMouseButton(0))// && !isPlayingJiggleAnim)
                         {
                             sideviewBase.enabled = true;                            
                         }
@@ -1864,6 +2036,7 @@ public class MainLoop : MonoBehaviour
                         {
                             sideviewBase.enabled = false;
                         }
+                        if (clickedButtonName == "mouth") yield return StartCoroutine(SuckItIn());
                         if (clickedButtonName == this.gameObject.name)
                         {
                             sideviewBase.enabled = false;
@@ -1881,8 +2054,15 @@ public class MainLoop : MonoBehaviour
                         if ((babiesKicking || preyInside > 0) && kickTimer <= 0f && !isPlayingJiggleAnim)
                         {
                             StartCoroutine(BellyJiggle(false));
-                            faces.SetCounterTo(gasContents > 0f ? 10 : 11);
                             kickTimer = Random.Range(2.5f, 5f);
+                            if (preyInside == 0)
+                            {
+                                faces.SetCounterTo(gasContents > 0f ? 10 : (playingDigestionSounds ? 0 : 11));
+                            }
+                            else
+                            {
+                                kickTimer += Random.Range(5f, 10f);
+                            }
                         }
                         if ((babiesKicking || preyInside > 0) && kickTimer > 0f && !doingSpecialMessage) kickTimer -= Time.deltaTime;
                         if (holdFaceDuration > 0f)
@@ -2030,7 +2210,7 @@ public class MainLoop : MonoBehaviour
                         while (!eligibleInteractions[interactionIndex]) interactionIndex = Random.Range(0, eligibleInteractions.Length);
                     }
                     if (eligibleInteractions[4] && !alreadySeenInteractions[4]) interactionIndex = 4;
-                    //interactionIndex = 5;
+                    //interactionIndex = 2;
 
                     string subMessage = "";
                     string subMessage2 = "";
@@ -2501,7 +2681,7 @@ public class MainLoop : MonoBehaviour
                     UpdateMedicineText();
                 }
 
-                if (clickedButtonName == "laxative")
+                if (clickedButtonName == "laxative" || Input.GetKeyDown(KeyCode.Delete))
                 {                
                     if (isStreaming)
                     {
@@ -2571,11 +2751,15 @@ public class MainLoop : MonoBehaviour
                 if ((babiesKicking || preyInside > 0) && kickTimer <= 0f && !isPlayingJiggleAnim)
                 {
                     StartCoroutine(BellyJiggle(false));
-                    faces.SetCounterTo(gasContents > 0f ? 10 : 11);
-                    //string subMessage = "";
-                    //if (stomachContents + intestineContents > 2f) subMessage = (stomachContents > stomachCapacity * trainingModifier) ? "overstuffed " : "full ";
-                    //bellyText.text = "Your " + (fetusCount == 1 ? "baby starts" : "babies start") + " kicking and squirming inside your " + subMessage + "belly. You turn towards the camera to present your viewers with the best possible view.";
                     kickTimer = Random.Range(2.5f, 5f);
+                    if (preyInside == 0)
+                    {
+                        faces.SetCounterTo(gasContents > 0f ? 10 : (playingDigestionSounds ? 0 : 11));
+                    }
+                    else
+                    {
+                        kickTimer += Random.Range(5f, 10f);
+                    }
                 }
                 if ((babiesKicking || preyInside > 0) && kickTimer > 0f && !doingSpecialMessage) kickTimer -= Time.deltaTime;
 
@@ -2666,55 +2850,76 @@ public class MainLoop : MonoBehaviour
 
             if (foodDescription == "" && fetusCount > 0 && pregnancyDays >= 20 && Random.Range(0, 55 - pregnancyDays) == 1)
             {
+                string babyDescriptor = "";
+                string preyDescriptor = "";
+                switch (fetusCount)
+                {
+                    case 1:
+                        babyDescriptor = "your baby";
+                        break;
+                    case 2:
+                        babyDescriptor = "your twins";
+                        break;
+                    case 3:
+                        babyDescriptor = "your triplets";
+                        break;
+                    case 4:
+                        babyDescriptor = "your quadruplets";
+                        break;
+                    default:
+                        babyDescriptor = "a lot of babies";
+                        break;
+                }
+                switch (preyInside)
+                {
+                    case 0:
+                        preyDescriptor = "";
+                        break;
+                    case 1:
+                        preyDescriptor = " and the prey that you swallowed";
+                        break;
+                    case 2:
+                        preyDescriptor = " and both of the prey that you swallowed";
+                        break;
+                    case 3:
+                        preyDescriptor = " and all of the prey that you swallowed";
+                        break;
+                    default:
+                        preyDescriptor = " and more prey than you're supposed to have";
+                        break;
+                }
                 if (stomachContents + intestineContents > 2.5f)
                 {
-                    switch (fetusCount)
-                    {
-                        case 1:
-                            foodDescription = "You feel the baby squirming in protest within your cramped, overstuffed tummy.";
-                            break;
-                        case 2:
-                            foodDescription = "You feel the twins squirming in protest within your cramped, overstuffed tummy.";
-                            break;
-                        case 3:
-                            foodDescription = "You feel the triplets squirming in protest within your cramped, overstuffed tummy.";
-                            break;
-                        case 4:
-                            foodDescription = "You feel the quadruplets squirming in protest within your cramped, overstuffed tummy.";
-                            break;
-                        default:
-                            foodDescription = "You feel a lot of babies squirming in protest within your cramped, overstuffed tummy.";
-                            break;
-                    }
+                    foodDescription = "You feel " + babyDescriptor + preyDescriptor + " squirming in protest within your cramped, overstuffed tummy.";
                 }
                 else
                 {
-                    switch (fetusCount)
-                    {
-                        case 1:
-                            foodDescription = "You feel the baby shifting slightly inside your tummy.";
-                            break;
-                        case 2:
-                            foodDescription = "You feel the twins shifting slightly inside your tummy.";
-                            break;
-                        case 3:
-                            foodDescription = "You feel the triplets shifting slightly inside your tummy.";
-                            break;
-                        case 4:
-                            foodDescription = "You feel the quadruplets shifting slightly inside your tummy.";
-                            break;
-                        default:
-                            foodDescription = "You feel a lot of babies shifting slightly inside your tummy.";
-                            break;
-                    }
+                    foodDescription = "You feel " + babyDescriptor + preyDescriptor + " shifting slightly inside your tummy.";
                 }
-
                 if (!achievements[5]) UpdateAchievements(5);
-
+                if (preyInside > 0)
+                {
+                    foodDescription += " ";
+                }
                 foodText.text = foodDescription;
-                yield return StartCoroutine(BellyJiggle(true));
+                if (preyInside == 0)
+                {
+                    yield return StartCoroutine(BellyJiggle(true));
+                }
+                else
+                {
+                    faces.SetCounterTo(4);
+                    stuffedMoansPlayer.PlayRandom();
+                    gurglePlayer.PlayRandom();
+                    yield return StartCoroutine(BellyJiggle(false, 0.3f));
+                    yield return StartCoroutine(BellyJiggle(false, 0.2f));
+                    faces.SetCounterTo(3);
+                    yield return StartCoroutine(BellyJiggle(false, 0.8f));
+                    yield return new WaitForSeconds(0.4f);
+                    faces.SetCounterTo(BellyToFaceIndex(false));
+                }
             }
-            else if (foodDescription == "" && Random.Range(0, 100) < GetPreyCount() * 25)
+            /*else if (foodDescription == "" && Random.Range(0, 100) < GetPreyCount() * 25)
             {
                 foodDescription = "You feel your prey struggling" + (preyHealth[0] > 20 ? "" : " weakly") + " inside your tummy.";
                 trainingModifier += 0.05f;
@@ -2726,7 +2931,7 @@ public class MainLoop : MonoBehaviour
                 }
                 foodText.text = foodDescription;
                 yield return StartCoroutine(BellyJiggle(!isAsleep));
-            }
+            }*/
 
             if (stomachContents > 0)
             {
@@ -2847,7 +3052,7 @@ public class MainLoop : MonoBehaviour
                     disposalTimer = 0;
                 }
             }
-
+            maintainEmptyBellyMessage = false;
             currentTime++;
             skipTime.SetCounterTo(currentTime == (tookCaffeine ? 1 : 23) ? 2 : 0);
             if (sleepCountdown > 0) sleepCountdown--;
@@ -2922,6 +3127,7 @@ public class MainLoop : MonoBehaviour
                         wombContents = 0;
                         pregnancyDays = 0;
                         actualDays = 0;
+                        lastSeenEmptyBelly = 0;
                         wombCapacityBar.localScale = new Vector3((6f + 2 * fetusCount) * barRatio, wombCapacityBar.localScale.y, 1);
                     }
                 }
@@ -3005,7 +3211,7 @@ public class MainLoop : MonoBehaviour
                     {
                         case 0:
                         case 1:
-                            bellyDescription += ".";
+                            //bellyDescription += "";
                             break;
                         case 2:
                         case 3:
@@ -3017,7 +3223,7 @@ public class MainLoop : MonoBehaviour
                             break;
                         case 6:
                         case 7:
-                            bellyDescription += ", and all you can think about is food. You feel like you could easily eat a meal for two and have plenty of room left.";
+                            bellyDescription += ", and feels like it could fit a meal for two and still have plenty of room left.";
                             break;
                         case 8:
                         case 9:
@@ -3049,7 +3255,7 @@ public class MainLoop : MonoBehaviour
                 break;
             case 8:
             case 9:
-                bellyDescription = "Your hugely swollen belly is so thoroughly stuffed that it feels like a boulder. " + (imageIndex < 13 ? "Your arms can barely reach your belly button." : "Your arms can no longer reach your belly button.");
+                bellyDescription = "Your hugely swollen belly is so thoroughly stuffed that it feels like a boulder. " + (imageIndex < 13 ? "Your arms can barely reach your belly button." : (imageIndex > 21 ? "Your arms can't even reach halfway to your belly button." : "Your arms can no longer reach your belly button."));
                 break;
             case 10:
             case 11:
@@ -3082,6 +3288,97 @@ public class MainLoop : MonoBehaviour
         {
             imageIndex = (int)Mathf.Min(characterSpritesBtm.Length / 2 - 1, 20 + (volumeInt - 20) / 2);
         }
+
+        if (digestiveContents <= 0f && hungerTimer < 2)
+        {
+            if ((lastSeenEmptyBelly < imageIndex || maintainEmptyBellyMessage) && gasContents <= 0f)
+            {
+                if (coomContents < 1f)
+                {
+                    switch (imageIndex)
+                    {
+                        case 0:
+                            break;
+                        case 1:
+                            bellyDescription += ". \n\nYou're not sure if you're imagining it, but it feels a bit rounder than usual.";
+                            break;
+                        case 2:
+                            bellyDescription += ". \n\nThere is definitely a slight swell to it compared to the last time you checked.";
+                            break;
+                        case 3:
+                            bellyDescription += ". \n\nHowever, it is starting to stick out a bit. You won't be able to hide this bump for much longer.";
+                            break;
+                        case 4:
+                            bellyDescription += ". \n\nIt is getting noticeably rounder thanks to the " + (fetusCount == 1 ? "baby" : "babies") + " growing inside.";
+                            break;
+                        case 5:
+                            bellyDescription += ". \n\nYou are really starting to feel the weight of the " + (fetusCount == 1 ? "baby" : "babies") + " growing within it.";
+                            break;
+                        case 6:
+                            bellyDescription += ". \n\nWith all of that food out of the way, you now have a chance to appreciate how big your " + (fetusCount == 1 ? "baby" : "babies") + " have gotten.";
+                            break;
+                        case 7:
+                            bellyDescription += ". \n\nWith no more food in your system, you now have a full, unobstructed view of your heavily pregnant belly.";
+                            break;
+                        case 8:
+                            bellyDescription += ". \n\nIt has now reached the size of a normal full-term pregnancy." + (fetusCount > 1 ? " You feel a combination of nervousness and excitement knowing that it will continue to grow larger still." : "");
+                            break;
+                        case 9:
+                            bellyDescription += ". \n\nYou can feel it stretching to contain the babies growing inside, and it will have to stretch further still if you want feed them the nutrition that they need.";
+                            break;
+                        case 10:
+                            bellyDescription += ". \n\nIt has grown large enough that the lower part of your belly is now impossible to reach.";
+                            break;
+                        case 11:
+                            bellyDescription += ". \n\nHowever, it is still much larger than a normal pregnancy, making it very obvious that there is more than one - no, more than two babies growing inside.";
+                            break;
+                        case 12:
+                            bellyDescription += ". \n\n" + (fetusCount == 3 ? "The three babies inside are now fully-grown, and you give your belly a satisfied rub." : "It is now equivalent in size to a full-term triplet pregnancy, and yet it is still not done growing.");
+                            break;
+                        case 13:
+                            bellyDescription += ". \n\nYou take a look in the mirror to see just how far your pregnancy has developed. It is now clear that your belly contains more than three babies.";
+                            break;
+                        case 14:
+                            bellyDescription += ". \n\nAlthough you've grown somewhat accustomed to the weight of your " + IntToWord(fetusCount) + " babies by now, your belly still feels unbelievably heavy and tight.";
+                            break;
+                        case 15:
+                            bellyDescription += ". \n\nAlthough your babies are not done growing, you feel an odd sense of pride in how huge they've gotten. At this size, you can tell that there are more than four.";
+                            break;
+                        case 16:
+                            bellyDescription += ". \n\nYou use this break between stuffing sessions as an opportunity to admire your massive belly, generously filled out with " + (fetusCount == 5 ? "five fully-grown babies." : (IntToWord(fetusCount) + " still-growing babies."));
+                            break;
+                        case 17:
+                            bellyDescription += ". \n\nEven without a massive meal stretching it out, your belly is still impossibly huge, with its incredible size dominating your otherwise slender frame. At this size, it must contain at least six babies.";
+                            break;
+                        case 18:
+                            bellyDescription += ". \n\nIt is so enormous that most people couldn't even begin to imagine how many babies are growing inside.";
+                            break;
+                        case 19:
+                            bellyDescription += ". \n\nAlthough your babies are not done growing yet, the incredible size of your belly makes it obvious that you are in the late stages of a very large multiple pregnancy.";
+                            break;
+                        case 20:
+                            bellyDescription += ". \n\nYou take a moment to admire its sheer size, with your womb stretched to the limit by the seven fully-grown babies resting inside. This is as pregnant as you can possibly get.";
+                            break;
+                        default:
+                            bellyDescription += ". \n\nYou would have something to say about the size of your belly, but your womb contents should never reach this size during normal gameplay. " + imageIndex;
+                            break;
+                    }
+                    lastSeenEmptyBelly = imageIndex;
+                    maintainEmptyBellyMessage = true;
+                }
+                else
+                {
+                    bellyDescription += ". \n\nYou feel a stretching sensation in your womb, but that's to be expected with all the baby batter that's been pumped into you.";
+                }
+
+            }
+            else
+            {
+                bellyDescription += ".";
+            }
+        }
+
+
         if (!achievements[8] && imageIndex == characterSpritesBtm.Length/2 - 1) UpdateAchievements(8);
         /*switch (Mathf.Floor(totalBellyContents))
         {

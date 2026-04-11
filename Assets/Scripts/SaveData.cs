@@ -28,6 +28,7 @@ public class SaveData
     public int fertilityBonus;
     public int pregnancyDays;
     public int actualDays;
+    public int lastSeenEmptyBelly;
     public int currentTime;
     public bool tookCaffeine;
     public bool isNauseous;
