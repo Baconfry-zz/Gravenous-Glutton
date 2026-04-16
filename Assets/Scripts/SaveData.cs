@@ -41,12 +41,20 @@ public class SaveData
     public int sleepCountdown;
     public bool isAsleep;
     public bool[] achievements;
+    public bool[] toggledStates = new bool[7];
+    //0: BGM
+    //1: SFX
+    //2: voice
+    //3: stomach xray
+    //4: womb xray
+    //5: sideview enabled
+    //6: womb tattoo
     public int[] preyHealth;
     public bool alwaysUseEatingAnimation;
-    public bool tattooToggledOn;
-    public bool xRayToggledOn;
+    //public bool tattooToggledOn;
+    //public bool xRayToggledOn;
     public bool ampmMode;
-    public bool nopanMode;
+    public bool nakedMode;
     public bool transparentSideview;
 
     // Start is called before the first frame update
