@@ -17,6 +17,7 @@ public class SaveData
     public float intestineMultiplier;
     public int munchiesConsumed;
     public int weedStock;
+    public int enzymeStock;
     public int money;
     public int cumulativeEarnings;
     public float flowRate;
@@ -30,6 +31,7 @@ public class SaveData
     public int actualDays;
     public int lastSeenEmptyBelly;
     public int currentTime;
+    public bool reachedMaxIntestine;
     public bool tookCaffeine;
     public bool isNauseous;
     public bool isStreaming;
@@ -56,6 +58,7 @@ public class SaveData
     public bool ampmMode;
     public bool nakedMode;
     public bool transparentSideview;
+    public int version;
 
     // Start is called before the first frame update
     void Start()

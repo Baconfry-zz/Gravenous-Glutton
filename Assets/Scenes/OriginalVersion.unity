@@ -795,7 +795,7 @@ MonoBehaviour:
   - {fileID: 1118177688}
   - {fileID: 1594566856}
   - {fileID: 412879405}
-  medicinePrices: 2c0100000500000032000000fa0000000f0000000a00000064000000e8030000
+  medicinePrices: 320000000500000064000000f4010000140000000a00000064000000d0070000
   medicinePricesText: {fileID: 536107333}
   clickedButtonName: 
   isPlayingJiggleAnim: 0
@@ -813,6 +813,7 @@ MonoBehaviour:
   intestineMultiplier: 1.5
   munchiesConsumed: 0
   weedStock: 0
+  enzymeStock: 20
   money: 0
   cumulativeEarnings: 0
   flowRate: 0.3
@@ -829,6 +830,7 @@ MonoBehaviour:
   currentTime: 8
   sleepCountdown: 0
   isAsleep: 0
+  reachedMaxIntestine: 0
   tookCaffeine: 0
   isNauseous: 0
   isStreaming: 0
@@ -839,6 +841,7 @@ MonoBehaviour:
   playingDigestionSounds: 0
   ampmMode: 0
   transparentSideview: 1
+  version: 0
   characterSpritesBtm:
   - {fileID: 21300000, guid: 343b8144a17efb14b9ff6e13604c9f3b, type: 3}
   - {fileID: 21300000, guid: 0b9e5594078a3604982cff888339061d, type: 3}
@@ -8097,6 +8100,20 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 3898d5f8351b2f94a815fdf552d4e1ed, type: 3}
   - {fileID: 21300000, guid: 420031cf9621c8b4aaddae749cfaea35, type: 3}
   - {fileID: 21300000, guid: 8a7678d5496d0bc43862febf34bf3438, type: 3}
+  - {fileID: 21300000, guid: 31980514243e26f428566857ccd6a222, type: 3}
+  - {fileID: 21300000, guid: 10897a1680c3ec54da196a5d92edb70c, type: 3}
+  - {fileID: 21300000, guid: d4e8264489bbfed488b987cc93af9e60, type: 3}
+  - {fileID: 21300000, guid: c92f0a44d6da3834eaeb414d001c711a, type: 3}
+  - {fileID: 21300000, guid: da99343665b59f24e85d4e902c40e3ea, type: 3}
+  - {fileID: 21300000, guid: 880d80d0b0012ef4d8a4374ff6960ec8, type: 3}
+  - {fileID: 21300000, guid: 28c7ab4680e4a7c4cac4c740ffd2b17b, type: 3}
+  - {fileID: 21300000, guid: efacf7cbd6f06934f89c83f064a56c92, type: 3}
+  - {fileID: 21300000, guid: 7785549b6362ee0438e537067e1737eb, type: 3}
+  - {fileID: 21300000, guid: b82e9ffa935385f45aa5b1e75a0fe8b0, type: 3}
+  - {fileID: 21300000, guid: 71350b330e7474c4fa7bc90ddcb77121, type: 3}
+  - {fileID: 21300000, guid: 55cb166ddbc82c147a59fd84178b63f8, type: 3}
+  - {fileID: 21300000, guid: 5c41a508b371e444fac39343be56bab4, type: 3}
+  - {fileID: 21300000, guid: 14137b2fffe95904098dc6bc6db5ba77, type: 3}
   autoButton: {fileID: 1922256148}
   cancelButton: {fileID: 2147436826}
   previewFace: {fileID: 1621542479}
@@ -8125,7 +8142,7 @@ GameObject:
   - component: {fileID: 632376416}
   - component: {fileID: 632376415}
   m_Layer: 5
-  m_Name: relaxant
+  m_Name: antiemetic
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11880,7 +11897,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -120.100006, y: 95.6}
+  m_AnchoredPosition: {x: -120.100006, y: 98}
   m_SizeDelta: {x: 336.39, y: 257.77}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1012988764
@@ -11916,32 +11933,31 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Relaxant: +0.1 intestine capacity (max 2.0)
+  m_Text: 'Antiemetic: cures nausea
 
 
-    Enzyme: digest some
-    food in stomach
+    Enzyme: digest some food in stomach
 
 
-    Laxative: digest all food in intestines
+    Laxative:
+    digest all food in intestines
 
 
-    Folate: restore
-    1 day of missed growth
+    Folate: restore 1 day of missed growth
 
 
-    Ghrelin: +1 hr of natural hunger
+    Ghrelin:
+    +1 hr of natural hunger
 
 
-    Caffeine:
-    sleep at 2:00
+    Caffeine: sleep at 2:00
 
 
-    Cervical plug: stop leakage until next 8:00
+    Cervical plug: stop
+    leakage until next 8:00
 
 
-    Egg implant:
-    +1 fetus (Day 0 only, max 6)'
+    Egg implant: +1 fetus (Day 0 only, max 6)'
 --- !u!222 &1012988765
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -15580,7 +15596,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 6
+  m_SortingOrder: 8
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 0, b: 0.6316929, a: 0}
   m_FlipX: 0
@@ -17862,6 +17878,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1592625229}
   - component: {fileID: 1592625228}
+  - component: {fileID: 1592625230}
   m_Layer: 0
   m_Name: background
   m_TagString: Untagged
@@ -17939,6 +17956,22 @@ Transform:
   - {fileID: 1310089536}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1592625230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1592625227}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99edb2fd9b9214942bd10db62af41e1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  digits:
+  - {fileID: 21300000, guid: c5e3c1a876faee4479646d5f9978e2b1, type: 3}
+  - {fileID: 21300000, guid: 05929cb8eddd7824f883575572f80bba, type: 3}
+  spriteRenderer: {fileID: 1592625228}
 --- !u!1 &1594566856
 GameObject:
   m_ObjectHideFlags: 0
@@ -22913,7 +22946,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 7
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.92941177}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.59607846}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

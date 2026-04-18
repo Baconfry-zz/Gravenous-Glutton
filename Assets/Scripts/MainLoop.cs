@@ -152,6 +152,7 @@ public class MainLoop : MonoBehaviour
 
     public int munchiesConsumed = 0; //save
     public int weedStock = 0; //save
+    public int enzymeStock = 20;
     int storedSoda = 0;
     int inertSoda = 0; //save
     int sodaInIntestines = 0;
@@ -185,6 +186,7 @@ public class MainLoop : MonoBehaviour
     bool babiesKicking = false;
     bool sawNauseaMessage = false;
     bool didElbows = false;
+    public bool reachedMaxIntestine = false;
     public bool tookCaffeine = false; //save
     public bool isNauseous = false; //save
     public bool isStreaming = false; //save
@@ -197,6 +199,8 @@ public class MainLoop : MonoBehaviour
     public bool playingDigestionSounds = false;
     public bool ampmMode = false;
     public bool transparentSideview = true;
+    public int version;
+    int currentVersion = 1;
     Color oldColor = new Color(1f, 1f, 1f, 0.1019608f);
     bool sodaMode = false;
 
@@ -231,6 +235,7 @@ public class MainLoop : MonoBehaviour
         saveData.intestineMultiplier = intestineMultiplier;
         saveData.munchiesConsumed = munchiesConsumed;
         saveData.weedStock = weedStock;
+        saveData.enzymeStock = enzymeStock;
         saveData.money = money;
         saveData.cumulativeEarnings = cumulativeEarnings;
         saveData.flowRate = flowRate;
@@ -244,6 +249,7 @@ public class MainLoop : MonoBehaviour
         saveData.actualDays = actualDays;
         saveData.lastSeenEmptyBelly = lastSeenEmptyBelly;
         saveData.currentTime = currentTime;
+        saveData.reachedMaxIntestine = reachedMaxIntestine;
         saveData.tookCaffeine = tookCaffeine;
         saveData.isNauseous = isNauseous;
         saveData.isStreaming = isStreaming;
@@ -263,6 +269,7 @@ public class MainLoop : MonoBehaviour
         saveData.ampmMode = ampmMode;
         saveData.nakedMode = nakedMode;
         saveData.transparentSideview = transparentSideview;
+        saveData.version = currentVersion;
 
         string json = JsonUtility.ToJson(saveData);
         File.WriteAllText(Application.persistentDataPath + "/savedGame.json", json);
@@ -280,6 +287,7 @@ public class MainLoop : MonoBehaviour
         }
         oldSaveData.ampmMode = ampmMode;
         oldSaveData.transparentSideview = transparentSideview;
+        oldSaveData.version = currentVersion;
         if (Settings.SaveEnabled)
         {
             for (int i = 3; i < toggleButtons.Length; i++)
@@ -307,6 +315,7 @@ public class MainLoop : MonoBehaviour
         intestineMultiplier = 1.5f;
         munchiesConsumed = 0;
         weedStock = 0;
+        enzymeStock = 20;
         money = 0;
         cumulativeEarnings = 0;
         flowRate = 0.3f;
@@ -320,6 +329,7 @@ public class MainLoop : MonoBehaviour
         actualDays = 0;
         lastSeenEmptyBelly = 0;
         currentTime = 8;
+        reachedMaxIntestine = false;
         tookCaffeine = false;
         isNauseous = false;
         isStreaming = false;
@@ -359,6 +369,7 @@ public class MainLoop : MonoBehaviour
         saveData.intestineMultiplier = 1.5f;
         saveData.munchiesConsumed = 0;
         saveData.weedStock = 0;
+        saveData.enzymeStock = 20;
         saveData.money = 0;
         saveData.cumulativeEarnings = 0;
         saveData.flowRate = 0.3f;
@@ -372,6 +383,7 @@ public class MainLoop : MonoBehaviour
         saveData.actualDays = 0;
         saveData.lastSeenEmptyBelly = 0;
         saveData.currentTime = 8;
+        saveData.reachedMaxIntestine = false;
         saveData.tookCaffeine = false;
         saveData.isNauseous = false;
         saveData.isStreaming = false;
@@ -412,6 +424,15 @@ public class MainLoop : MonoBehaviour
                 JsonUtility.FromJsonOverwrite(File.ReadAllText(Application.persistentDataPath + "/savedGame.json"), this);
             }
             catch { }
+            if (version < currentVersion)
+            {
+                Debug.Log("old version found");
+                if (version == 0)//4.17.26
+                {
+                    intestineMultiplier = Mathf.Round(intestineMultiplier * trainingModifier * 10) / 10;
+                    if (intestineMultiplier > 8f) intestineMultiplier = 8f;
+                }
+            }
         }
         else
         {
@@ -1010,8 +1031,8 @@ public class MainLoop : MonoBehaviour
             if (achievements[i]) numberOfAchievements++;
         }
         maxFertilityBonus = numberOfAchievements / 3;
-        medicineButtons[0].SetActive(intestineMultiplier < 2f);
-        medicineButtons[1].SetActive((stomachContents > 0f && intestineContents < (intestineCapacity * intestineMultiplier * trainingModifier)) || preyInside > 0);
+        medicineButtons[0].SetActive(isNauseous);
+        medicineButtons[1].SetActive(((stomachContents > 0f && intestineContents < (intestineCapacity * intestineMultiplier)) || preyInside > 0) && enzymeStock > 0);
         medicineButtons[2].SetActive(isStreaming ? (storedSoda > 0 && stomachContents + gasContents < 14f) : (intestineContents > 0f && !tookLaxative));
         medicineButtons[3].SetActive(fetusCount > 0 && Mathf.Round(wombContents * 10000) / 10000 < Mathf.Round(pregnancyDays * (0.15f + 0.05f * fetusCount) * 10000) / 10000);
         medicineButtons[4].SetActive(hungerTimer < 10);
@@ -1022,13 +1043,13 @@ public class MainLoop : MonoBehaviour
         medicinePrices[2] = (isStreaming ? 5 : 50);
 
         string updatedText = "";
-        updatedText += "Relaxant: +0.1 intestine capacity (max 2.0)\n\n";
-        updatedText += "Enzyme: digest some food in stomach\n\n";
+        updatedText += "Antiemetic: cures nausea\n\n";
+        updatedText += "Enzyme: digest some food in stomach (" + enzymeStock + ") \n\n";
         updatedText += (isStreaming ? "Mentos: reacts on contact with soda\n\n" : ("Laxative: " + (tookLaxative ? "already taken today\n\n" : "digest all food in intestines \n\n")));
         updatedText += "Folate: restore 1 day of missed growth\n\n";
         updatedText += "Ghrelin: +1 hr of natural hunger\n\n";
-        updatedText += "Caffeine: sleep at 2:00\n\n";
-        updatedText += "Cervical plug: " + (usedPlug ? "already used today\n\n" : "stop leakage until next 8:00\n\n");
+        updatedText += "Caffeine: sleep at " + (ampmMode ? "3 AM" : "03:00") + "\n\n";
+        updatedText += "Cervical plug: " + (usedPlug ? "already used today\n\n" : "stop leakage until next " + (ampmMode ? "8 AM" : "08:00") + "\n\n");
         if (achievements[10]) updatedText += "Fertility drug: " + (fetusCount > 0 ? "use before getting pregnant" : ("+1 baby after sex (" + fertilityBonus + "/" + maxFertilityBonus + ")"));
 
         medicineText.text = updatedText;
@@ -1065,11 +1086,11 @@ public class MainLoop : MonoBehaviour
                 rewardMessage = "Reward: when near the limit, eat twice";
                 break;
             case 2:
-                achievementMessage = "Miss Piggy: Digest 8000 calories in one day.";
+                achievementMessage = "Miss Piggy: Digest 10000 calories in one day.";
                 rewardMessage = "Reward: digestion starts 1 hour sooner";
                 break;
             case 3:
-                achievementMessage = "Mucho Texto: Have a total of 18L or more in your stomach and intestines.";
+                achievementMessage = "Mucho Texto: Have a total of 20L or more in your stomach and intestines.";
                 rewardMessage = "Reward: intestines fill up 33% quicker";
                 flowRate = 0.4f;
                 break;
@@ -1152,12 +1173,12 @@ public class MainLoop : MonoBehaviour
                     break;
                 case 2:
                     achievementName = "Miss Piggy";
-                    achievementDescription = "Digest 8000 calories in one day.";
+                    achievementDescription = "Digest 10000 calories in one day.";
                     rewardMessage = "-1 digestion delay";
                     break;
                 case 3:
                     achievementName = "Mucho Texto";
-                    achievementDescription = "Have a total of 18L or more in your stomach and intestines.";
+                    achievementDescription = "Have a total of 20L or more in your stomach and intestines.";
                     rewardMessage = "+33% flow rate";
                     break;
                 case 4:
@@ -1421,6 +1442,7 @@ public class MainLoop : MonoBehaviour
         {
             fetusCount = 1 + fertilityBonus + Mathf.Min((int)sexMinigame.amountReleased, 200) / 100;
             if (currentTime < 8) actualDays = 1;
+            fertilityBonus = 0;
         }
         coomContents += sexMinigame.amountReleased / 100;
         if (coomContents + wombContents > 21f) coomContents = 21f - wombContents;
@@ -1716,7 +1738,7 @@ public class MainLoop : MonoBehaviour
             PrintStats();
             UpdateMedicineText();
 
-            skipTime.SetCounterTo(currentTime == (tookCaffeine ? 1 : 23) ? 2 : 0);
+            skipTime.SetCounterTo(currentTime == (tookCaffeine ? 2 : 23) ? 2 : 0);
 
             achievementButton.GetComponent<Collider2D>().enabled = !isAsleep;
             pillButton.GetComponent<Collider2D>().enabled = !isAsleep;
@@ -2403,12 +2425,12 @@ public class MainLoop : MonoBehaviour
                             }
                             else
                             {
-                                subMessage = "You tell them that you are stuffed to the limit, " + ((hungerModifier >= 4f && intestineContents >= intestineCapacity * trainingModifier) ? "and it is physically impossible to stuff your overstretched belly any further." : "but you might be able to force yourself to eat more with some encouragement from chat.");
+                                subMessage = "You tell them that you are stuffed to the limit, " + ((hungerModifier >= 4f && intestineContents >= intestineCapacity * intestineMultiplier) ? "and it is physically impossible to stuff your overstretched belly any further." : "but you might be able to force yourself to eat more with some encouragement from chat.");
                                 if (gasContents > 0)
                                 {
                                     subMessage2 = "\n\nYou can probably free up some space by burping.";
                                 }
-                                else if (intestineContents < intestineCapacity * trainingModifier * intestineMultiplier)
+                                else if (intestineContents < intestineCapacity * intestineMultiplier)
                                 {
                                     subMessage2 = "\n\nMaybe you can free up more space in your stomach if you could get some food to flow into your lower digestive tract.";
                                 }
@@ -2420,9 +2442,9 @@ public class MainLoop : MonoBehaviour
                                 {
                                     subMessage2 = "\n\nYou might be able to gulp down more food if you had some more weed in your system.";
                                 }
-                                else if (stomachContents + gasContents + intestineContents + wombContents + coomContents >= 41.4f)
+                                else if (stomachContents + gasContents + intestineContents + wombContents + coomContents >= 43.4f)
                                 {
-                                    subMessage2 = "\n\nNow containing a total volume of over 41 liters, your belly is as huge as it can possibly get.";
+                                    subMessage2 = "\n\nNow containing a total volume of over 43 liters, your belly is as huge as it can possibly get in the current version.";
                                 }
                             }
                             bellyText.text = "\"How much more do you think you can eat?\"\n\n" + subMessage + subMessage2;
@@ -2505,18 +2527,18 @@ public class MainLoop : MonoBehaviour
                             subMessage = "Your round tummy presses into the counter, leaving you without much room to work with";
                             if (imageIndex > 7) subMessage = "You have to rest your huge belly on the edge of the sink to make room";
                             if (imageIndex > 13) subMessage = "You have to lean forward with your enormous belly pressed against the front of the counter in order to reach the sink";
-                            if (intestineContents < intestineCapacity * intestineMultiplier * trainingModifier)
+                            if (intestineContents < intestineCapacity * intestineMultiplier)
                             {
                                 topHeavyAtStart = stomachContents + gasContents > intestineContents + wombContents + coomContents;
-                                if (stomachContents >= flowRate && (intestineContents + flowRate) <= intestineCapacity * intestineMultiplier * trainingModifier)
+                                if (stomachContents >= flowRate && (intestineContents + flowRate) <= intestineCapacity * intestineMultiplier)
                                 {
                                     stomachContents -= flowRate;
                                     intestineContents += flowRate;
                                 }
-                                else if (intestineContents < (intestineCapacity * intestineMultiplier * trainingModifier) && (intestineContents + flowRate) > intestineCapacity * intestineMultiplier * trainingModifier)
+                                else if (intestineContents < (intestineCapacity * intestineMultiplier) && (intestineContents + flowRate) > intestineCapacity * intestineMultiplier)
                                 {
-                                    stomachContents -= ((intestineCapacity * intestineMultiplier * trainingModifier) - intestineContents);
-                                    intestineContents = intestineCapacity * intestineMultiplier * trainingModifier;
+                                    stomachContents -= ((intestineCapacity * intestineMultiplier) - intestineContents);
+                                    intestineContents = intestineCapacity * intestineMultiplier;
                                 }
                                 else if (stomachContents < flowRate)
                                 {
@@ -2611,7 +2633,7 @@ public class MainLoop : MonoBehaviour
                     {
                         if (mouseHeldDuration < 3f && mouseHeldDuration + Time.deltaTime >= 3f)
                         {
-                            intestineMultiplier = 2f;
+                            intestineMultiplier = 8f;
                             trainingModifier = 3f;
                             money = (int)Mathf.Max(money, 99999);
                             dailyCalories = Mathf.Max(dailyCalories, 2000 + fetusCount * (pregnancyDays >= 20 ? 500 : 0));
@@ -2695,6 +2717,7 @@ public class MainLoop : MonoBehaviour
                 {
                     ampmMode = !ampmMode;
                     timeText.text = (ampmMode ? (ConvertToAMPM(currentTime)) : ((currentTime < 10 ? "0" : "") + currentTime + ":00")) + " | Day " + (fetusCount > 0 ? actualDays : "--");
+                    UpdateMedicineText();
                     SaveOnlySettings();
                 }
 
@@ -2704,9 +2727,18 @@ public class MainLoop : MonoBehaviour
                     SaveOnlySettings();
                 }
 
-                if (clickedButtonName == "relaxant")// && intestineMultiplier < 2f)
+                if (clickedButtonName == "antiemetic")// && intestineMultiplier < 2f)
                 {
-                    intestineMultiplier += 0.1f;
+                    foodDescription = "Your nausea wears off, and you suddenly feel much hungrier than normal.";
+                    isNauseous = false;
+                    sawNauseaMessage = false;
+                    munchiesConsumed += 2;
+                    hungerModifier = 1f + (hungerTimer * 0.2f) + (0.2f * munchiesConsumed);
+                    if (!achievements[0] && hungerModifier >= 4f) UpdateAchievements(0);
+                    hungerText.text = "Hunger multiplier: " + hungerModifier + "x";
+
+                    //intestineMultiplier += 0.1f;
+                    //intestineMultiplier = Mathf.Round(intestineMultiplier * 10) / 10;
                     money -= medicinePrices[0];
                     PrintStats();
                     UpdateMedicineText();
@@ -2729,8 +2761,9 @@ public class MainLoop : MonoBehaviour
                     UpdateMedicineText();
                 }
 
-                if (clickedButtonName == "enzyme")// && stomachContents > 0f && intestineContents < (intestineCapacity * intestineMultiplier * trainingModifier))
+                if (clickedButtonName == "enzyme")// && stomachContents > 0f && intestineContents < (intestineCapacity * intestineMultiplier))
                 {
+                    enzymeStock--;
                     topHeavyAtStart = stomachContents + gasContents > intestineContents + wombContents + coomContents;
                     /*if (stomachContents >= stomachCapacity * trainingModifier)
                     {
@@ -2745,15 +2778,15 @@ public class MainLoop : MonoBehaviour
                         //PrintStats();
                         //yield return new WaitForSeconds(0.2f);
                     }
-                    if (stomachContents >= flowRate + preyVolume && (intestineContents + flowRate) <= intestineCapacity * intestineMultiplier * trainingModifier)
+                    if (stomachContents >= flowRate + preyVolume && (intestineContents + flowRate) <= intestineCapacity * intestineMultiplier)
                     {
                         stomachContents -= flowRate;
                         intestineContents += flowRate;
                     }
-                    else if (intestineContents < (intestineCapacity * intestineMultiplier * trainingModifier) && (intestineContents + flowRate) > intestineCapacity * intestineMultiplier * trainingModifier)
+                    else if (intestineContents < (intestineCapacity * intestineMultiplier) && (intestineContents + flowRate) > intestineCapacity * intestineMultiplier)
                     {
-                        stomachContents -= ((intestineCapacity * intestineMultiplier * trainingModifier) - intestineContents);
-                        intestineContents = intestineCapacity * intestineMultiplier * trainingModifier;
+                        stomachContents -= ((intestineCapacity * intestineMultiplier) - intestineContents);
+                        intestineContents = intestineCapacity * intestineMultiplier;
                     }
                     else if (stomachContents < flowRate + preyVolume)
                     {
@@ -2800,7 +2833,13 @@ public class MainLoop : MonoBehaviour
                     else
                     {
                         dailyCalories += Mathf.Round(intestineContents * 1000);
-                        if (!achievements[2] && (int)dailyCalories >= 8000) UpdateAchievements(2);
+                        if (intestineContents >= intestineCapacity * intestineMultiplier && intestineMultiplier < 8f)
+                        {
+                            intestineMultiplier += 0.1f;
+                            intestineMultiplier = Mathf.Round(intestineMultiplier * 10) / 10;
+                            reachedMaxIntestine = true;
+                        }
+                        if (!achievements[2] && (int)dailyCalories >= 10000) UpdateAchievements(2);
                         intestineContents = 0f;
                         sodaInIntestines = 0;
                         disposalTimer = 0;
@@ -2876,7 +2915,7 @@ public class MainLoop : MonoBehaviour
                 yield return new WaitForSeconds(holdFaceDuration);
                 mouthSprite.enabled = false;
             }
-            skipTime.SetCounterTo(currentTime == (tookCaffeine ? 1 : 23) ? 2 : 0);
+            skipTime.SetCounterTo(currentTime == (tookCaffeine ? 2 : 23) ? 2 : 0);
             if (!isAsleep) achievementText.text = "";
             playingDigestionSounds = false;
             streamDigestionSounds.Mute(true);
@@ -2922,7 +2961,7 @@ public class MainLoop : MonoBehaviour
             storedSoda = 0;
             sodaInIntestines = 0;
             //end of hour
-            if (gasContents > 0f && currentTime == (tookCaffeine ? 1 : 23))
+            if (gasContents > 0f && currentTime == (tookCaffeine ? 2 : 23))
             {
                 faces.SetCounterTo(10);
                 holdFaceDuration = 0.9f;
@@ -3049,7 +3088,7 @@ public class MainLoop : MonoBehaviour
                 else
                 {
                     if (digestionTimer > 0) digestionTimer--;
-                    if (digestionTimer == 0 && intestineContents < (intestineCapacity * intestineMultiplier * trainingModifier)) flowEnabled = true;
+                    if (digestionTimer == 0 && intestineContents < (intestineCapacity * intestineMultiplier)) flowEnabled = true;
 
                 }
                 hungerTimer = 0;
@@ -3101,16 +3140,16 @@ public class MainLoop : MonoBehaviour
                     //PrintStats();
                     //yield return new WaitForSeconds(0.2f);
                 }
-                if (stomachContents >= flowRate + preyVolume && (intestineContents + flowRate) <= intestineCapacity * intestineMultiplier * trainingModifier)
+                if (stomachContents >= flowRate + preyVolume && (intestineContents + flowRate) <= intestineCapacity * intestineMultiplier)
                 {
                     stomachContents -= flowRate;
                     //Debug.Log(preyVolume);
                     intestineContents += flowRate;
                 }
-                else if (stomachContents >= intestineCapacity * intestineMultiplier * trainingModifier - intestineContents && intestineContents < (intestineCapacity * intestineMultiplier * trainingModifier) && (intestineContents + flowRate) > intestineCapacity * intestineMultiplier * trainingModifier)
+                else if (stomachContents >= intestineCapacity * intestineMultiplier - intestineContents && intestineContents < (intestineCapacity * intestineMultiplier) && (intestineContents + flowRate) > intestineCapacity * intestineMultiplier)
                 {
-                    stomachContents -= ((intestineCapacity * intestineMultiplier * trainingModifier) - intestineContents);
-                    intestineContents = intestineCapacity * intestineMultiplier * trainingModifier;
+                    stomachContents -= ((intestineCapacity * intestineMultiplier) - intestineContents);
+                    intestineContents = intestineCapacity * intestineMultiplier;
                     flowEnabled = false;
                 }
                 else if (stomachContents < flowRate + preyVolume)
@@ -3137,7 +3176,7 @@ public class MainLoop : MonoBehaviour
                 }*/
                 if (liquidContents < 0f) liquidContents = 0f;
             }
-            if (intestineContents >= intestineCapacity * intestineMultiplier * trainingModifier) flowEnabled = false;
+            if (intestineContents >= intestineCapacity * intestineMultiplier) flowEnabled = false;
 
             if (intestineContents > 0)
             {
@@ -3145,30 +3184,36 @@ public class MainLoop : MonoBehaviour
                 {
                     disposalTimer++;
                 }
-                if ((currentTime == 23 || (currentTime == 1 && tookCaffeine)) && stomachContents == 0f && disposalTimer > 0)
+                if ((currentTime == 23 || (currentTime == 2 && tookCaffeine)) && stomachContents == 0f && disposalTimer > 0)
                 {
                     disposalTimer = disposalReq + 1;
                 }
                 if (disposalTimer > disposalReq && (!isAsleep || sleepCountdown == 1))
                 {
                     dailyCalories += Mathf.Round(intestineContents * 1000);
-                    if (!achievements[2] && (int)dailyCalories >= 8000) UpdateAchievements(2);
+                    if (intestineContents >= intestineCapacity * intestineMultiplier && intestineMultiplier < 8f)
+                    {
+                        intestineMultiplier += 0.1f;
+                        intestineMultiplier = Mathf.Round(intestineMultiplier * 10) / 10;
+                        reachedMaxIntestine = true;
+                    }
+                    if (!achievements[2] && (int)dailyCalories >= 10000) UpdateAchievements(2);
                     intestineContents = 0f;
                     sodaInIntestines = 0;
                     disposalTimer = 0;
                 }
             }
             currentTime++;
-            skipTime.SetCounterTo(currentTime == (tookCaffeine ? 1 : 23) ? 2 : 0);
+            skipTime.SetCounterTo(currentTime == (tookCaffeine ? 2 : 23) ? 2 : 0);
             if (sleepCountdown > 0) sleepCountdown--;
             if (currentTime > 23)
             {
                 currentTime = 0;
                 if (fetusCount > 0) actualDays++;
             }
-            if (currentTime == 0 + (tookCaffeine ? 2 : 0))
+            if (currentTime == 0 + (tookCaffeine ? 3 : 0))
             { 
-                sleepCountdown = 8 - (tookCaffeine ? 2 : 0);
+                sleepCountdown = 8 - (tookCaffeine ? 3 : 0);
                 holdFaceDuration = 0f;
                 isAsleep = true;
                 tookCaffeine = false;
@@ -3191,9 +3236,9 @@ public class MainLoop : MonoBehaviour
             if (currentTime == 4)
             {
                 munchiesConsumed = 0;
+                enzymeStock = 20;
                 maintainEmptyBellyMessage = false;
                 tookLaxative = false;
-                fertilityBonus = 0;
                 if (weedStock < 5)
                 {
                     weedStock++;
@@ -3226,7 +3271,7 @@ public class MainLoop : MonoBehaviour
                     {
                         StartCoroutine(musicPlayer.GraduallyMute(2f));
                         stomachCapacityBar.localScale = new Vector3(stomachCapacity * trainingModifier * barRatio, stomachCapacityBar.localScale.y, 1);
-                        intestineCapacityBar.localScale = new Vector3(intestineCapacity * intestineMultiplier * trainingModifier * barRatio, intestineCapacityBar.localScale.y, 1);
+                        intestineCapacityBar.localScale = new Vector3(intestineCapacity * intestineMultiplier * barRatio, intestineCapacityBar.localScale.y, 1);
                         yield return StartCoroutine(AnimateBirth());
                         musicPlayer.GetComponent<AudioSource>().time = 0f;
                         StartCoroutine(musicPlayer.GraduallyUnmute(2f));
@@ -3239,6 +3284,12 @@ public class MainLoop : MonoBehaviour
                 }
                 //if (dailyCalories >= 2000 + fetusCount * 800) wombContents += fetusCount * 0.025f;
                 //Mathf.Clamp(wombContents, 0f, fetusCount * pregnancyDays * 0.05f);
+                if (!reachedMaxIntestine && intestineMultiplier > 1.5f)
+                {
+                    intestineMultiplier -= 0.1f;
+                    intestineMultiplier = Mathf.Round(intestineMultiplier * 10) / 10;
+                }
+                reachedMaxIntestine = false;
 
                 if (fetusCount > 0) bankedCalories += (int)dailyCalories - (2000 + (500 * fetusCount * (pregnancyDays >= 20 ? 1 : 0)));
                 bankedCalories -= fetusCount > 0 ? (600 - (pregnancyDays >= 20 ? (fetusCount * 300) : 0)) : 10000;
@@ -3373,10 +3424,12 @@ public class MainLoop : MonoBehaviour
                 break;
             case 14:
             case 15:
+            case 16:
                 bellyDescription = "The signals of immense fullness from your ridiculously huge belly are laced with streaks of pain as you approach the physical limit of how much food you can cram into yourself.";
                 break;
-            case 16:
             case 17:
+            case 18:
+            case 19:
                 bellyDescription = "Your gigantic belly has gone far beyond the limit of what the human body is meant to withstand. You feel your consciousness slipping away as your brain is bombarded with intense sensations of orgasmic pleasure and pain from your tightly stretched skin, abdominal muscles, and overstuffed guts.";
                 break;
             default:
@@ -3587,9 +3640,9 @@ public class MainLoop : MonoBehaviour
         //stomachContentsBar.localScale = new Vector3(displayedStomachContents * barRatio, stomachContentsBar.localScale.y, 1);
         //gasContentsBar.localScale = new Vector3((displayedStomachContents + displayedGasContents) * barRatio, gasContentsBar.localScale.y, 1);
         contentsText[0].text = Mathf.Round((stomachContents + gasContents) * 100) / 100 + "L / " + Mathf.Round(stomachCapacity * trainingModifier * 100) / 100 + "L";
-        intestineCapacityBar.localScale = new Vector3(intestineCapacity * intestineMultiplier * trainingModifier * barRatio, intestineCapacityBar.localScale.y, 1);
+        intestineCapacityBar.localScale = new Vector3(intestineCapacity * intestineMultiplier * barRatio, intestineCapacityBar.localScale.y, 1);
         //intestineContentsBar.localScale = new Vector3(displayedIntestineContents * barRatio, intestineContentsBar.localScale.y, 1);
-        contentsText[1].text = Mathf.Round(intestineContents * 100) / 100 + "L / " + Mathf.Round(intestineCapacity * intestineMultiplier * trainingModifier * 100) / 100 + "L";
+        contentsText[1].text = Mathf.Round(intestineContents * 100) / 100 + "L / " + Mathf.Round(intestineCapacity * intestineMultiplier * 100) / 100 + "L";
         //wombContentsBar.localScale = new Vector3(displayedWombContents * barRatio, wombContentsBar.localScale.y, 1);
         //coomContentsBar.localScale = new Vector3((displayedCoomContents + displayedWombContents) * barRatio, coomContentsBar.localScale.y, 1);
         wombCapacityBar.localScale = new Vector3((6f + 2 * fetusCount) * barRatio, wombCapacityBar.localScale.y, 1);
