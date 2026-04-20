@@ -206,7 +206,7 @@ public class TimedSlider : MonoBehaviour
             //if (amountReleased > 200) amountReleased = 200;
             if (startPregnancy)
             {
-                pregnancyPreview.sprite = previewSprites[(mainLoop.fertilityBonus + Mathf.Min((int)amountReleased, 200) / 100 + (mainLoop.largeBreastMode ? 7 : 0)) + (mainLoop.nakedMode ? 14 : 0)];
+                pregnancyPreview.sprite = previewSprites[(mainLoop.fertilityBonus + Mathf.Min((int)amountReleased, 200) / 100 + (mainLoop.largeBreastMode ? 8 : 0)) + (mainLoop.nakedMode ? 16 : 0)];
                 pregnancyPreview.enabled = true;
                 previewBG.enabled = true;
                 pregnancyPreview.color = new Color(pregnancyPreview.color.r, pregnancyPreview.color.g, pregnancyPreview.color.b, 0.2f);

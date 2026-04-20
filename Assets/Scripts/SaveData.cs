@@ -20,6 +20,8 @@ public class SaveData
     public int enzymeStock;
     public int money;
     public int cumulativeEarnings;
+    public int daysEatingPreyOnly;
+    public bool eligibleForCarnivore;
     public float flowRate;
     public int disposalTimer;
     public float dailyCalories;
@@ -29,7 +31,7 @@ public class SaveData
     public int fertilityBonus;
     public int pregnancyDays;
     public int actualDays;
-    public int lastSeenEmptyBelly;
+    //public int lastSeenEmptyBelly;
     public int currentTime;
     public bool reachedMaxIntestine;
     public bool tookCaffeine;
