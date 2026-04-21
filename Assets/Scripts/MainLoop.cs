@@ -162,7 +162,7 @@ public class MainLoop : MonoBehaviour
     public int money = 0;
     public int cumulativeEarnings = 0;
     public int daysEatingPreyOnly = 0;
-    public bool eligibleForCarnivore = true;
+    public bool ateNormalFood = false;
 
     bool flowEnabled = false;
     public float flowRate = 0.3f; //save
@@ -243,7 +243,7 @@ public class MainLoop : MonoBehaviour
         saveData.money = money;
         saveData.cumulativeEarnings = cumulativeEarnings;
         saveData.daysEatingPreyOnly = daysEatingPreyOnly;
-        saveData.eligibleForCarnivore = eligibleForCarnivore;
+        saveData.ateNormalFood = ateNormalFood;
         saveData.flowRate = flowRate;
         saveData.disposalTimer = disposalTimer;
         saveData.dailyCalories = dailyCalories;
@@ -325,7 +325,7 @@ public class MainLoop : MonoBehaviour
         money = 0;
         cumulativeEarnings = 0;
         daysEatingPreyOnly = 0;
-        eligibleForCarnivore = true;
+        ateNormalFood = false;
         flowRate = 0.3f;
         disposalTimer = 0;
         dailyCalories = 1000f;
@@ -381,7 +381,7 @@ public class MainLoop : MonoBehaviour
         saveData.money = 0;
         saveData.cumulativeEarnings = 0;
         saveData.daysEatingPreyOnly = 0;
-        saveData.eligibleForCarnivore = true;
+        saveData.ateNormalFood = false;
         saveData.flowRate = 0.3f;
         saveData.disposalTimer = 0;
         saveData.dailyCalories = 1000f;
@@ -1127,7 +1127,7 @@ public class MainLoop : MonoBehaviour
                 break;
             case 5:
                 achievementMessage = "Opening Kickoff: Experience your first fetal movement.";
-                rewardMessage = "Reward: Womb X-ray";
+                rewardMessage = "Reward: womb X-ray";
                 toggleButtons[4].gameObject.SetActive(true);
                 //xRayToggle.GetComponent<ToggleButton>().ForceState(true);
                 break;
@@ -1731,7 +1731,7 @@ public class MainLoop : MonoBehaviour
             //intestineCapacityBar.localScale = new Vector3(intestineCapacity * intestineMultiplier * trainingModifier, intestineCapacityBar.localScale.y, 1);
 
             if (!achievements[1] && currentTime == 8) eligibleForNoLunchBreak = true;//no lunch break
-            if (currentTime == 8 && daysEatingPreyOnly == 0) eligibleForCarnivore = (!achievements[13] && dailyCalories == 0 && stomachContents == 0f && intestineContents == 0f);
+            if (currentTime == 8) ateNormalFood = false;// && daysEatingPreyOnly == 0) ateNormalFood = (!achievements[13] && dailyCalories == 0 && stomachContents == 0f && intestineContents == 0f);
 
             if (!isAsleep && currentTime > 8 && stomachContents <= stomachCapacity * trainingModifier) eligibleForNoLunchBreak = false;
 
@@ -1837,6 +1837,7 @@ public class MainLoop : MonoBehaviour
             //storedSoda = 0;
             //inertSoda = 0;
             int lastSeenInteraction = -1;
+            float preyVolume = GetPreyVolume();
             sodaMode = false;
 
             while (!Input.GetKeyDown(KeyCode.Return) && clickedButtonName != "skip_time_button" && !isAsleep)
@@ -1944,7 +1945,7 @@ public class MainLoop : MonoBehaviour
                         stomachContents += 0.4f;             
                         if (isStreaming)
                         {
-                            if (plateIndex <= plates.Length && !sodaMode) plates[plateIndex].SetActive(true);
+                            if (plateIndex < plates.Length && !sodaMode) plates[plateIndex].SetActive(true);
                             foodEaten++;
                             if (!sodaMode) plateIndex++;
                             streamEarnings += (int)((1 + 2 * (stomachContents + intestineContents + wombContents + gasContents + coomContents)) * Mathf.Pow(1.013f, (foodEaten + preyInside * 10)));
@@ -2005,7 +2006,7 @@ public class MainLoop : MonoBehaviour
                         mouthSprite.transform.localPosition = mouthSpriteStartPos;
                         recordButton.GetComponent<Collider2D>().enabled = !isStreaming && !isAsleep && daysUntilNextStream <= 0;
                         ateThisTurn = true;
-                        eligibleForCarnivore = false;
+                        ateNormalFood = true;
                         daysEatingPreyOnly = 0;
                         if (stomachContents + gasContents >= stomachCapacity * trainingModifier && hungerModifier > 1)
                         {
@@ -2118,7 +2119,7 @@ public class MainLoop : MonoBehaviour
                 //vore
                 if (Input.GetMouseButtonUp(0) && cursor.GetAllColliderNames(5).Contains("mouth") && cursor.heldPrey != null)
                 {
-                    if (stomachContents + gasContents + 3f <= adjustedStomachCapacity || (canSwallowFinalPrey && stomachContents + gasContents <= (achievements[13] ? 12f : 8f)))
+                    if (stomachContents + gasContents + 3f <= adjustedStomachCapacity || (canSwallowFinalPrey && stomachContents + gasContents <= adjustedStomachCapacity))//(achievements[13] ? 12f : 8f)))
                     {
                         if (Input.GetKey(KeyCode.LeftShift) || Random.Range(0, 100) < 20 + (40 - cursor.heldPrey.health) * 4)
                         {
@@ -2177,7 +2178,7 @@ public class MainLoop : MonoBehaviour
                         {
                             foodDescription = "Your prey manages to escape from you this time.";
                             cursor.heldPrey.TossInRandomDirection(0.1f);
-                            faces.SetCounterTo(6);
+                            faces.SetCounterTo(12);
                             holdFaceDuration = 0.6f;
                         }
                     }
@@ -2185,6 +2186,8 @@ public class MainLoop : MonoBehaviour
                     {
                         foodDescription = "You don't have enough appetite to swallow another prey.";
                         cursor.heldPrey.TossInRandomDirection(0.1f);
+                        faces.SetCounterTo(6);
+                        holdFaceDuration = 0.6f;
                     }
 
                 }
@@ -2496,7 +2499,7 @@ public class MainLoop : MonoBehaviour
                             }
                             else
                             {
-                                subMessage = "You tell them that you are stuffed to the limit, " + ((hungerModifier >= 4f && intestineContents >= intestineCapacity * intestineMultiplier) ? "and it is physically impossible to stuff your overstretched belly any further." : "but you might be able to force yourself to eat more with some encouragement from chat.");
+                                subMessage = "You tell them that you are stuffed to the limit, " + ((hungerModifier >= 4f && intestineContents >= intestineCapacity * intestineMultiplier) ? "and it is physically impossible to stuff yourself any further." : "but you might be able to force yourself to eat more with some encouragement from chat.");
                                 if (gasContents > 0)
                                 {
                                     subMessage2 = "\n\nYou can probably free up some space by burping.";
@@ -2513,9 +2516,9 @@ public class MainLoop : MonoBehaviour
                                 {
                                     subMessage2 = "\n\nYou might be able to gulp down more food if you had some more weed in your system.";
                                 }
-                                else if (stomachContents + gasContents + intestineContents + wombContents + coomContents >= 43.4f)
+                                else if (stomachContents + intestineContents >= 20f)
                                 {
-                                    subMessage2 = "\n\nNow containing a total volume of over 43 liters, your belly is as huge as it can possibly get in the current version.";
+                                    subMessage2 = "\n\nYour massively overstretched belly serves as proof of what you've accomplished during this stream, and you proudly show it off to the camera.";
                                 }
                             }
                             bellyText.text = "\"How much more do you think you can eat?\"\n\n" + subMessage + subMessage2;
@@ -2534,7 +2537,7 @@ public class MainLoop : MonoBehaviour
                             if (stomachContents + intestineContents + coomContents > 1f)
                             {
                                 string descriptor = "all food.";
-                                if (stomachContents == 0f) descriptor = "all \"food\".";
+                                if (stomachContents + intestineContents == 0f) descriptor = "all \"food\".";
                                 if (liquidContents > 0f && liquidContents / stomachContents > 0.5f) descriptor = "all food and soda.";
                                 if (liquidContents > 0f && liquidContents == stomachContents) descriptor = "all soda.";
                                 subMessage2 = "The rest is " + descriptor + (coomContents >= 0.4f ? " (You decide not to tell them what else is in there.)" : "");
@@ -2558,7 +2561,7 @@ public class MainLoop : MonoBehaviour
                                             subMessage = "triplets? " + (wombContents > 6 ? "no wonder she's so huge" : "dang i can't wait to see how big she gets");
                                             break;
                                         case 4:
-                                            subMessage = "quadruplets? you're not kidding?";
+                                            subMessage = "quadruplets? is she serious?";
                                             break;
                                         case 5:
                                             subMessage = "five babies? are you sure???";
@@ -2567,10 +2570,13 @@ public class MainLoop : MonoBehaviour
                                             subMessage = "six? six babies?! did I hear that correctly";
                                             break;
                                         case 7:
-                                            subMessage = "show us the ultrasound, no way there's actually seven babies in there";
+                                            subMessage = "seven babies? nah there's no way. that can't be possible";
+                                            if (wombContents >= 15f) subMessage = "seven babies?? i mean it sounds crazy but look how huge she is. she might be telling the truth";
                                             break;
                                         case 8:
-                                            subMessage = "eight babies? eight?? either she's trolling or she's an actual fertility goddess";
+                                            subMessage = "show us the ultrasound, no way there's actually eight babies in there";
+                                            if (wombContents >= 9f) subMessage = "8 babies? 8?? sure, it looks like multiples, but there's no way she's carrying 8";
+                                            if (wombContents >= 16.5f) subMessage = "oh my god. she's serious. i think she actually IS carrying 8 babies";
                                             break;
                                     }
                                     commentGenerator.GenerateComment(subMessage);
@@ -2601,27 +2607,32 @@ public class MainLoop : MonoBehaviour
                             subMessage = "Your round tummy presses into the counter, leaving you without much room to work with";
                             if (imageIndex > 7) subMessage = "You have to rest your huge belly on the edge of the sink to make room";
                             if (imageIndex > 13) subMessage = "You have to lean forward with your enormous belly pressed against the front of the counter in order to reach the sink";
+                            subMessage2 = "\n\nWhile you wash the dishes, you feel some of your stomach contents flow into the lower parts of your abdomen.";
                             if (intestineContents < intestineCapacity * intestineMultiplier)
                             {
                                 topHeavyAtStart = stomachContents + gasContents > intestineContents + wombContents + coomContents;
-                                if (stomachContents >= flowRate && (intestineContents + flowRate) <= intestineCapacity * intestineMultiplier)
+                                preyVolume = GetPreyVolume();
+                                if (stomachContents <= preyVolume) DamageAllPrey();   
+                                if (stomachContents >= flowRate + preyVolume && (intestineContents + flowRate) <= intestineCapacity * intestineMultiplier)
                                 {
                                     stomachContents -= flowRate;
                                     intestineContents += flowRate;
                                 }
-                                else if (intestineContents < (intestineCapacity * intestineMultiplier) && (intestineContents + flowRate) > intestineCapacity * intestineMultiplier)
+                                else if (intestineContents < (intestineCapacity * intestineMultiplier) && (intestineContents + flowRate) > intestineCapacity * intestineMultiplier && ((intestineCapacity * intestineMultiplier) - intestineContents) < stomachContents - preyVolume)
                                 {
                                     stomachContents -= ((intestineCapacity * intestineMultiplier) - intestineContents);
                                     intestineContents = intestineCapacity * intestineMultiplier;
                                 }
-                                else if (stomachContents < flowRate)
+                                else if (stomachContents < flowRate + preyVolume)
                                 {
-                                    intestineContents += stomachContents;
-                                    stomachContents = 0f;
+                                    intestineContents += stomachContents - preyVolume;
+                                    stomachContents = preyVolume;
                                 }
                                 else
                                 {
-                                    //Debug.Log("should not reach this point");
+                                    DamageAllPrey();
+                                    subMessage2 = "\n\nWhile you wash the dishes, you feel the prey in your stomach weakening slightly.";
+
                                 }
                                 liquidContents -= flowRate;
                                 if (inertSoda > 0)
@@ -2641,7 +2652,6 @@ public class MainLoop : MonoBehaviour
                                     gurglePlayer.PlayRandom();
                                     topHeavyAtStart = false;
                                 }
-                                subMessage2 = "\n\nWhile you wash the dishes, you feel some of your stomach contents flow into the lower parts of your abdomen.";
                             }
                             bellyText.text = "You are too full to eat another bite, so you decide it's a good time to take a break and wash some dishes. " + subMessage + ", but you manage to make some decent progress." + subMessage2;
                             faces.SetCounterTo(0);
@@ -2710,6 +2720,7 @@ public class MainLoop : MonoBehaviour
                         {
                             intestineMultiplier = 8f;
                             trainingModifier = 3f;
+                            weedStock = Mathf.Min(5, 8 - munchiesConsumed);
                             money = (int)Mathf.Max(money, 99999);
                             dailyCalories = Mathf.Max(dailyCalories, 2000 + fetusCount * (pregnancyDays >= 20 ? 500 : 0));
                             for (int i = 0; i < achievements.Length; i++)
@@ -2846,7 +2857,7 @@ public class MainLoop : MonoBehaviour
                         hungerModifier = 1f + (hungerTimer * 0.2f) + (0.2f * munchiesConsumed);
                         hungerText.text = "Hunger multiplier: " + hungerModifier + "x";
                     }*/
-                    float preyVolume = GetPreyVolume();
+                    preyVolume = GetPreyVolume();
                     if (stomachContents <= preyVolume)
                     {
                         DamageAllPrey();
@@ -2858,7 +2869,7 @@ public class MainLoop : MonoBehaviour
                         stomachContents -= flowRate;
                         intestineContents += flowRate;
                     }
-                    else if (intestineContents < (intestineCapacity * intestineMultiplier) && (intestineContents + flowRate) > intestineCapacity * intestineMultiplier)
+                    else if (intestineContents < (intestineCapacity * intestineMultiplier) && (intestineContents + flowRate) > intestineCapacity * intestineMultiplier && ((intestineCapacity * intestineMultiplier) - intestineContents) < stomachContents - preyVolume)
                     {
                         stomachContents -= ((intestineCapacity * intestineMultiplier) - intestineContents);
                         intestineContents = intestineCapacity * intestineMultiplier;
@@ -2870,7 +2881,8 @@ public class MainLoop : MonoBehaviour
                     }
                     else
                     {
-                        //Debug.Log("should not reach this point");
+                        DamageAllPrey();
+                        Debug.Log("all prey damaged by enzyme");
                     }
                     if (intestineContents >= intestineCapacity * intestineMultiplier) reachedMaxIntestine = true;
                     
@@ -3147,7 +3159,7 @@ public class MainLoop : MonoBehaviour
             /*else if (foodDescription == "" && Random.Range(0, 100) < GetPreyCount() * 25)
             {
                 foodDescription = "You feel your prey struggling" + (preyHealth[0] > 20 ? "" : " weakly") + " inside your tummy.";
-                trainingModifier += 0.05f;
+                //trainingModifier += 0.05f;
                 //if (imageIndex > 3) gurglePlayer.PlayRandom();
                 if (trainingModifier >= 3f)
                 {
@@ -3160,13 +3172,17 @@ public class MainLoop : MonoBehaviour
 
             if (stomachContents > 0)
             {
+                preyVolume = GetPreyVolume();
                 if (ateThisTurn)
                 {
                     flowEnabled = false;
                     digestionTimer = achievements[2] ? 1 : 2; //upgrade to 1
                 }
-                else
+                else if (stomachContents <= preyVolume)
                 {
+                    flowEnabled = false;
+                }
+                else {
                     if (digestionTimer > 0) digestionTimer--;
                     if (digestionTimer == 0 && intestineContents < (intestineCapacity * intestineMultiplier)) flowEnabled = true;
 
@@ -3210,23 +3226,19 @@ public class MainLoop : MonoBehaviour
                 if (coomStorage > 3f) coomStorage = 3f;
             }
 
+            preyVolume = GetPreyVolume();
+            if (stomachContents > 0f && stomachContents <= preyVolume) DamageAllPrey();
+            DamageAllPrey();
 
             if (flowEnabled)
             {
-                float preyVolume = GetPreyVolume();
-                if (stomachContents <= preyVolume)
-                {
-                    DamageAllPrey();
-                    //PrintStats();
-                    //yield return new WaitForSeconds(0.2f);
-                }
                 if (stomachContents >= flowRate + preyVolume && (intestineContents + flowRate) <= intestineCapacity * intestineMultiplier)
                 {
                     stomachContents -= flowRate;
                     //Debug.Log(preyVolume);
                     intestineContents += flowRate;
                 }
-                else if (stomachContents >= intestineCapacity * intestineMultiplier - intestineContents && intestineContents < (intestineCapacity * intestineMultiplier) && (intestineContents + flowRate) > intestineCapacity * intestineMultiplier)
+                else if (stomachContents >= intestineCapacity * intestineMultiplier - intestineContents && intestineContents < (intestineCapacity * intestineMultiplier) && (intestineContents + flowRate) > intestineCapacity * intestineMultiplier && ((intestineCapacity * intestineMultiplier) - intestineContents) < stomachContents - preyVolume)
                 {
                     stomachContents -= ((intestineCapacity * intestineMultiplier) - intestineContents);
                     intestineContents = intestineCapacity * intestineMultiplier;
@@ -3243,7 +3255,6 @@ public class MainLoop : MonoBehaviour
                     Debug.Log("this should only happen if both stomach and intestines are stuffed, congratulations");
                     flowEnabled = false;
                 }
-                DamageAllPrey();
                 liquidContents -= flowRate;
                 /*if (inertSoda > 0)
                 {
@@ -3342,17 +3353,14 @@ public class MainLoop : MonoBehaviour
                     if (pregnancyDays < 20)
                     {
                         wombContents += 0.15f + ((dailyCalories >= 2000) ? (0.05f * fetusCount) : 0f);
-                        if (!achievements[13])
+                        if (!ateNormalFood && dailyCalories >= 2000)
                         {
-                            if (eligibleForCarnivore && dailyCalories >= 2000)
-                            {
-                                daysEatingPreyOnly++;
-                                if (daysEatingPreyOnly == 3) UpdateAchievements(13);
-                            }
-                            else
-                            {
-                                daysEatingPreyOnly = 0;
-                            }
+                            daysEatingPreyOnly++;
+                            if (!achievements[13] && daysEatingPreyOnly == 3) UpdateAchievements(13);
+                        }
+                        else
+                        {
+                            daysEatingPreyOnly = 0;
                         }
                         //wombContents += (3f + fetusCount) * ((dailyCalories >= 2000) ? 0.05f : 0.01f);
                         if (coomContents + wombContents > 22f) coomContents = 22f - wombContents;
@@ -3361,17 +3369,14 @@ public class MainLoop : MonoBehaviour
                     else if (pregnancyDays <= 40)
                     {
                         wombContents += 0.15f + ((dailyCalories >= 2000 + fetusCount * 500) ? (0.05f * fetusCount) : 0f);
-                        if (!achievements[13])
+                        if (!ateNormalFood && dailyCalories >= 2000 + fetusCount * 500)
                         {
-                            if (eligibleForCarnivore && dailyCalories >= 2000 + fetusCount * 500)
-                            {
-                                daysEatingPreyOnly++;
-                                if (daysEatingPreyOnly == 3) UpdateAchievements(13);
-                            }
-                            else
-                            {
-                                daysEatingPreyOnly = 0;
-                            }
+                            daysEatingPreyOnly++;
+                            if (!achievements[13] && daysEatingPreyOnly == 3) UpdateAchievements(13);
+                        }
+                        else
+                        {
+                            daysEatingPreyOnly = 0;
                         }
                         //wombContents += (3f + fetusCount) * ((dailyCalories >= 2000 + fetusCount * 500) ? 0.05f : 0.01f); //Mathf.Clamp(0.025f * ((dailyCalories - 2000) / fetusCount) / 400, 0f, 0.025f));
                         if (coomContents + wombContents > 22f) coomContents = 22f - wombContents;
@@ -3593,7 +3598,7 @@ public class MainLoop : MonoBehaviour
                             bellyDescription += ". \n\nIt has now reached the size of a normal full-term pregnancy." + (fetusCount > 1 ? " You feel a combination of nervousness and excitement knowing that it will continue to grow larger still." : "");
                             break;
                         case 9:
-                            bellyDescription += ". \n\nYou can feel it stretching to contain the babies growing inside, and it will have to stretch further still if you want feed them the nutrition that they need.";
+                            bellyDescription += ". \n\nYou can feel it stretching to contain the babies growing inside, and it will have to stretch further still if you want to feed them the nutrition that they need.";
                             break;
                         case 10:
                             bellyDescription += ". \n\nIt has grown large enough that the lower part of your belly is now impossible to reach.";
@@ -3602,7 +3607,7 @@ public class MainLoop : MonoBehaviour
                             bellyDescription += ". \n\nHowever, it is still much larger than a normal pregnancy, making it very obvious that there is more than one - no, more than two babies growing inside.";
                             break;
                         case 12:
-                            bellyDescription += ". \n\n" + (fetusCount == 3 ? "The three babies inside are now fully-grown, and you give your belly a satisfied rub." : "It is now equivalent in size to a full-term triplet pregnancy, and yet it is still not done growing.");
+                            bellyDescription += ". \n\n" + (fetusCount == 3 ? "The three babies inside are now fully-grown and ready to be born at any moment." : "It is now equivalent in size to a full-term triplet pregnancy, and yet it is still not done growing.");
                             break;
                         case 13:
                             bellyDescription += ". \n\nYou take a look in the mirror to see just how far your pregnancy has developed. It is now clear that your belly contains more than three babies.";
@@ -3811,8 +3816,8 @@ public class MainLoop : MonoBehaviour
     {
         spriteRenderer.sprite = (isTopHeavy ? characterSpritesTop[index + (largeBreastMode ? 28 : 0) + (nakedMode ? 56 : 0)] : characterSpritesBtm[index + (largeBreastMode ? 28 : 0) + (nakedMode ? 56 : 0)]);
         sideviewBase.GetComponent<DigitCounter>().SetCounterTo(largeBreastMode ? 1 : 0);
-        stomachSprites.SetCounterTo(Mathf.Min(16, (int)(stomachContents + gasContents)));
-        stomachSprites.transform.localPosition = new Vector3(Mathf.Clamp(imageIndex - (int)(stomachContents + gasContents), 0, 13) * -0.02f, Mathf.Clamp(imageIndex - (int)(stomachContents + gasContents), 0, 13) * 0.045f + (isTopHeavy ? 0f : (stomachContents + gasContents) / -120f), 0f);
+        stomachSprites.SetCounterTo(Mathf.Min(17, (int)(stomachContents + gasContents)));
+        stomachSprites.transform.localPosition = new Vector3(Mathf.Clamp(imageIndex - (int)(stomachContents + gasContents), 0, 17) * -0.02f, Mathf.Clamp(imageIndex - (int)(stomachContents + gasContents), 0, 17) * 0.045f + (isTopHeavy ? 0f : (stomachContents + gasContents) / -120f), 0f);
         if (isTopHeavy)
         {
             sideviewBottom.GetComponent<SpriteRenderer>().enabled = false;

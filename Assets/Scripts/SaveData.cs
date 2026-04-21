@@ -21,7 +21,7 @@ public class SaveData
     public int money;
     public int cumulativeEarnings;
     public int daysEatingPreyOnly;
-    public bool eligibleForCarnivore;
+    public bool ateNormalFood;
     public float flowRate;
     public int disposalTimer;
     public float dailyCalories;
