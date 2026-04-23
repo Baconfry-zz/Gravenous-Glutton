@@ -9,6 +9,7 @@ using UnityEngine.UI;
 public class MainLoop : MonoBehaviour
 {
     private SpriteRenderer spriteRenderer;
+    public bool censorXRay;
     [SerializeField] private Text foodText;
     [SerializeField] private Text bellyText;
     [SerializeField] private Text timeText;
@@ -1405,7 +1406,13 @@ public class MainLoop : MonoBehaviour
             if (wombContents < 0) wombContents = 0;
             foodText.text = "You give birth to a " + babyDescriptor + "baby.";
             PrintStats();
-            wombSprites.SetCounterTo(fetusCount);
+            wombSprites.SetCounterTo(censorXRay ? 0 : Mathf.Min(8, fetusCount));
+        }
+        while (wombContents > 0f)
+        {
+            yield return new WaitForSeconds(0.1f);
+            wombContents -= 1f;
+            PrintStats();
         }
         wombContents = 0f;
         coomContents = 0f;
@@ -3119,6 +3126,7 @@ public class MainLoop : MonoBehaviour
                         preyDescriptor = " and both of the prey that you swallowed";
                         break;
                     case 3:
+                    case 4:
                         preyDescriptor = " and all of the prey that you swallowed";
                         break;
                     default:
@@ -3455,7 +3463,7 @@ public class MainLoop : MonoBehaviour
 
             if (isAsleep)
             {
-                yield return new WaitForSeconds(1f);
+                yield return new WaitForSeconds((Input.GetMouseButton(0) && cursor.GetColliderName(5) == "skip_time_button" && sleepCountdown < 8 - (tookCaffeine ? 3 : 0)) ? 0.15f : 1f);
             }
             else
             {
@@ -3730,14 +3738,9 @@ public class MainLoop : MonoBehaviour
         coomWomb.localScale = new Vector3(Mathf.Max(0.2f, 0.05f + (int)(wombContents + coomContents) * 0.05f), Mathf.Max(0.2f, 0.05f + (int)(wombContents + coomContents) * 0.05f), 1f);
         coomWombSprite.enabled = coomContents > 0f;
         UpdatePreyXray();
-        if (pregnancyDays < 20)
-        {
-            wombSprites.SetCounterTo(0);
-        }
-        else
-        {
-            wombSprites.SetCounterTo(Mathf.Min(8, fetusCount));
-        }
+        wombSprites.SetCounterTo(censorXRay ? 0 : Mathf.Min(8, fetusCount));
+        Color wombColor = wombSprites.GetComponent<SpriteRenderer>().color;
+        wombSprites.GetComponent<SpriteRenderer>().color = new Color(wombColor.r, wombColor.g, wombColor.b, Mathf.Clamp(-0.75f + 0.075f * pregnancyDays, 0f, 0.75f));
         caloriesText.text = Mathf.Round(displayedCalories) + " / " + (fetusCount > 0 ? (2000 + fetusCount * (pregnancyDays >= 20 ? 500 : 0)) : "----");
         caloriesText.color = (Mathf.Round(dailyCalories) >= (2000 + fetusCount * (pregnancyDays >= 20 ? 500 : 0)) && fetusCount > 0) ? new Color(0.5058824f, 1f, 0.3803922f, 1f) : Color.white;
         RefreshTouchColliders();
