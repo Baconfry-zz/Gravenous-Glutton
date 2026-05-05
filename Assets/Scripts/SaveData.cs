@@ -45,7 +45,7 @@ public class SaveData
     public int sleepCountdown;
     public bool isAsleep;
     public bool[] achievements;
-    public bool[] toggledStates = new bool[7];
+    public bool[] toggledStates = new bool[8];
     //0: BGM
     //1: SFX
     //2: voice

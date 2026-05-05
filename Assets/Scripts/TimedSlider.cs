@@ -96,6 +96,7 @@ public class TimedSlider : MonoBehaviour
             climaxTransform.localScale = new Vector3(climax / 100f, climaxTransform.localScale.y, 1);
             if (climax < 200f) StartCoroutine(mainLoop.Bounce(0.2f));
             StartCoroutine(mainLoop.BellyJiggle(false));
+            if (mainLoop.nakedMode && mainLoop.largeBreastMode && Random.Range(0, 100000) < mainLoop.bankedCalories - 40000) StartCoroutine(mainLoop.CreateMilkStream(1, 0.05f, 0f));
             plapsPlayer.PlayRandom();
             sexualMoansPlayer.PlayRandom();
         }
@@ -117,6 +118,7 @@ public class TimedSlider : MonoBehaviour
             climaxTransform.localScale = new Vector3(climax / 100f, climaxTransform.localScale.y, 1);
             //if (climax < 200f) StartCoroutine(mainLoop.Bounce(0.2f));
             StartCoroutine(mainLoop.BellyJiggle(false));
+            if (mainLoop.nakedMode && mainLoop.largeBreastMode && Random.Range(0, 100000) < mainLoop.bankedCalories - 40000) StartCoroutine(mainLoop.CreateMilkStream(1, 0.05f, 0f));
             plapsPlayer.PlayRandom();
             sexualMoansPlayer.PlayRandom();
         }
@@ -218,6 +220,12 @@ public class TimedSlider : MonoBehaviour
 
             plapsPlayer.PlayCustom(nutBuster, 0.4f);
             sexualMoansPlayer.PlayCustom(orgasmMoan);
+            if (mainLoop.nakedMode && mainLoop.largeBreastMode)
+            {
+                StartCoroutine(mainLoop.CreateMilkStream(mainLoop.bankedCalories / 40000, 0.05f, 0f));
+                StartCoroutine(mainLoop.CreateMilkStream(mainLoop.bankedCalories / 30000, 0.05f, 0.4f));
+                StartCoroutine(mainLoop.CreateMilkStream(mainLoop.bankedCalories / 80000, 0.05f, 1f));
+            }
 
             while (climax > 0)
             {
