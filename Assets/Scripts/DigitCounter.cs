@@ -6,6 +6,7 @@ public class DigitCounter : MonoBehaviour
 {
     [SerializeField] private Sprite[] digits;
     [SerializeField] private SpriteRenderer spriteRenderer;
+    public int index = 0;
     // Start is called before the first frame update
     void Start()
     {
@@ -23,9 +24,10 @@ public class DigitCounter : MonoBehaviour
         
     }
 
-    public void SetCounterTo(int index)
+    public void SetCounterTo(int newIndex)
     {
-        spriteRenderer.sprite = digits[index];
+        spriteRenderer.sprite = digits[newIndex];
+        index = newIndex;
     }
 
     public void SetAltColor(bool isMaxed)

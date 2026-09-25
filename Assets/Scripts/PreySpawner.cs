@@ -7,6 +7,7 @@ public class PreySpawner : MonoBehaviour
     [SerializeField] private DigitCounter preyCurrentCounter;
     [SerializeField] private DigitCounter preyMaxCounter;
     [SerializeField] private GameObject preyToSpawn;
+    [SerializeField] private GameObject minigame;
 
     [SerializeField] private Transform spawnLocation;
 
@@ -24,7 +25,7 @@ public class PreySpawner : MonoBehaviour
 
     public void SpawnPrey()
     {
-        Instantiate(preyToSpawn, spawnLocation.position, Quaternion.identity);
+        Instantiate(preyToSpawn, spawnLocation.position, Quaternion.identity).GetComponent<Prey>().burgerMinigame = minigame;
     }
 
     public void UpdateValues(int upper, int lower)

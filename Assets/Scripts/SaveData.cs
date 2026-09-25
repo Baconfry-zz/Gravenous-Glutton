@@ -16,6 +16,7 @@ public class SaveData
     public float trainingModifier;
     public float intestineMultiplier;
     public int munchiesConsumed;
+    public int foodStock;
     public int weedStock;
     public int enzymeStock;
     public int money;
@@ -30,6 +31,7 @@ public class SaveData
     public int fetusCount;
     public int fertilityBonus;
     public int pregnancyDays;
+    public int overdueDays;
     public int actualDays;
     //public int lastSeenEmptyBelly;
     public int currentTime;
@@ -55,6 +57,7 @@ public class SaveData
     //6: womb tattoo
     public int[] preyHealth;
     public bool alwaysUseEatingAnimation;
+    public bool skipFoodMinigame;
     //public bool tattooToggledOn;
     //public bool xRayToggledOn;
     public bool ampmMode;

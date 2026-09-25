@@ -8,6 +8,7 @@ public class Prey : MonoBehaviour
     private MainLoop mainLoop;
     private GameObject sprites;
     private GameObject UIobject;
+    public GameObject burgerMinigame;
     private Cursor cursor;
     private Collider2D hitbox;
     [SerializeField] private Sprite[] walkingSprites;
@@ -48,7 +49,7 @@ public class Prey : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButtonDown(0) && cursor.heldPrey == null && cursor.GetAllGameObjectsWithColliders(5).Contains(this.gameObject) && !pickedUp && pickupTimer <= 0f)
+        if (Input.GetMouseButtonDown(0) && !burgerMinigame.activeInHierarchy && cursor.heldPrey == null && cursor.GetAllGameObjectsWithColliders(5).Contains(this.gameObject) && !pickedUp && pickupTimer <= 0f)
         {
             StartCoroutine(GetDragged());
         }
@@ -116,7 +117,7 @@ public class Prey : MonoBehaviour
     {
         while (!wasEaten)
         {
-            if (!pickedUp)
+            if (!pickedUp && !burgerMinigame.activeInHierarchy)
             {
                 velocity = new Vector2(velocity.x, velocity.y - (isWalking ? 0 : gravityFactor * Time.deltaTime));
 

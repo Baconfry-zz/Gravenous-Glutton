@@ -17,6 +17,9 @@ public class AudioPlayer : MonoBehaviour
 
     private bool isTransitioning;
     public bool constantPlaying = false;
+
+    public float minimumDelay = 1f;
+    public float maximumDelay = 1f;
     
     void Awake()
     {
@@ -60,7 +63,7 @@ public class AudioPlayer : MonoBehaviour
         {
             PlayRandom();
             while (source.isPlaying) yield return null;
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(Random.Range(minimumDelay, maximumDelay));
         }
     }
 

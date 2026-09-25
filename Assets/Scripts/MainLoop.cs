@@ -11,6 +11,7 @@ public class MainLoop : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     public bool censorXRay;
     [SerializeField] private Text foodText;
+    [SerializeField] private Text foodStockText;
     [SerializeField] private Text bellyText;
     [SerializeField] private Text timeText;
     [SerializeField] private Text caloriesText;
@@ -50,6 +51,7 @@ public class MainLoop : MonoBehaviour
     [SerializeField] private GameObject minigameUI;
     [SerializeField] private GameObject statsView;
     [SerializeField] private TimedSlider sexMinigame;
+    [SerializeField] private BurgerMinigame burgerMinigame;
     [SerializeField] private CommentGenerator commentGenerator;
     [SerializeField] private Cursor cursor;
     [SerializeField] private Sprite[] draggableFood;
@@ -91,6 +93,7 @@ public class MainLoop : MonoBehaviour
     [SerializeField] private GameObject deleteSaveButton;
     [SerializeField] private GameObject autoSexButton;
     [SerializeField] private ToggleButton alwaysEatButton;
+    [SerializeField] private ToggleButton skipFoodButton;
     [SerializeField] private ToggleButton achievementButton;
     [SerializeField] private ToggleButton pillButton;
     [SerializeField] private ToggleButton recordButton;
@@ -129,6 +132,27 @@ public class MainLoop : MonoBehaviour
     /*
      * 0.59, 1.07 |22: 0.59, 1.14| 23: 0.59, 1.20 | 24: 0.59, 1.38 | 25: 0.62, 1.50 | 26: 0.65, 1.57 | 27: 0.74, 1.64
      * 0.42, 0.70 | 21: 0.42, 0.83 | 22: 0.42, 1.01 | 23: 0.42, 1.17 | 24: 0.42, 1.24 | 25: 0.58, 1.27 | 26: 0.67, 1.32 | 27: 0.73, 1.37
+     * 
+     * size 1.09 softness 0.8 nipThickness 0.96 areoSize 0.66 nipColor F38E8E74
+     * 0-10: 
+     * 11: softness 0.7 | v.angle 1.07
+     * 12: 0.65
+     * 13: 0.6
+     * 14: 0.55
+     * 15: 0.5
+     * 16: 0.45
+     * 17: 0.4
+     * 18: 0.35
+     * 19: 0.3
+     * 20: softness 0.25 |
+     * 21: softness 0.20 |
+     * 22: softness 0.15 |
+     * 23: softness 0.10 | v.angle 1.11
+     * 24: softness 0.05 | v.angle 1.19
+     * 25: v.angle 1.26
+     * 26: v.angle 1.36
+     * 27: v.angle 1.53
+     * 
      * -1/0, 0/1 : -2/0, -1/1
      * forearm thickness 0.35
      * step: right 0.7832 left 0.4806
@@ -156,6 +180,7 @@ public class MainLoop : MonoBehaviour
     public float hungerModifier = 1.0f;
     public float intestineMultiplier = 1.5f; //save
 
+    public int foodStock = 5;
     public int munchiesConsumed = 0; //save
     public int weedStock = 0; //save
     public int enzymeStock = 20;
@@ -183,6 +208,7 @@ public class MainLoop : MonoBehaviour
     public int fertilityBonus; //save
     int maxFertilityBonus = 3;
     public int pregnancyDays = 0; //save
+    public int overdueDays = 0; //save
     public int actualDays = 0; //save
     private int lastSeenEmptyBelly = 0; //save
     string foodDescription = "";
@@ -199,6 +225,7 @@ public class MainLoop : MonoBehaviour
     public bool isNauseous = false; //save
     public bool isStreaming = false; //save
     public bool alwaysUseEatingAnimation = false; //save
+    public bool skipFoodMinigame = false;
     //public bool tattooToggledOn = false; //save
     //public bool xRayToggledOn = false;
     public bool tookLaxative = false; //save
@@ -249,6 +276,7 @@ public class MainLoop : MonoBehaviour
         saveData.trainingModifier = trainingModifier;
         saveData.intestineMultiplier = intestineMultiplier;
         saveData.munchiesConsumed = munchiesConsumed;
+        saveData.foodStock = foodStock;
         saveData.weedStock = weedStock;
         saveData.enzymeStock = enzymeStock;
         saveData.money = money;
@@ -263,6 +291,7 @@ public class MainLoop : MonoBehaviour
         saveData.fetusCount = fetusCount;
         saveData.fertilityBonus = fertilityBonus;
         saveData.pregnancyDays = pregnancyDays;
+        saveData.overdueDays = overdueDays;
         saveData.actualDays = actualDays;
         //saveData.lastSeenEmptyBelly = lastSeenEmptyBelly;
         saveData.currentTime = currentTime;
@@ -278,6 +307,7 @@ public class MainLoop : MonoBehaviour
         saveData.achievements = achievements;
         saveData.preyHealth = preyHealth;
         saveData.alwaysUseEatingAnimation = alwaysUseEatingAnimation;
+        saveData.skipFoodMinigame = skipFoodMinigame;
         for (int i = 0; i < toggleButtons.Length; i++)
         {
             saveData.toggledStates[i] = toggleButtons[i].isActive;
@@ -299,6 +329,7 @@ public class MainLoop : MonoBehaviour
     {
         SaveData oldSaveData = JsonUtility.FromJson<SaveData>(File.ReadAllText(Application.persistentDataPath + "/savedGame.json"));
         oldSaveData.alwaysUseEatingAnimation = alwaysUseEatingAnimation;
+        oldSaveData.skipFoodMinigame = skipFoodMinigame;
         for (int i = 0; i < 3; i++)
         {
             oldSaveData.toggledStates[i] = toggleButtons[i].isActive;
@@ -333,6 +364,7 @@ public class MainLoop : MonoBehaviour
         trainingModifier = 1f;
         intestineMultiplier = 1.5f;
         munchiesConsumed = 0;
+        foodStock = 5;
         weedStock = 0;
         enzymeStock = 20;
         money = 0;
@@ -347,6 +379,7 @@ public class MainLoop : MonoBehaviour
         fetusCount = 0;
         fertilityBonus = 0;
         pregnancyDays = 0;
+        overdueDays = 0;
         actualDays = 0;
         //lastSeenEmptyBelly = 0;
         currentTime = 8;
@@ -390,6 +423,7 @@ public class MainLoop : MonoBehaviour
         saveData.trainingModifier = 1f;
         saveData.intestineMultiplier = 1.5f;
         saveData.munchiesConsumed = 0;
+        saveData.foodStock = 0;
         saveData.weedStock = 0;
         saveData.enzymeStock = 20;
         saveData.money = 0;
@@ -404,6 +438,7 @@ public class MainLoop : MonoBehaviour
         saveData.fetusCount = 0;
         saveData.fertilityBonus = 0;
         saveData.pregnancyDays = 0;
+        saveData.overdueDays = 0;
         saveData.actualDays = 0;
         //saveData.lastSeenEmptyBelly = 0;
         saveData.currentTime = 8;
@@ -419,6 +454,7 @@ public class MainLoop : MonoBehaviour
         saveData.achievements = new bool[15];
         saveData.preyHealth = new int[] { 0, 0, 0, 0 };
         saveData.alwaysUseEatingAnimation = false;
+        saveData.skipFoodMinigame = false;
         saveData.toggledStates[0] = true;
         saveData.toggledStates[1] = true;
         saveData.toggledStates[2] = true;
@@ -511,6 +547,7 @@ public class MainLoop : MonoBehaviour
         xRayStartPosition = xRayWomb.localPosition;
         yield return null;
         alwaysEatButton.ForceState(alwaysUseEatingAnimation);
+        skipFoodButton.ForceState(skipFoodMinigame);
         autoSexButton.SetActive(achievements[4]);
         sideviewToggle.SetActive(achievements[14]);
         playingDigestionSounds = toggledStates[7];
@@ -531,7 +568,9 @@ public class MainLoop : MonoBehaviour
         sideviewTop.GetComponent<SpriteRenderer>().color = transparentSideview ? oldColor : Color.white;
         sideviewBottom.GetComponent<SpriteRenderer>().color = transparentSideview ? oldColor : Color.white;
         nopan.GetComponent<SpriteRenderer>().enabled = false;//nopanMode && !nakedMode;
+        foodStockText.text = "x" + foodStock;
         PrintAchievementBoard();
+        StartCoroutine(HandleOtherToggles());
         StartCoroutine(MainRoutine());
     }
 
@@ -541,8 +580,10 @@ public class MainLoop : MonoBehaviour
     {
         hungryDigestionSounds.Mute(!(toggleButtons[1].isActive && playingDigestionSounds && stomachContents + intestineContents == 0f && hungerModifier > 1.7f));
         hungryDigestionSounds.volumeMultiplier = (hungerModifier - 1.6f) / 4;
+        hungryDigestionSounds.maximumDelay = Mathf.Max(1f, 20f - (hungerModifier * 5));
         stuffedDigestionSounds.Mute(!(toggleButtons[1].isActive && playingDigestionSounds && stomachContents + intestineContents >= stomachCapacity * trainingModifier));
         stuffedDigestionSounds.volumeMultiplier = Mathf.Clamp((stomachContents + intestineContents - (stomachCapacity * trainingModifier)) / 15f, 0f, 1f);
+        stuffedDigestionSounds.maximumDelay = Mathf.Max(2f, 20f - (stomachContents + intestineContents));
     }
 
     void UpdateEligibleMessages(int foodEaten, bool[] seenInteractions)
@@ -751,7 +792,7 @@ public class MainLoop : MonoBehaviour
         stomachSprites.transform.localScale = new Vector3(1 - 0.025f * amountToDecrement, 1f, 1f);
         stomachSprites.transform.localPosition = new Vector3(startingXpos + 0.002f * (stomachContents + gasContents), stomachSprites.transform.localPosition.y, 0f);
         nopan.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/4 - 1, trueImageIndex - 1));
-        xRayWomb.localPosition = startPosForSuck + new Vector3(0.05f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0.1f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0f) + new Vector3(0.04f, 0.05f, 0f);
+        xRayWomb.localPosition = startPosForSuck + new Vector3(0.05f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0.1f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0f) + new Vector3(0.04f, 0f, 0f);
         coomWomb.localPosition = xRayWomb.localPosition;
         yield return new WaitForSeconds(frameDelay);
         SetBellySprites(true, (int)Mathf.Min(characterSpritesTop.Length/4 - 1, trueImageIndex - 2));
@@ -759,7 +800,7 @@ public class MainLoop : MonoBehaviour
         stomachSprites.transform.localScale = new Vector3(1 - 0.05f * amountToDecrement, 1f, 1f);
         stomachSprites.transform.localPosition = new Vector3(startingXpos + 0.004f * (stomachContents + gasContents), stomachSprites.transform.localPosition.y, 0f);
         nopan.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/4 - 1, trueImageIndex - 2));
-        xRayWomb.localPosition = startPosForSuck + new Vector3(0.1f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0.1f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0f) + new Vector3(0.08f, 0.1f, 0f);
+        xRayWomb.localPosition = startPosForSuck + new Vector3(0.1f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0.1f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0f) + new Vector3(0.08f, 0f, 0f);
         coomWomb.localPosition = xRayWomb.localPosition;
         yield return new WaitForSeconds(frameDelay);
         while (Input.GetMouseButton(0))
@@ -774,7 +815,7 @@ public class MainLoop : MonoBehaviour
         stomachSprites.transform.localPosition = new Vector3(startingXpos + 0.002f * (stomachContents + gasContents), stomachSprites.transform.localPosition.y, 0f);
         wombTattoo.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/4 - 1, trueImageIndex - 1) + (nakedMode ? 56 : 0));
         nopan.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/4 - 1, trueImageIndex - 1));
-        xRayWomb.localPosition = startPosForSuck + new Vector3(0.05f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0.1f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0f) + new Vector3(0.04f, 0.05f, 0f);
+        xRayWomb.localPosition = startPosForSuck + new Vector3(0.05f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0.1f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0f) + new Vector3(0.04f, 0f, 0f);
         coomWomb.localPosition = xRayWomb.localPosition;
         yield return new WaitForSeconds(frameDelay);
         SetBellySprites(true, imageIndex);
@@ -1480,6 +1521,7 @@ public class MainLoop : MonoBehaviour
         if (babyVolume >= 2.0f) babyDescriptor = "perfectly healthy ";
 
         gaspPlayer.PlayRandom();
+        if (largeBreastMode && nakedMode) StartCoroutine(CreateMilkStream(1, 0.05f, 0f));
         StartCoroutine(Bounce(0.1f));
         StartCoroutine(BellyJiggle(false));
         faces.SetCounterTo(4);
@@ -1488,7 +1530,8 @@ public class MainLoop : MonoBehaviour
         yield return new WaitForSeconds(1f);
         nopan.GetComponent<SpriteRenderer>().enabled = !nakedMode;
 
-        float amountToDecrement = 2 * wombContents / (6f + 2 * fetusCount);
+        float amountToDecrement = (wombContents - (0.15f * (pregnancyDays - 1))) / fetusCount;//2 * wombContents / (6f + 2 * fetusCount);
+        amountToDecrement = Mathf.Round(amountToDecrement * 10000) / 10000;
 
         while (fetusCount > 0)
         {
@@ -1497,11 +1540,19 @@ public class MainLoop : MonoBehaviour
             if (fetusCount > 1)
             {
                 gaspPlayer.PlayRandom();
+                if (largeBreastMode && nakedMode) StartCoroutine(CreateMilkStream(Random.Range(1, 3), 0.05f, 0f));
             }
             else
             {
                 gaspPlayer.PlayCustom(lastBirthSound);
+                if (largeBreastMode && nakedMode)
+                {
+                    StartCoroutine(CreateMilkStream(1, 0.05f, 0f));
+                    StartCoroutine(CreateMilkStream(2, 0.05f, 0.6f));
+                    StartCoroutine(CreateMilkStream(1, 0.05f, 1f));
+                }
             }
+
             StartCoroutine(Bounce(0.1f));
             StartCoroutine(BellyJiggle(false));
             faces.SetCounterTo(4);
@@ -1515,10 +1566,13 @@ public class MainLoop : MonoBehaviour
             PrintStats();
             wombSprites.SetCounterTo(censorXRay ? 0 : Mathf.Min(8, fetusCount));
         }
+        wombContents = Mathf.Floor(wombContents);
         while (wombContents > 0f)
         {
             yield return new WaitForSeconds(0.1f);
             wombContents -= 1f;
+            wombContents = Mathf.Round(wombContents * 10000) / 10000;
+            if (wombContents < 0f) wombContents = 0f;
             PrintStats();
         }
         wombContents = 0f;
@@ -1563,6 +1617,9 @@ public class MainLoop : MonoBehaviour
             case 8:
                 word = "eight";
                 break;
+            case 9:
+                word = "nine";
+                break;
             default:
                 word = number.ToString();
                 break;
@@ -1590,11 +1647,24 @@ public class MainLoop : MonoBehaviour
             case 4:
                 uplets = "quadruplets";
                 break;
+            case 5:
+                uplets = "quintuplets";
+                break;
             default:
                 uplets = IntToWord(babyCount) + " babies";
                 break;
         }
         return uplets;
+    }
+
+    void CapCoomContents()
+    {
+        if (coomContents + wombContents > 9f + 2 * fetusCount)
+        {
+            coomContents = 9f + 2 * fetusCount - wombContents;
+        }
+        if (coomContents < 0) coomContents = 0f;
+        coomContents = Mathf.Round(coomContents * 10000) / 10000;
     }
 
     IEnumerator SexMinigame(bool startPregnancy)
@@ -1622,10 +1692,24 @@ public class MainLoop : MonoBehaviour
             fetusCount = 1 + fertilityBonus + Mathf.Min((int)sexMinigame.amountReleased, 200) / 100;
             if (currentTime < 8) actualDays = 1;
             fertilityBonus = 0;
+            if (Random.Range(0, 3) == 0)
+            {
+                UpdateMedicineText();
+                for (int i = 0; i < maxFertilityBonus; i++)
+                {
+                    if (Random.Range(0, 10) < 7)
+                    {
+                        overdueDays++;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
         }
         coomContents += sexMinigame.amountReleased / 100;
-        if (coomContents + wombContents > 23f) coomContents = 23f - wombContents;
-        coomContents = Mathf.Round(coomContents * 10000) / 10000;
+        CapCoomContents();
         //Debug.Log(sexMinigame.amountReleased);
         //coomStorage -= sexMinigame.amountReleased / 100;
         //coomStorage = Mathf.Round(coomStorage * 10000) / 10000;
@@ -1799,6 +1883,56 @@ public class MainLoop : MonoBehaviour
         return ((int)(50 * fetusCount * Mathf.Clamp(pregnancyDays - 10, 0, 10) + 2000));
     }
 
+    IEnumerator HandleOtherToggles()
+    {
+        while (true)
+        {
+            if (clickedButtonName == "toggle_naked")
+            {
+                nakedMode = !nakedMode;
+                nakedToggle.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, (nakedMode ? 1f : 0.2f));
+                SetBellySprites(stomachContents + gasContents > intestineContents + wombContents + coomContents, imageIndex);
+                UpdateWombTattoo(stomachContents + gasContents > intestineContents + wombContents + coomContents);
+                SaveOnlySettings();
+            }
+
+            if (clickedButtonName == "toggle_mic")
+            {
+                if (toggleButtons[1].isActive)
+                {
+                    playingDigestionSounds = !playingDigestionSounds;
+                    UpdateDigestionSounds();
+                    //yield return null;
+                    micToggle.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, ((playingDigestionSounds) ? 1f : 0.2f));
+                    SaveOnlySettings();
+                }
+            }
+            if (clickedButtonName == "toggle_time")
+            {
+                ampmMode = !ampmMode;
+                timeText.text = (ampmMode ? (ConvertToAMPM(currentTime)) : ((currentTime < 10 ? "0" : "") + currentTime + ":00")) + " | Day " + (fetusCount > 0 ? actualDays : "--");
+                UpdateMedicineText();
+                SaveOnlySettings();
+            }
+
+            if (clickedButtonName == "toggle_BGM" || clickedButtonName == "toggle_SFX" || clickedButtonName == "toggle_voice" || clickedButtonName == "toggle_stomach" || clickedButtonName == "toggle_xray" || clickedButtonName == "toggle_tattoo" || clickedButtonName == "toggle_sideview")
+            {
+                if (clickedButtonName == "toggle_SFX") micToggle.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, ((playingDigestionSounds && toggleButtons[1].isActive) ? 1f : 0.2f));
+                yield return null;
+                SaveOnlySettings();
+            }
+            if (cursor.GetColliderName(4) == "sideview_base" && Input.GetMouseButtonDown(0) && !pillButton.isActive)
+            {
+                //sideviewBase.enabled = true;
+                transparentSideview = !transparentSideview;
+                sideviewTop.GetComponent<SpriteRenderer>().color = transparentSideview ? oldColor : Color.white;
+                sideviewBottom.GetComponent<SpriteRenderer>().color = transparentSideview ? oldColor : Color.white;
+                SaveOnlySettings();
+            }
+            yield return null;
+        }
+    }
+
     IEnumerator MainRoutine()
     {
         float adjustedStomachCapacity;
@@ -1955,6 +2089,8 @@ public class MainLoop : MonoBehaviour
                 sexButton.GetComponent<AnimateSprite>().EnableAnimations(false);
                 sexButton.GetComponent<AnimateSprite>().SetAllColors((coomStorage >= 1f && !isAsleep) ? Color.white : new Color(1f, 1f, 1f, 0.2f));
             }
+            foodButton.GetComponent<Collider2D>().enabled = foodStock < 60;
+            foodButton.GetComponent<SpriteRenderer>().color = (foodStock < 60 ? Color.white : new Color(1f, 1f, 1f, 0.2f));
             recordButton.GetComponent<Collider2D>().enabled = !isAsleep && daysUntilNextStream <= 0;
             recordButton.Brighten(daysUntilNextStream <= 0);
             streamEarnings = 0;
@@ -1997,11 +2133,45 @@ public class MainLoop : MonoBehaviour
 
                 bool fedDuringStream = false;
 
-                if (clickedButtonName == "food_button" && isStreaming)
-                {                  
-                    sodaMode = !sodaMode;
-                    foodButton.GetComponent<DigitCounter>().SetCounterTo(sodaMode ? 0 : 1);
-                    streamFoodIcon.GetComponent<DigitCounter>().SetCounterTo(sodaMode ? 1 : 0);
+                if (clickedButtonName == "food_button")
+                {
+                    if (isStreaming)
+                    {
+                        sodaMode = !sodaMode;
+                        foodButton.GetComponent<DigitCounter>().SetCounterTo(sodaMode ? 0 : 1);
+                        streamFoodIcon.GetComponent<DigitCounter>().SetCounterTo(sodaMode ? 1 : 0);
+                    }
+                    else
+                    {
+                        if (skipFoodMinigame)
+                        {
+                            foodStock += 5;
+                            if (foodStock > 60) foodStock = 60;
+                            foodStockText.text = "x" + foodStock;
+                            foodButton.GetComponent<Collider2D>().enabled = false;
+                            foodButton.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.2f);
+                        }
+                        else
+                        {
+                            burgerMinigame.transform.parent.gameObject.SetActive(true);
+                            pillButton.GetComponent<Collider2D>().enabled = false;
+                            recordButton.GetComponent<Collider2D>().enabled = false;
+                            achievementButton.GetComponent<Collider2D>().enabled = false;
+                            burgerMinigame.startingFoodStock = foodStock;
+                            yield return StartCoroutine(burgerMinigame.ConstantlySpawnIngredients());
+                            pillButton.GetComponent<Collider2D>().enabled = true;
+                            recordButton.GetComponent<Collider2D>().enabled = !isStreaming && !isAsleep && daysUntilNextStream <= 0;
+                            achievementButton.GetComponent<Collider2D>().enabled = true;
+                            foodStock += burgerMinigame.amountCompleted * (burgerMinigame.maxStreak > 10 ? 5 : Mathf.Max(1, burgerMinigame.maxStreak / 2));
+                            if (foodStock > 60) foodStock = 60;
+                            foodStockText.text = "x" + foodStock;
+                            if (burgerMinigame.amountCompleted > 0)
+                            {
+                                foodButton.GetComponent<Collider2D>().enabled = false;
+                                foodButton.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.2f);
+                            }
+                        }
+                    }
                 }
 
                 if (clickedButtonName == "mouth" && !isPlayingJiggleAnim) yield return StartCoroutine(SuckItIn());
@@ -2024,7 +2194,7 @@ public class MainLoop : MonoBehaviour
                     }
                 }
 
-                if (isStreaming && clickedButtonName == "streaming_food")
+                if ((isStreaming || alwaysUseEatingAnimation) && clickedButtonName == "streaming_food" && foodStock > 0)
                 {
                     cursor.GetComponent<SpriteRenderer>().sprite = draggableFood[sodaMode ? 1 : 0];
                     streamFoodIcon.enabled = false;
@@ -2038,11 +2208,11 @@ public class MainLoop : MonoBehaviour
                     cursor.GetComponent<SpriteRenderer>().sprite = null;
                 }
 
-                if (fedDuringStream || (!isStreaming && (Input.GetKeyDown(KeyCode.Space) || (clickedButtonName == "food_button" && !isStreaming))))
+                if (fedDuringStream || (!isStreaming && (Input.GetKeyDown(KeyCode.Space) || (clickedButtonName == "streaming_food" && !isStreaming))))
                 {
                     achievementText.text = "";
 
-                    if (stomachContents + gasContents < adjustedStomachCapacity - 0.0001f && !isNauseous)
+                    if (stomachContents + gasContents < adjustedStomachCapacity - 0.0001f && !isNauseous && foodStock > 0)
                     {
                         babiesKicking = false;
                         //kickTimer = 0f;
@@ -2086,7 +2256,11 @@ public class MainLoop : MonoBehaviour
                             storedSoda++;
                             liquidContents += 0.4f;
                         }
-                        stomachContents += 0.4f;             
+                        stomachContents += 0.4f;
+                        foodStock--;
+                        if (foodStock < 0) foodStock = 0;
+                        foodStockText.text = "x" + foodStock;
+
                         if (isStreaming)
                         {
                             if (plateIndex < plates.Length && !sodaMode) plates[plateIndex].SetActive(true);
@@ -2102,7 +2276,7 @@ public class MainLoop : MonoBehaviour
                             faces.SetCounterTo(BellyToFaceIndex(false));
                         }
                         gulpPlayer.PlayRandom();
-                        if (achievements[1] && stomachContents + gasContents >= adjustedStomachCapacity)
+                        if (achievements[1] && stomachContents + gasContents >= adjustedStomachCapacity && foodStock > 0)
                         {
                             foodDescription = "You're not done yet...";
                             foodText.text = foodDescription;
@@ -2138,6 +2312,10 @@ public class MainLoop : MonoBehaviour
                                 liquidContents += 0.4f;
                             }
                             stomachContents += 0.4f;
+                            foodStock--;
+                            if (foodStock < 0) foodStock = 0;
+                            foodStockText.text = "x" + foodStock;
+
                             if (isStreaming)
                             {
                                 if (plateIndex <= plates.Length) plates[plateIndex].SetActive(true);
@@ -2243,6 +2421,10 @@ public class MainLoop : MonoBehaviour
                         sawNauseaMessage = true;
                         faces.SetCounterTo(6);
                         holdFaceDuration = 1.5f;
+                    }
+                    else if (foodStock <= 0)
+                    {
+                        foodDescription = "You've eaten all the food you have right now.";
                     }
                     else if (hungerModifier <= 1f)
                     {
@@ -2424,14 +2606,14 @@ public class MainLoop : MonoBehaviour
                     recordButton.GetComponent<Collider2D>().enabled = !isStreaming && !isAsleep && daysUntilNextStream <= 0;
                     sideviewToggle.GetComponent<Collider2D>().enabled = true;
                 }
-                if (cursor.GetColliderName(4) == "sideview_base" && Input.GetMouseButtonDown(0))
+                /*if (cursor.GetColliderName(4) == "sideview_base" && Input.GetMouseButtonDown(0) && !pillButton.isActive)
                 {
                     //sideviewBase.enabled = true;
                     transparentSideview = !transparentSideview;
                     sideviewTop.GetComponent<SpriteRenderer>().color = transparentSideview ? oldColor : Color.white;
                     sideviewBottom.GetComponent<SpriteRenderer>().color = transparentSideview ? oldColor : Color.white;
                     SaveOnlySettings();
-                }
+                }*/
 
                 if (clickedButtonName == "weed_button")
                 {
@@ -2448,6 +2630,7 @@ public class MainLoop : MonoBehaviour
                     if (hungerModifier < 1f + (hungerTimer * 0.2f) + (0.2f * munchiesConsumed)) hungerModifier = 1f + (hungerTimer * 0.2f) + (0.2f * munchiesConsumed);
 
                     if (!achievements[0] && hungerModifier >= 4f) UpdateAchievements(0);
+                    UpdateDigestionSounds();
                     //if (hungerModifier < 1f + 0.2f * munchiesConsumed) hungerModifier = 1f + 0.2f * munchiesConsumed;
                     weedStockCounter.SetCounterTo(weedStock);
                     weedStockCounter.SetAltColor(weedStock >= 5);
@@ -2486,7 +2669,7 @@ public class MainLoop : MonoBehaviour
                     }
                 }
 
-                if (clickedButtonName == "toggle_naked")
+                /*if (clickedButtonName == "toggle_naked")
                 {
                     nakedMode = !nakedMode;
                     nakedToggle.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, (nakedMode ? 1f : 0.2f));
@@ -2505,7 +2688,7 @@ public class MainLoop : MonoBehaviour
                         micToggle.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, ((playingDigestionSounds) ? 1f : 0.2f));
                         SaveOnlySettings();
                     }
-                }
+                }*/
 
                 if (clickedButtonName == "sex_button")
                 {
@@ -2534,7 +2717,7 @@ public class MainLoop : MonoBehaviour
                 if (clickedButtonName == "chat_button")
                 {
                     chatButton.GetComponent<Collider2D>().enabled = false;
-                    chatButton.GetComponent<SpriteRenderer>().color = new Color(0.2f, 0.2f, 0.2f, 1f);
+                    chatButton.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.2f);
                     interactedWithChat = true;
                     eligibleInteractions[2] = false;
                     eligibleInteractions[4] = imageIndex > 3;
@@ -2837,13 +3020,18 @@ public class MainLoop : MonoBehaviour
                         faces.SetCounterTo(6);
                         holdFaceDuration = 1.5f;
                     }
-                    else
+                    else if (foodStock == 0)
                     {
+                        foodDescription = "You can't start a mukbang stream without any food.";
+                    }
+                    else {
                         achievementText.text = "";
                         skipTime.SetCounterTo(1);
                         foodButton.GetComponent<DigitCounter>().SetCounterTo(1);
                         foodButton.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.5f);
                         isStreaming = true;
+                        foodButton.GetComponent<Collider2D>().enabled = true;
+                        foodButton.GetComponent<SpriteRenderer>().color = Color.white;
                         recordButton.GetComponent<Collider2D>().enabled = false;
                         //sexButton.GetComponent<Collider2D>().enabled = false;                     
                         sexButton.GetComponent<AnimateSprite>().EnableAnimations(false);
@@ -2905,6 +3093,11 @@ public class MainLoop : MonoBehaviour
                             alwaysUseEatingAnimation = alwaysEatButton.isActive;
                             SaveOnlySettings();
                         }
+                        if (clickedButtonName == "skip_food_button")
+                        {
+                            skipFoodMinigame = skipFoodButton.isActive;
+                            SaveOnlySettings();
+                        }
                         if (clickedButtonName == "toggle_tattoo") SaveOnlySettings();
                         if (clickedButtonName == "delete_save_button")
                         {
@@ -2948,7 +3141,7 @@ public class MainLoop : MonoBehaviour
                     //achievementButton.GetComponent<ToggleButton>().ForceState(false);
                 }
 
-                if (clickedButtonName == "toggle_time")
+                /*if (clickedButtonName == "toggle_time")
                 {
                     ampmMode = !ampmMode;
                     timeText.text = (ampmMode ? (ConvertToAMPM(currentTime)) : ((currentTime < 10 ? "0" : "") + currentTime + ":00")) + " | Day " + (fetusCount > 0 ? actualDays : "--");
@@ -2961,7 +3154,7 @@ public class MainLoop : MonoBehaviour
                     if (clickedButtonName == "toggle_SFX") micToggle.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, ((playingDigestionSounds && toggleButtons[1].isActive) ? 1f : 0.2f));
                     yield return null;
                     SaveOnlySettings();
-                }
+                }*/
 
                 if (clickedButtonName == "antiemetic")// && intestineMultiplier < 2f)
                 {
@@ -3096,8 +3289,7 @@ public class MainLoop : MonoBehaviour
                     wombContents += fetusCount * 0.05f;
                     //wombContents += (fetusCount + 3f) * 0.04f;
                     wombContents = Mathf.Round(wombContents * 10000) / 10000;
-                    if (coomContents + wombContents > 23f) coomContents = 23f - wombContents;
-                    coomContents = Mathf.Round(coomContents * 10000) / 10000;
+                    CapCoomContents();
                     money -= medicinePrices[3];
                     PrintStats();
                     UpdateMedicineText();
@@ -3254,6 +3446,9 @@ public class MainLoop : MonoBehaviour
                     case 4:
                         babyDescriptor = "your quadruplets";
                         break;
+                    case 5:
+                        babyDescriptor = "your quintuplets";
+                        break;
                     default:
                         babyDescriptor = "a lot of babies";
                         break;
@@ -3366,8 +3561,7 @@ public class MainLoop : MonoBehaviour
                 coomContents -= 0.1f;
                 if (coomContents < 0f) coomContents = 0f;
             }
-            if (coomContents + wombContents > 23f) coomContents = 23f - wombContents;
-            coomContents = Mathf.Round(coomContents * 10000) / 10000;
+            CapCoomContents();
             if (coomStorage < 3f)
             {
                 coomStorage += 0.05f;
@@ -3461,7 +3655,6 @@ public class MainLoop : MonoBehaviour
                 sleepCountdown = 8 - (tookCaffeine ? 3 : 0);
                 holdFaceDuration = 0f;
                 isAsleep = true;
-                tookCaffeine = false;
                 if (!achievements[1] && eligibleForNoLunchBreak) UpdateAchievements(1);
             }
 
@@ -3484,6 +3677,7 @@ public class MainLoop : MonoBehaviour
                 enzymeStock = (achievements[12] ? 40 : 20);
                 maintainEmptyBellyMessage = false;
                 tookLaxative = false;
+                tookCaffeine = false;
                 if (weedStock < 5)
                 {
                     weedStock++;
@@ -3498,7 +3692,7 @@ public class MainLoop : MonoBehaviour
                 //Debug.Log(pregnancyDays);
                 if (fetusCount > 0)
                 {
-                    if (pregnancyDays <= 40)
+                    if (pregnancyDays <= 40 + overdueDays)
                     {
                         wombContents += 0.15f + ((dailyCalories >= GetCalorieRequirement()) ? (0.05f * fetusCount) : 0f);
                         if (!ateNormalFood && dailyCalories >= GetCalorieRequirement())
@@ -3510,8 +3704,7 @@ public class MainLoop : MonoBehaviour
                         {
                             daysEatingPreyOnly = 0;
                         }
-                        if (coomContents + wombContents > 23f) coomContents = 23f - wombContents;
-                        coomContents = Mathf.Round(coomContents * 10000) / 10000;
+                        CapCoomContents();
                     }
                     else
                     {
@@ -3523,6 +3716,7 @@ public class MainLoop : MonoBehaviour
                         StartCoroutine(musicPlayer.GraduallyUnmute(2f));
                         wombContents = 0;
                         pregnancyDays = 0;
+                        overdueDays = 0;
                         actualDays = 0;
                         lastSeenEmptyBelly = 0;
                         wombCapacityBar.localScale = new Vector3((6f + 2 * fetusCount) * barRatio, wombCapacityBar.localScale.y, 1);
@@ -3736,79 +3930,106 @@ public class MainLoop : MonoBehaviour
             {
                 if (coomContents < 1f)
                 {
-                    switch (imageIndex)
+                    if (pregnancyDays <= 40)
                     {
-                        case 0:
-                            break;
-                        case 1:
-                            bellyDescription += ". \n\nYou're not sure if you're imagining it, but it feels a bit rounder than usual.";
-                            break;
-                        case 2:
-                            bellyDescription += ". \n\nThere is definitely a slight swell to it compared to the last time you checked.";
-                            break;
-                        case 3:
-                            bellyDescription += ". \n\nHowever, it is starting to stick out a bit. You won't be able to hide this bump for much longer.";
-                            break;
-                        case 4:
-                            bellyDescription += ". \n\nIt is getting noticeably rounder thanks to the " + (fetusCount == 1 ? "baby" : "babies") + " growing inside.";
-                            break;
-                        case 5:
-                            bellyDescription += ". \n\nYou are really starting to feel the weight of the " + (fetusCount == 1 ? "baby" : "babies") + " growing within it.";
-                            break;
-                        case 6:
-                            bellyDescription += ". \n\nWith all of that food out of the way, you now have a chance to appreciate how big your " + (fetusCount == 1 ? "baby" : "babies") + " have gotten.";
-                            break;
-                        case 7:
-                            bellyDescription += ". \n\nWith no more food in your system, you now have a full, unobstructed view of your heavily pregnant belly.";
-                            break;
-                        case 8:
-                            bellyDescription += ". \n\nIt has now reached the size of a normal full-term pregnancy." + (fetusCount > 1 ? " You feel a combination of nervousness and excitement knowing that it will continue to grow larger still." : "");
-                            break;
-                        case 9:
-                            bellyDescription += ". \n\nYou can feel it stretching to contain the babies growing inside, and it will have to stretch further still if you want to feed them the nutrition that they need.";
-                            break;
-                        case 10:
-                            bellyDescription += ". \n\nIt has grown large enough that the lower part of your belly is now impossible to reach.";
-                            break;
-                        case 11:
-                            bellyDescription += ". \n\nHowever, it is still much larger than a normal pregnancy, making it very obvious that there is more than one - no, more than two babies growing inside.";
-                            break;
-                        case 12:
-                            bellyDescription += ". \n\n" + (fetusCount == 3 ? "The three babies inside are now fully-grown and ready to be born at any moment." : "It is now equivalent in size to a full-term triplet pregnancy, and yet it is still not done growing.");
-                            break;
-                        case 13:
-                            bellyDescription += ". \n\nYou take a look in the mirror to see just how far your pregnancy has developed. It is now clear that your belly contains more than three babies.";
-                            break;
-                        case 14:
-                            bellyDescription += ". \n\nAlthough you've grown somewhat accustomed to the weight of your " + IntToWord(fetusCount) + " babies by now, your belly still feels unbelievably heavy and tight.";
-                            break;
-                        case 15:
-                            bellyDescription += ". \n\nAlthough your babies are not done growing, you feel an odd sense of pride in how huge they've gotten. At this size, you can tell that there are more than four.";
-                            break;
-                        case 16:
-                            bellyDescription += ". \n\nYou use this break between stuffing sessions as an opportunity to admire your massive belly, generously filled out with " + (fetusCount == 5 ? "five fully-grown babies." : (IntToWord(fetusCount) + " still-growing babies."));
-                            break;
-                        case 17:
-                            bellyDescription += ". \n\nEven without a massive meal stretching it out, your belly is still unbelievably huge, with its incredible size dominating your otherwise slender frame. At this size, it must contain at least six babies.";
-                            break;
-                        case 18:
-                            bellyDescription += ". \n\nIt is so enormous that most people couldn't even begin to imagine how many babies are growing inside.";
-                            break;
-                        case 19:
-                            bellyDescription += ". \n\nAlthough your babies are not done growing yet, the incredible size of your belly makes it obvious that you are in the late stages of a very large multiple pregnancy.";
-                            break;
-                        case 20:
-                            bellyDescription += ". \n\nYou take a moment to admire your belly in all of its glory, stretched to an enormous size by no less than seven babies.";
-                            break;
-                        case 21:
-                            bellyDescription += ". \n\nIt is almost difficult to believe that your absurdly huge belly can grow bigger still, but your eight babies still have a little bit of time left to finish growing.";
-                            break;
-                        case 22:
-                            bellyDescription += ". \n\nYou've done it. You've carried eight babies to full term, and the sheer size of your belly serves as proof of what you've accomplished. It occupies the entire bottom third of your field of vision, and is so unimaginably heavy that it takes nearly all your strength just to walk a few steps.";
-                            break;
-                        default:
-                            bellyDescription += ". \n\nYou would have something to say about the size of your belly, but your womb contents should never reach this size during normal gameplay. " + imageIndex;
-                            break;
+                        switch (imageIndex)
+                        {
+                            case 0:
+                                break;
+                            case 1:
+                                bellyDescription += ". \n\nYou're not sure if you're imagining it, but it feels a bit rounder than usual.";
+                                break;
+                            case 2:
+                                bellyDescription += ". \n\nThere is definitely a slight swell to it compared to the last time you checked.";
+                                break;
+                            case 3:
+                                bellyDescription += ". \n\nHowever, it is starting to stick out a bit. You won't be able to hide this bump for much longer.";
+                                break;
+                            case 4:
+                                bellyDescription += ". \n\nIt is getting noticeably rounder thanks to the " + (fetusCount == 1 ? "baby" : "babies") + " growing inside.";
+                                break;
+                            case 5:
+                                bellyDescription += ". \n\nYou are really starting to feel the weight of the " + (fetusCount == 1 ? "baby" : "babies") + " growing within it.";
+                                break;
+                            case 6:
+                                bellyDescription += ". \n\nWith all of that food out of the way, you now have a chance to appreciate how big your " + (fetusCount == 1 ? "baby" : "babies") + " have gotten.";
+                                break;
+                            case 7:
+                                bellyDescription += ". \n\nWith no more food in your system, you now have a full, unobstructed view of your heavily pregnant belly.";
+                                break;
+                            case 8:
+                                bellyDescription += ". \n\nIt has now reached the size of a normal full-term pregnancy." + (fetusCount > 1 ? " You feel a combination of nervousness and excitement knowing that it will continue to grow larger still." : "");
+                                break;
+                            case 9:
+                                bellyDescription += ". \n\nYou can feel it stretching to contain the babies growing inside, and it will have to stretch further still if you want to feed them the nutrition that they need.";
+                                break;
+                            case 10:
+                                bellyDescription += ". \n\nIt has grown large enough that the lower part of your belly is now impossible to reach.";
+                                break;
+                            case 11:
+                                bellyDescription += ". \n\nHowever, it is still much larger than a normal pregnancy, making it very obvious that it contains at least two babies.";
+                                break;
+                            case 12:
+                                bellyDescription += ". \n\n" + (fetusCount == 3 ? "The three babies inside are now fully-grown and ready to be born at any moment." : "It is now equivalent in size to a full-term triplet pregnancy, and yet it is still not done growing.");
+                                break;
+                            case 13:
+                                bellyDescription += ". \n\nYou take a look in the mirror to see just how far your pregnancy has developed. Despite how huge and round your belly is, your " + IntToWord(fetusCount) + " babies still have " + (40 - pregnancyDays) + " days left to finish growing.";
+                                break;
+                            case 14:
+                                bellyDescription += ". \n\nAlthough you've grown somewhat accustomed to the weight of your " + IntToWord(fetusCount) + " babies by now, your belly still feels unbelievably heavy and tight.";
+                                break;
+                            case 15:
+                                bellyDescription += ". \n\nAlthough your babies are not done growing, you feel an odd sense of pride in how huge they've gotten. The combined weight of the " + IntToWord(fetusCount) + " babies in your womb is now heavier than 2 bowling balls.";
+                                break;
+                            case 16:
+                                bellyDescription += ". \n\nYou use this break between stuffing sessions as an opportunity to admire your massive belly, generously filled out with " + (fetusCount == 5 ? "five fully-grown babies." : (IntToWord(fetusCount) + " still-growing babies."));
+                                break;
+                            case 17:
+                                bellyDescription += ". \n\nEven without a massive meal stretching it out, your belly is still unbelievably huge, with its incredible size dominating your otherwise slender frame.";
+                                break;
+                            case 18:
+                                bellyDescription += ". \n\nIt is so enormous that most people couldn't even begin to imagine how many babies are growing inside.";
+                                break;
+                            case 19:
+                                bellyDescription += ". \n\nAlthough your babies are not done growing yet, the incredible size of your belly makes it obvious that you are in the late stages of a very large multiple pregnancy.";
+                                break;
+                            case 20:
+                                bellyDescription += ". \n\nYou take a moment to admire your belly in all of its glory, stretched to an enormous size by the " + IntToWord(fetusCount) + " babies tightly packed inside.";
+                                break;
+                            case 21:
+                                bellyDescription += ". \n\nIt is almost difficult to believe that your absurdly huge belly can grow bigger still, but your eight babies still have a little bit of time left to finish growing.";
+                                break;
+                            case 22:
+                                bellyDescription += ". \n\nYou've done it. You've carried eight babies to full term, and the sheer size of your belly serves as proof of what you've accomplished. It occupies the entire bottom third of your field of vision, and is so unimaginably heavy that it takes nearly all your strength just to walk a few steps.";
+                                break;
+                            default:
+                                bellyDescription += ". \n\nYou would have something to say about the size of your belly, but your womb contents should never reach this size during normal gameplay. " + imageIndex;
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        switch (fetusCount)
+                        {
+                            case 0:
+                                break;
+                            case 1:
+                                bellyDescription += ". \n\nThe baby inside seems like it wants to keep growing for a while longer.";
+                                break;
+                            case 2:
+                                bellyDescription += ". \n\nIt seems like your twins want to keep growing for a while longer.";
+                                break;
+                            case 3:
+                            case 4:
+                            case 5:
+                                bellyDescription += ". \n\nYou feel your womb stretching to the limit as your overdue" + IntToNumberofBabies(fetusCount) + " continue to grow.";
+                                break;
+                            case 6:
+                            case 7:
+                            case 8:
+                                bellyDescription += ". \n\nYou feel your womb stretching past its limits as your " + IntToWord(fetusCount) + " overdue babies continue to grow.";
+                                break;
+                        }
                     }
                     lastSeenEmptyBelly = imageIndex;
                     maintainEmptyBellyMessage = true;
