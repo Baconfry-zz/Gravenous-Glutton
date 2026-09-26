@@ -569,6 +569,7 @@ public class MainLoop : MonoBehaviour
         sideviewBottom.GetComponent<SpriteRenderer>().color = transparentSideview ? oldColor : Color.white;
         nopan.GetComponent<SpriteRenderer>().enabled = false;//nopanMode && !nakedMode;
         foodStockText.text = "x" + foodStock;
+        foodStockText.color = (foodStock >= 60 ? Color.yellow : Color.white);
         PrintAchievementBoard();
         StartCoroutine(HandleOtherToggles());
         StartCoroutine(MainRoutine());
@@ -2145,9 +2146,10 @@ public class MainLoop : MonoBehaviour
                     {
                         if (skipFoodMinigame)
                         {
-                            foodStock += 5;
+                            foodStock += 3;
                             if (foodStock > 60) foodStock = 60;
                             foodStockText.text = "x" + foodStock;
+                            foodStockText.color = (foodStock >= 60 ? Color.yellow : Color.white);
                             foodButton.GetComponent<Collider2D>().enabled = false;
                             foodButton.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.2f);
                         }
@@ -2162,10 +2164,11 @@ public class MainLoop : MonoBehaviour
                             pillButton.GetComponent<Collider2D>().enabled = true;
                             recordButton.GetComponent<Collider2D>().enabled = !isStreaming && !isAsleep && daysUntilNextStream <= 0;
                             achievementButton.GetComponent<Collider2D>().enabled = true;
-                            foodStock += burgerMinigame.amountCompleted * (burgerMinigame.maxStreak > 10 ? 5 : Mathf.Max(1, burgerMinigame.maxStreak / 2));
+                            foodStock += burgerMinigame.totalReward;
                             if (foodStock > 60) foodStock = 60;
                             foodStockText.text = "x" + foodStock;
-                            if (burgerMinigame.amountCompleted > 0)
+                            foodStockText.color = (foodStock >= 60 ? Color.yellow : Color.white);
+                            if (burgerMinigame.totalReward > 0)
                             {
                                 foodButton.GetComponent<Collider2D>().enabled = false;
                                 foodButton.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.2f);
@@ -2260,6 +2263,7 @@ public class MainLoop : MonoBehaviour
                         foodStock--;
                         if (foodStock < 0) foodStock = 0;
                         foodStockText.text = "x" + foodStock;
+                        foodStockText.color = (foodStock >= 60 ? Color.yellow : Color.white);
 
                         if (isStreaming)
                         {
@@ -2315,6 +2319,7 @@ public class MainLoop : MonoBehaviour
                             foodStock--;
                             if (foodStock < 0) foodStock = 0;
                             foodStockText.text = "x" + foodStock;
+                            foodStockText.color = (foodStock >= 60 ? Color.yellow : Color.white);
 
                             if (isStreaming)
                             {

@@ -10,8 +10,8 @@ public class BurgerMinigame : MonoBehaviour
     private List<int> alreadyCollectedIngredients = new List<int>();
     private List<Transform> alreadySpawnedIngredients = new List<Transform>();
     public int layerIndex = 0;
-    public int amountCompleted = 0;
-    private int currentStreak = 0;
+    private int amountCompleted = 0;
+    public int totalReward = 0;
     public int maxStreak = 0;
     public int startingFoodStock = 0;
     [SerializeField] private GameObject ingredient;
@@ -25,6 +25,7 @@ public class BurgerMinigame : MonoBehaviour
     [SerializeField] private float maxDelay;
     private int layerMask = 1 << 6;
     private bool manuallyCanceled = false;
+    [SerializeField] private SpriteRenderer endButton;
 
     // Start is called before the first frame update
     void Start()
@@ -37,10 +38,11 @@ public class BurgerMinigame : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.position = new Vector3(cursor.transform.position.x, transform.position.y, transform.position.z);
-        if (Input.GetMouseButtonDown(1) && !manuallyCanceled)
+        transform.position = new Vector3(Mathf.Max(-2.5f, cursor.transform.position.x), transform.position.y, transform.position.z);
+        if ((Input.GetMouseButtonDown(1) || (Input.GetMouseButtonDown(0) && cursor.GetColliderName(5) == "end_minigame")) && !manuallyCanceled)
         {
             manuallyCanceled = true;
+            endButton.color = new Color(0.5f, 0.5f, 0.5f, 1f);
         }
     }
 
@@ -56,7 +58,7 @@ public class BurgerMinigame : MonoBehaviour
 
     void UpdateScoreText()
     {
-        scoreText.text = "Burgers completed: " + amountCompleted + "\nStreak: " + currentStreak + "  (Max: " + maxStreak + ")\nScore multiplier: " + (maxStreak > 10 ? 5 : Mathf.Max(1, maxStreak / 2)) + "x";
+        scoreText.text = "Total food earned: " + totalReward + "\nStorage: " + Mathf.Min(60, startingFoodStock + totalReward) + " / 60";
     }
 
     IEnumerator CollectFallingIngredients()
@@ -99,11 +101,12 @@ public class BurgerMinigame : MonoBehaviour
 
                 if (layerIndex > 5)
                 {
+                    scoreText.text = "Total food earned: " + totalReward + "  +" + Mathf.Max(1, 5 - amountCompleted) + "\nStorage: " + Mathf.Min(60, startingFoodStock + totalReward) + " / 60";
+                    totalReward += Mathf.Max(1, 5 - amountCompleted);
                     amountCompleted++;
-                    currentStreak++;
-                    if (maxStreak < currentStreak) maxStreak = currentStreak;
-                    UpdateScoreText();
+                    if (startingFoodStock + totalReward >= 60) endButton.color = new Color(0.5f, 0.5f, 0.5f, 1f);
                     yield return new WaitForSeconds(0.6f);
+                    UpdateScoreText();
                     alreadyCollectedIngredients.Clear();
                     layerIndex = 0;
                     for (int i = 0; i < layers.Length; i++)
@@ -120,7 +123,7 @@ public class BurgerMinigame : MonoBehaviour
                 {
                     Destroy(alreadySpawnedIngredients[startingIndex].gameObject, 0.1f);
                     alreadySpawnedIngredients.Remove(alreadySpawnedIngredients[startingIndex]);
-                    currentStreak = 0;
+                    //currentStreak = 0;
                     UpdateScoreText();
                 }
                 startingIndex++;
@@ -157,8 +160,9 @@ public class BurgerMinigame : MonoBehaviour
     public IEnumerator ConstantlySpawnIngredients()
     {
         Reshuffle();
+        endButton.color = Color.white;
         amountCompleted = 0;
-        maxStreak = 0;
+        totalReward = 0;
         manuallyCanceled = false;
         alreadyCollectedIngredients.Clear();
         alreadySpawnedIngredients.Clear();
@@ -169,21 +173,27 @@ public class BurgerMinigame : MonoBehaviour
         }
         UpdateScoreText();
         StartCoroutine(CollectFallingIngredients());
-        while (!manuallyCanceled && startingFoodStock + (amountCompleted * (maxStreak > 10 ? 5 : Mathf.Max(1, maxStreak / 2))) < 60)
+        while (!manuallyCanceled && startingFoodStock + totalReward < 60)
         {
             for (int i = 0; i < spawnedIDs.Length;i++)
             {
                 SpawnIngredient(spawnedIDs[i]);
-                if (manuallyCanceled || startingFoodStock + (amountCompleted * (maxStreak > 10 ? 5 : Mathf.Max(1, maxStreak / 2))) >= 60) break;
+                if (manuallyCanceled || startingFoodStock + totalReward >= 60)
+                {
+                    //endButton.color = new Color(0.5f, 0.5f, 0.5f, 1f);
+                    break;
+                }
                 float randomizedDelay = Random.Range(minDelay, maxDelay);
                 if (randomizedDelay > minDelay + (maxDelay - minDelay) / 3) randomizedDelay = Random.Range(minDelay, maxDelay);
                 if (randomizedDelay > minDelay + (maxDelay - minDelay) / 3) randomizedDelay = Random.Range(minDelay, maxDelay);
                 yield return new WaitForSeconds(randomizedDelay);
             }
+            //if (startingFoodStock + totalReward >= 60) endButton.color = new Color(0.5f, 0.5f, 0.5f, 1f);
             yield return new WaitForSeconds(1f);
             Reshuffle();
         }
-        scoreText.text += "        Results: +" + (amountCompleted * (maxStreak > 10 ? 5 : Mathf.Max(1, maxStreak / 2)));
+
+        //scoreText.text += "        Results: +" + totalReward;
         yield return new WaitForSeconds(1.5f);
         for(int i = 0; i < alreadySpawnedIngredients.Count; i++)
         {
