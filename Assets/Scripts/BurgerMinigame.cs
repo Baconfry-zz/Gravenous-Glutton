@@ -12,7 +12,6 @@ public class BurgerMinigame : MonoBehaviour
     public int layerIndex = 0;
     private int amountCompleted = 0;
     public int totalReward = 0;
-    public int maxStreak = 0;
     public int startingFoodStock = 0;
     [SerializeField] private GameObject ingredient;
     [SerializeField] private Cursor cursor;
@@ -38,8 +37,8 @@ public class BurgerMinigame : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.position = new Vector3(Mathf.Max(-2.5f, cursor.transform.position.x), transform.position.y, transform.position.z);
-        if ((Input.GetMouseButtonDown(1) || (Input.GetMouseButtonDown(0) && cursor.GetColliderName(5) == "end_minigame")) && !manuallyCanceled)
+        transform.position = new Vector3(Mathf.Max(-2f, cursor.transform.position.x), transform.position.y, transform.position.z);
+        if ((Input.GetMouseButtonDown(0) && cursor.GetColliderName(5) == "end_minigame") && !manuallyCanceled)
         {
             manuallyCanceled = true;
             endButton.color = new Color(0.5f, 0.5f, 0.5f, 1f);
@@ -58,12 +57,12 @@ public class BurgerMinigame : MonoBehaviour
 
     void UpdateScoreText()
     {
-        scoreText.text = "Total food earned: " + totalReward + "\nStorage: " + Mathf.Min(60, startingFoodStock + totalReward) + " / 60";
+        scoreText.text = "\nFood earned: " + (totalReward > 9 ? "" : " ") + totalReward + "\nStorage: " + Mathf.Min(60, startingFoodStock + totalReward) + " / 60";
     }
 
     IEnumerator CollectFallingIngredients()
     {
-        while (!manuallyCanceled && startingFoodStock + (amountCompleted * (maxStreak > 10 ? 5 : Mathf.Max(1, maxStreak / 2))) < 60)
+        while (!manuallyCanceled && startingFoodStock + totalReward < 60)
         {
             Collider2D collider = Physics2D.OverlapCircle(new Vector3(transform.position.x, transform.position.y - 0.2f, 0f), 0.2f, layerMask);
             if (collider != null && collider.GetComponent<DigitCounter>() != null)
@@ -101,8 +100,8 @@ public class BurgerMinigame : MonoBehaviour
 
                 if (layerIndex > 5)
                 {
-                    scoreText.text = "Total food earned: " + totalReward + "  +" + Mathf.Max(1, 5 - amountCompleted) + "\nStorage: " + Mathf.Min(60, startingFoodStock + totalReward) + " / 60";
-                    totalReward += Mathf.Max(1, 5 - amountCompleted);
+                    scoreText.text = "                   +" + Mathf.Max(1, 5 - amountCompleted) + "\nFood earned: " + (totalReward > 9 ? "" : " ") + totalReward + "\nStorage: " + Mathf.Min(60, startingFoodStock + totalReward) + " / 60";
+                    totalReward += Mathf.Max(1, 6 - amountCompleted);
                     amountCompleted++;
                     if (startingFoodStock + totalReward >= 60) endButton.color = new Color(0.5f, 0.5f, 0.5f, 1f);
                     yield return new WaitForSeconds(0.6f);
@@ -151,6 +150,7 @@ public class BurgerMinigame : MonoBehaviour
         newIngredient.transform.parent = this.transform.parent;
         newIngredient.GetComponent<DigitCounter>().SetCounterTo(id);
         newIngredient.GetComponent<Rigidbody2D>().velocity = new Vector3(Random.Range(-minXvelocity, -maxXvelocity), (id == 5 ? maxYvelocity : Random.Range(minYvelocity, maxYvelocity)), 0f);
+        //newIngredient.GetComponent<Rigidbody2D>().velocity = new Vector3(-maxXvelocity, maxYvelocity, 0f);
         newIngredient.GetComponent<Rigidbody2D>().angularVelocity = Random.Range(-30f, 30f);
         //Destroy(newIngredient, 2f);
         alreadySpawnedIngredients.Add(newIngredient.transform);

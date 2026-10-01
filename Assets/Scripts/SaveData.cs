@@ -36,12 +36,13 @@ public class SaveData
     //public int lastSeenEmptyBelly;
     public int currentTime;
     public bool reachedMaxIntestine;
+    public bool foodMinigameAvailable;
     public bool tookCaffeine;
     public bool isNauseous;
     public bool isStreaming;
     //public bool jiggledDuringStream;
     public bool tookLaxative;
-    public bool usedPlug;
+    public bool usedViagra;
     public int daysUntilNextStream;
 
     public int sleepCountdown;

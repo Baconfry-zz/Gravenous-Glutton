@@ -5,6 +5,7 @@ using UnityEngine;
 public class AudioPlayer : MonoBehaviour
 {
     [SerializeField] private AudioClip[] audioClips;
+    [SerializeField] private GameObject tempSFX;
     private AudioSource source;
 
     private int previousClipIndex = -1;
@@ -40,7 +41,11 @@ public class AudioPlayer : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.E)) volumeMultiplier = 1f;
         if (Input.GetKeyDown(KeyCode.S)) StartCoroutine(ChangeTrackTo(1, 5f));
         if (Input.GetKeyDown(KeyCode.A)) StartCoroutine(ChangeTrackTo(0, 5f));*/
-        source.volume = internalVolume * volumeMultiplier;
+        foreach (AudioSource aud in GetComponentsInChildren<AudioSource>())
+        {
+            aud.volume = internalVolume * volumeMultiplier;
+            aud.mute = source.mute;
+        }
 
     }
 
@@ -77,8 +82,11 @@ public class AudioPlayer : MonoBehaviour
             if (newIndex != previousClipIndex) clipIndex = newIndex;
         }
         previousClipIndex = clipIndex;
-        source.clip = audioClips[clipIndex];
-        source.Play();
+        GameObject newSFX = Instantiate(tempSFX, transform.position, Quaternion.identity);
+        newSFX.transform.parent = this.transform;
+        newSFX.GetComponent<AudioSource>().clip = audioClips[clipIndex];
+        newSFX.GetComponent<AudioSource>().Play();
+        Destroy(newSFX, audioClips[clipIndex].length);
         /*if (!source.isPlaying)
         {
             
