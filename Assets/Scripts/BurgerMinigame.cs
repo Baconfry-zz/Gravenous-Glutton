@@ -100,7 +100,7 @@ public class BurgerMinigame : MonoBehaviour
 
                 if (layerIndex > 5)
                 {
-                    scoreText.text = "                   +" + Mathf.Max(1, 5 - amountCompleted) + "\nFood earned: " + (totalReward > 9 ? "" : " ") + totalReward + "\nStorage: " + Mathf.Min(60, startingFoodStock + totalReward) + " / 60";
+                    scoreText.text = "                   +" + Mathf.Max(1, 6 - amountCompleted) + "\nFood earned: " + (totalReward > 9 ? "" : " ") + totalReward + "\nStorage: " + Mathf.Min(60, startingFoodStock + totalReward) + " / 60";
                     totalReward += Mathf.Max(1, 6 - amountCompleted);
                     amountCompleted++;
                     if (startingFoodStock + totalReward >= 60) endButton.color = new Color(0.5f, 0.5f, 0.5f, 1f);

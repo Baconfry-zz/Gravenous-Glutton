@@ -85,12 +85,28 @@ public class AudioPlayer : MonoBehaviour
         GameObject newSFX = Instantiate(tempSFX, transform.position, Quaternion.identity);
         newSFX.transform.parent = this.transform;
         newSFX.GetComponent<AudioSource>().clip = audioClips[clipIndex];
+        newSFX.GetComponent<AudioSource>().mute = source.mute;
         newSFX.GetComponent<AudioSource>().Play();
+
         Destroy(newSFX, audioClips[clipIndex].length);
         /*if (!source.isPlaying)
         {
             
         }*/
+    }
+
+    public void PlayRandomNoOverlap()
+    {
+        internalVolume = startingVolume;
+        int clipIndex = Random.Range(0, audioClips.Length);
+        for (int i = 0; i < 8; i++)
+        {
+            int newIndex = Random.Range(0, audioClips.Length);
+            if (newIndex != previousClipIndex) clipIndex = newIndex;
+        }
+        previousClipIndex = clipIndex;
+        source.clip = audioClips[clipIndex];
+        source.Play();
     }
 
     public IEnumerator PlayCustomWaitFor(AudioClip clip, AudioSource source)

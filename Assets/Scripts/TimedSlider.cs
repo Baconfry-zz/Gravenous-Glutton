@@ -96,7 +96,7 @@ public class TimedSlider : MonoBehaviour
             climaxTransform.localScale = new Vector3(climax / 100f, climaxTransform.localScale.y, 1);
             if (climax < 200f) StartCoroutine(mainLoop.Bounce(0.2f));
             StartCoroutine(mainLoop.BellyJiggle(false));
-            if (mainLoop.nakedMode && mainLoop.largeBreastMode && Random.Range(0, 100000) < mainLoop.bankedCalories - 40000) StartCoroutine(mainLoop.CreateMilkStream(1, 0.05f, 0f));
+            if (mainLoop.nakedMode && mainLoop.breastIndex > 0 && Random.Range(0, 100000) < mainLoop.bankedCalories - 40000) StartCoroutine(mainLoop.CreateMilkStream(1, 0.05f, 0f));
             plapsPlayer.PlayRandom();
             sexualMoansPlayer.PlayRandom();
         }
@@ -118,7 +118,7 @@ public class TimedSlider : MonoBehaviour
             climaxTransform.localScale = new Vector3(climax / 100f, climaxTransform.localScale.y, 1);
             //if (climax < 200f) StartCoroutine(mainLoop.Bounce(0.2f));
             StartCoroutine(mainLoop.BellyJiggle(false));
-            if (mainLoop.nakedMode && mainLoop.largeBreastMode && Random.Range(0, 100000) < mainLoop.bankedCalories - 40000) StartCoroutine(mainLoop.CreateMilkStream(1, 0.05f, 0f));
+            if (mainLoop.nakedMode && mainLoop.breastIndex > 0 && Random.Range(0, 100000) < mainLoop.bankedCalories - 40000) StartCoroutine(mainLoop.CreateMilkStream(1, 0.05f, 0f));
             plapsPlayer.PlayRandom();
             sexualMoansPlayer.PlayRandom();
         }
@@ -208,7 +208,7 @@ public class TimedSlider : MonoBehaviour
             //if (amountReleased > 200) amountReleased = 200;
             if (startPregnancy)
             {
-                pregnancyPreview.sprite = previewSprites[(mainLoop.fertilityBonus + Mathf.Min((int)amountReleased, 200) / 100 + (mainLoop.largeBreastMode ? 8 : 0)) + (mainLoop.nakedMode ? 16 : 0)];
+                pregnancyPreview.sprite = previewSprites[(mainLoop.fertilityBonus + Mathf.Min((int)amountReleased, 200) / 100 + (mainLoop.breastIndex * 8) + (mainLoop.nakedMode ? 24 : 0))];
                 pregnancyPreview.enabled = true;
                 previewBG.enabled = true;
                 pregnancyPreview.color = new Color(pregnancyPreview.color.r, pregnancyPreview.color.g, pregnancyPreview.color.b, 0.2f);
@@ -220,7 +220,7 @@ public class TimedSlider : MonoBehaviour
 
             plapsPlayer.PlayCustom(nutBuster, 0.4f);
             sexualMoansPlayer.PlayCustom(orgasmMoan);
-            if (mainLoop.nakedMode && mainLoop.largeBreastMode)
+            if (mainLoop.nakedMode && mainLoop.breastIndex > 0)
             {
                 StartCoroutine(mainLoop.CreateMilkStream(mainLoop.bankedCalories / 40000, 0.05f, 0f));
                 StartCoroutine(mainLoop.CreateMilkStream(mainLoop.bankedCalories / 30000, 0.05f, 0.4f));

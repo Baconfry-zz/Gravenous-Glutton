@@ -165,7 +165,7 @@ public class MainLoop : MonoBehaviour
     float holdFaceDuration = 0f;
     float barRatio = 0.42f;
     public bool isPlayingJiggleAnim = false;
-    public bool largeBreastMode = false;
+    public int breastIndex = 0;
     public bool nakedMode = false;
     bool maintainEmptyBellyMessage = false;
     bool canSwallowFinalPrey;
@@ -181,7 +181,7 @@ public class MainLoop : MonoBehaviour
 
     public float trainingModifier = 1.0f; //save
     public float hungerModifier = 1.0f;
-    public float intestineMultiplier = 1.5f; //save
+    public float intestineMultiplier = 2f; //save
 
     public int foodStock = 5;
     int displayedFoodStock = 0;
@@ -369,7 +369,7 @@ public class MainLoop : MonoBehaviour
         digestionTimer = 0;
         hungerTimer = 0;
         trainingModifier = 1f;
-        intestineMultiplier = 1.5f;
+        intestineMultiplier = 2f;
         munchiesConsumed = 0;
         foodStock = 5;
         weedStock = 0;
@@ -429,7 +429,7 @@ public class MainLoop : MonoBehaviour
         saveData.digestionTimer = 0;
         saveData.hungerTimer = 0;
         saveData.trainingModifier = 1f;
-        saveData.intestineMultiplier = 1.5f;
+        saveData.intestineMultiplier = 2f;
         saveData.munchiesConsumed = 0;
         saveData.foodStock = 0;
         saveData.weedStock = 0;
@@ -712,7 +712,7 @@ public class MainLoop : MonoBehaviour
         eligibleMessages[109] = fetusCount == 1 && foodEaten > 15;
         eligibleMessages[110] = false;
         eligibleMessages[111] = false;
-        eligibleMessages[112] = largeBreastMode;
+        eligibleMessages[112] = breastIndex > 0;
         eligibleMessages[113] = imageIndex > 11;
         eligibleMessages[114] = false;
         eligibleMessages[115] = doingSpecialMessage && preyInside == 1;
@@ -800,19 +800,19 @@ public class MainLoop : MonoBehaviour
             yield return new WaitForSeconds(frameDelay);
         }
         Vector3 startPosForSuck = xRayWomb.localPosition;
-        SetBellySprites(true, (int)Mathf.Min(characterSpritesTop.Length/4 - 1, trueImageIndex - 1));
-        wombTattoo.SetCounterTo((int)(Mathf.Min(characterSpritesTop.Length/4 - 1, trueImageIndex - 1)) + (nakedMode ? 56 : 0));
+        SetBellySprites(true, (int)Mathf.Min(characterSpritesTop.Length/6 - 1, trueImageIndex - 1));
+        wombTattoo.SetCounterTo((int)(Mathf.Min(characterSpritesTop.Length/6 - 1, trueImageIndex - 1)) + (nakedMode ? 56 : 0));
         stomachSprites.transform.localScale = new Vector3(1 - 0.025f * amountToDecrement, 1f, 1f);
         stomachSprites.transform.localPosition = new Vector3(startingXpos + 0.002f * (stomachContents + gasContents), stomachSprites.transform.localPosition.y, 0f);
-        nopan.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/4 - 1, trueImageIndex - 1));
+        nopan.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/6 - 1, trueImageIndex - 1));
         xRayWomb.localPosition = startPosForSuck + new Vector3(0.05f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0.1f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0f) + new Vector3(0.04f, 0f, 0f);
         coomWomb.localPosition = xRayWomb.localPosition;
         yield return new WaitForSeconds(frameDelay);
-        SetBellySprites(true, (int)Mathf.Min(characterSpritesTop.Length/4 - 1, trueImageIndex - 2));
-        wombTattoo.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/4 - 1, trueImageIndex - 2) + (nakedMode ? 56 : 0));
+        SetBellySprites(true, (int)Mathf.Min(characterSpritesTop.Length/6 - 1, trueImageIndex - 2));
+        wombTattoo.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/6 - 1, trueImageIndex - 2) + (nakedMode ? 56 : 0));
         stomachSprites.transform.localScale = new Vector3(1 - 0.05f * amountToDecrement, 1f, 1f);
         stomachSprites.transform.localPosition = new Vector3(startingXpos + 0.004f * (stomachContents + gasContents), stomachSprites.transform.localPosition.y, 0f);
-        nopan.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/4 - 1, trueImageIndex - 2));
+        nopan.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/6 - 1, trueImageIndex - 2));
         xRayWomb.localPosition = startPosForSuck + new Vector3(0.1f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0.1f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0f) + new Vector3(0.08f, 0f, 0f);
         coomWomb.localPosition = xRayWomb.localPosition;
         yield return new WaitForSeconds(frameDelay);
@@ -823,11 +823,11 @@ public class MainLoop : MonoBehaviour
         faces.SetCounterTo(gasContents > 0f ? 10 : BellyToFaceIndex(true));
         if (stomachContents + intestineContents > 3f) gurglePlayer.PlayRandom();
         if ((int)(stomachContents + intestineContents) >= 5 && gasContents == 0f) stuffedMoansPlayer.PlayRandom();
-        SetBellySprites(true, (int)Mathf.Min(characterSpritesTop.Length/4 - 1, trueImageIndex - 1));
+        SetBellySprites(true, (int)Mathf.Min(characterSpritesTop.Length/6 - 1, trueImageIndex - 1));
         stomachSprites.transform.localScale = new Vector3(1 - 0.025f * amountToDecrement, 1f, 1f);
         stomachSprites.transform.localPosition = new Vector3(startingXpos + 0.002f * (stomachContents + gasContents), stomachSprites.transform.localPosition.y, 0f);
-        wombTattoo.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/4 - 1, trueImageIndex - 1) + (nakedMode ? 56 : 0));
-        nopan.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/4 - 1, trueImageIndex - 1));
+        wombTattoo.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/6 - 1, trueImageIndex - 1) + (nakedMode ? 56 : 0));
+        nopan.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/6 - 1, trueImageIndex - 1));
         xRayWomb.localPosition = startPosForSuck + new Vector3(0.05f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0.1f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0f) + new Vector3(0.04f, 0f, 0f);
         coomWomb.localPosition = xRayWomb.localPosition;
         yield return new WaitForSeconds(frameDelay);
@@ -882,39 +882,128 @@ public class MainLoop : MonoBehaviour
         Vector3 leftOffset = Vector3.zero;
         Vector3 rightOffset = Vector3.zero;
 
-        switch (imageIndex)
+        if (breastIndex == 1)
         {
-            case 22:
-                leftOffset = new Vector3(0.011f, 0.029f, 0f);
-                rightOffset = new Vector3(0f, 0.033f, 0f);
-                break;
-            case 23:
-                leftOffset = new Vector3(0.015f, 0.058f, 0f);
-                rightOffset = new Vector3(0.011f, 0.055f, 0f);
-                break;
-            case 24:
-                leftOffset = new Vector3(0.033f, 0.131f, 0f);
-                rightOffset = new Vector3(0.04f, 0.128f, 0f);
-                break;
-            case 25:
-                leftOffset = new Vector3(0.037f, 0.172f, 0f);
-                rightOffset = new Vector3(0.072f, 0.178f, 0f);
-                break;
-            case 26:
-                leftOffset = new Vector3(0.042f, 0.205f, 0f);
-                rightOffset = new Vector3(0.096f, 0.206f, 0f);
-                break;
-            case 27:
-                leftOffset = new Vector3(0.028f, 0.224f, 0f);
-                rightOffset = new Vector3(0.139f, 0.23f, 0f);
-                break;
-            default:
-                break;
+            switch (imageIndex)
+            {
+                case 22:
+                    leftOffset = new Vector3(0.011f, 0.029f, 0f);
+                    rightOffset = new Vector3(0f, 0.033f, 0f);
+                    break;
+                case 23:
+                    leftOffset = new Vector3(0.015f, 0.058f, 0f);
+                    rightOffset = new Vector3(0.011f, 0.055f, 0f);
+                    break;
+                case 24:
+                    leftOffset = new Vector3(0.033f, 0.131f, 0f);
+                    rightOffset = new Vector3(0.04f, 0.128f, 0f);
+                    break;
+                case 25:
+                    leftOffset = new Vector3(0.037f, 0.172f, 0f);
+                    rightOffset = new Vector3(0.072f, 0.178f, 0f);
+                    break;
+                case 26:
+                    leftOffset = new Vector3(0.042f, 0.205f, 0f);
+                    rightOffset = new Vector3(0.096f, 0.206f, 0f);
+                    break;
+                case 27:
+                    leftOffset = new Vector3(0.028f, 0.224f, 0f);
+                    rightOffset = new Vector3(0.139f, 0.23f, 0f);
+                    break;
+                default:
+                    break;
+            }
         }
+        else if (breastIndex == 2)
+        {
+            switch (imageIndex)
+            {
+                case 11:
+                    leftOffset = new Vector3(-0.355f, -0.094f, 0f);
+                    rightOffset = new Vector3(-0.177f, -0.106f, 0f);
+                    break;
+                case 12:
+                    leftOffset = new Vector3(-0.342f, -0.06f, 0f);
+                    rightOffset = new Vector3(-0.181f, -0.064f, 0f);
+                    break;
+                case 13:
+                    leftOffset = new Vector3(-0.338f, -0.033f, 0f);
+                    rightOffset = new Vector3(-0.173f, -0.026f, 0f);
+                    break;
+                case 14:
+                    leftOffset = new Vector3(-0.342f, -0.003f, 0f);
+                    rightOffset = new Vector3(-0.181f, 0.008f, 0f);
+                    break;
+                case 15:
+                    leftOffset = new Vector3(-0.338f, 0.02f, 0f);
+                    rightOffset = new Vector3(-0.185f, 0.027f, 0f);
+                    break;
+                case 16:
+                    leftOffset = new Vector3(-0.342f, 0.035f, 0f);
+                    rightOffset = new Vector3(-0.185f, 0.05f, 0f);
+                    break;
+                case 17:
+                    leftOffset = new Vector3(-0.342f, 0.058f, 0f);
+                    rightOffset = new Vector3(-0.181f, 0.069f, 0f);
+                    break;
+                case 18:
+                    leftOffset = new Vector3(-0.342f, 0.069f, 0f);
+                    rightOffset = new Vector3(-0.189f, 0.077f, 0f);
+                    break;
+                case 19:
+                    leftOffset = new Vector3(-0.342f, 0.084f, 0f);
+                    rightOffset = new Vector3(-0.193f, 0.085f, 0f);
+                    break;
+                case 20:
+                    leftOffset = new Vector3(-0.346f, 0.088f, 0f);
+                    rightOffset = new Vector3(-0.185f, 0.1f, 0f);
+                    break;
+                case 21:
+                    leftOffset = new Vector3(-0.346f, 0.096f, 0f);
+                    rightOffset = new Vector3(-0.185f, 0.111f, 0f);
+                    break;
+                case 22:
+                    leftOffset = new Vector3(-0.342f, 0.107f, 0f);
+                    rightOffset = new Vector3(-0.185f, 0.119f, 0f);
+                    break;
+                case 23:
+                    leftOffset = new Vector3(-0.338f, 0.13f, 0f);
+                    rightOffset = new Vector3(-0.177f, 0.149f, 0f);
+                    break;
+                case 24:
+                    leftOffset = new Vector3(-0.33f, 0.175f, 0f);
+                    rightOffset = new Vector3(-0.17f, 0.213f, 0f);
+                    break;
+                case 25:
+                    leftOffset = new Vector3(-0.345f, 0.251f, 0f);
+                    rightOffset = new Vector3(-0.161f, 0.279f, 0f);
+                    break;
+                case 26:
+                    leftOffset = new Vector3(-0.307f, 0.269f, 0f);
+                    rightOffset = new Vector3(-0.147f, 0.303f, 0f);
+                    break;
+                case 27:
+                    leftOffset = new Vector3(-0.288f, 0.355f, 0f);
+                    rightOffset = new Vector3(-0.128f, 0.404f, 0f);
+                    break;
+                default:
+                    leftOffset = new Vector3(-0.326f, -0.194f, 0f);
+                    rightOffset = new Vector3(-0.171f, -0.208f, 0f);
+                    break;
+            }
+        }
+        //leftNipple.localRotation = Quaternion.Euler(0f, 0f, 0f);
+        //rightNipple.localRotation = Quaternion.Euler(0f, 0f, 0f);
+        //leftNipple.localPosition = leftNipStartPos + leftOffset;
+        //rightNipple.localPosition = rightNipStartPos + rightOffset;
 
         GameObject newLeftSquirt = Instantiate(leftSquirt, transform.position + leftOffset, Quaternion.identity);
+        newLeftSquirt.transform.parent = this.transform;
+        newLeftSquirt.transform.localPosition = leftOffset;
         newLeftSquirt.transform.parent = leftNipple;
         GameObject newRightSquirt = Instantiate(rightSquirt, transform.position + rightOffset, Quaternion.identity);
+        newRightSquirt.transform.parent = this.transform;
+        newRightSquirt.transform.localPosition = rightOffset;
         newRightSquirt.transform.parent = rightNipple;
         leftNipple.localRotation = Quaternion.Euler(0f, 0f, Random.Range(-5f, 5f));
         rightNipple.localRotation = Quaternion.Euler(0f, 0f, Random.Range(-5f, 5f));
@@ -1337,7 +1426,7 @@ public class MainLoop : MonoBehaviour
                 break;
             case 13:
                 achievementMessage = "Carnivore: Fulfill your calorie requirements using only prey for 3 days.";
-                rewardMessage = "Reward: prey can't escape";
+                rewardMessage = "Reward: always swallow prey";
                 daysEatingPreyOnly = 0;
                 //preySpawner.UpdateValues(preyInside, (stomachCapacity * trainingModifier * hungerModifier) / 4)
                 break;
@@ -1440,7 +1529,7 @@ public class MainLoop : MonoBehaviour
                 case 13:
                     achievementName = "Carnivore";
                     achievementDescription = "Fulfill your calorie requirements using only prey for 3 days.";
-                    rewardMessage = "prey cannot escape";
+                    rewardMessage = "always successfully swallow prey";
                     break;
                 case 14:
                     achievementName = "Mega Milk";
@@ -1544,7 +1633,7 @@ public class MainLoop : MonoBehaviour
         if (babyVolume >= 2.0f) babyDescriptor = "perfectly healthy ";
 
         gaspPlayer.PlayRandom();
-        if (largeBreastMode && nakedMode) StartCoroutine(CreateMilkStream(1, 0.05f, 0f));
+        if (breastIndex > 0 && nakedMode) StartCoroutine(CreateMilkStream(1, 0.05f, 0f));
         StartCoroutine(Bounce(0.1f));
         StartCoroutine(BellyJiggle(false));
         faces.SetCounterTo(4);
@@ -1563,12 +1652,12 @@ public class MainLoop : MonoBehaviour
             if (fetusCount > 1)
             {
                 gaspPlayer.PlayRandom();
-                if (largeBreastMode && nakedMode) StartCoroutine(CreateMilkStream(Random.Range(1, 3), 0.05f, 0f));
+                if (breastIndex > 0 && nakedMode) StartCoroutine(CreateMilkStream(Random.Range(1, 3), 0.05f, 0f));
             }
             else
             {
                 gaspPlayer.PlayCustom(lastBirthSound);
-                if (largeBreastMode && nakedMode)
+                if (breastIndex > 0 && nakedMode)
                 {
                     StartCoroutine(CreateMilkStream(1, 0.05f, 0f));
                     StartCoroutine(CreateMilkStream(2, 0.05f, 0.6f));
@@ -1875,7 +1964,7 @@ public class MainLoop : MonoBehaviour
         }
         preyCount = (int)Mathf.Min(preyCount, (stomachContents + gasContents) / 4);
         preyXraySprites.SetCounterTo(preyCount);
-        preyXraySprites.transform.localPosition = new Vector3(-0.06f * ((int)(stomachContents + gasContents) - 4 * preyCount), -0.05f * ((int)(stomachContents + gasContents) - 4 * preyCount), 0f);
+        preyXraySprites.transform.localPosition = new Vector3(-0.06f * ((int)Mathf.Min(stomachContents + gasContents, 17f) - 4 * preyCount), -0.05f * ((int)Mathf.Min(stomachContents + gasContents, 17f) - 4 * preyCount), 0f);
     }
 
     float GetPreyVolume()
@@ -2002,14 +2091,18 @@ public class MainLoop : MonoBehaviour
         while (true)
         {
             if (!isAsleep && Settings.SaveEnabled) SaveGame();
-            if (bankedCalories >= 50000)
+            if (bankedCalories >= 100000)
             {
-                largeBreastMode = true;
+                breastIndex = 2;            
+            }
+            else if (bankedCalories >= 50000)
+            {
+                breastIndex = 1;
                 if (!achievements[14]) UpdateAchievements(14);
             }
             else
             {
-                largeBreastMode = false;
+                breastIndex = 0;
             }
             SetBellySprites(stomachContents + gasContents > intestineContents + wombContents + coomContents, imageIndex);
             adjustedStomachCapacity = stomachCapacity * hungerModifier * trainingModifier;
@@ -2221,13 +2314,13 @@ public class MainLoop : MonoBehaviour
 
                 if (clickedButtonName == "leftNipple" || clickedButtonName == "rightNipple")
                 {
-                    if (largeBreastMode && nakedMode && Random.Range(0, 50000) < bankedCalories - 45000)
+                    if (breastIndex > 0 && nakedMode && Random.Range(0, 50000) < bankedCalories - 45000)
                     {
                         StartCoroutine(CreateMilkStream(1 + Random.Range(0, (bankedCalories - 50000) / 15000), 0.05f, 0f));
                         if (Mathf.Floor(Mathf.Round((stomachContents + intestineContents + gasContents) * 1000) / 1000) > 8)
                         {
                             faces.SetCounterTo(9);
-                            if (!stuffedMoansPlayer.GetComponent<AudioSource>().isPlaying) stuffedMoansPlayer.PlayRandom();
+                            if (!stuffedMoansPlayer.GetComponent<AudioSource>().isPlaying) stuffedMoansPlayer.PlayRandomNoOverlap();
                         }
                         else
                         {
@@ -2502,7 +2595,7 @@ public class MainLoop : MonoBehaviour
                 {
                     if (stomachContents + gasContents + 3f <= adjustedStomachCapacity || (canSwallowFinalPrey && stomachContents + gasContents <= adjustedStomachCapacity) || berserkMode)//(achievements[13] ? 12f : 8f)))
                     {
-                        if (Input.GetKey(KeyCode.LeftShift) || berserkMode || achievements[13] || Random.Range(0, 100) < 20 + (40 - cursor.heldPrey.health) * 4)
+                        if (Input.GetKey(KeyCode.LeftShift) || achievements[13] || Random.Range(0, 100) < 20 + (40 - cursor.heldPrey.health) * 4)
                         {
                             ateThisTurn = true;
                             babiesKicking = false;
@@ -2698,6 +2791,7 @@ public class MainLoop : MonoBehaviour
                 weedStockCounter.SetCounterTo(weedStock);
                 weedStockCounter.SetAltColor(weedStock >= 5);
                 hungerText.text = "Hunger multiplier: " + (berserkMode ? "???" : (hungerModifier + "x"));
+                hungerText.color = (berserkMode ? Color.yellow : Color.white);
 
                 if (clickedButtonName == this.gameObject.name)
                 {
@@ -2781,7 +2875,7 @@ public class MainLoop : MonoBehaviour
                     eligibleInteractions[2] = false;
                     eligibleInteractions[4] = imageIndex > 3;
                     eligibleInteractions[5] = pregnancyDays >= 20 && imageIndex >= 6;
-                    eligibleInteractions[6] = stomachContents + gasContents > stomachCapacity * trainingModifier * hungerModifier;
+                    eligibleInteractions[6] = stomachContents + gasContents >= stomachCapacity * trainingModifier * hungerModifier;
                     eligibleInteractions[7] = GetPreyCount() == 3 && stomachContents + gasContents <= adjustedStomachCapacity;                   
 
                     int interactionIndex = Random.Range(0, eligibleInteractions.Length);
@@ -2795,7 +2889,8 @@ public class MainLoop : MonoBehaviour
                     if (eligibleInteractions[6] && !alreadySeenInteractions[6]) interactionIndex = 6;
                     if (eligibleInteractions[4] && !alreadySeenInteractions[4]) interactionIndex = 4;
                     if (eligibleInteractions[7] && !alreadySeenInteractions[7]) interactionIndex = 7;
-                    if (eligibleInteractions[3] && hungerModifier >= 4.4f && intestineContents >= intestineCapacity * intestineMultiplier && stomachContents >= 13.6f && foodStock < 10 && !berserkMode) interactionIndex = 3;
+                    if (eligibleInteractions[3] && stomachContents + gasContents >= stomachCapacity * trainingModifier * hungerModifier && !alreadySeenInteractions[3]) interactionIndex = 3;
+                    if (eligibleInteractions[3] && hungerModifier >= 4.4f && intestineContents >= intestineCapacity * intestineMultiplier && stomachContents >= 13.6f && foodStock < 10 && preyOutside == 0 && !berserkMode) interactionIndex = 3;
                     //interactionIndex = 2;
 
                     string subMessage = "";
@@ -2805,8 +2900,8 @@ public class MainLoop : MonoBehaviour
                     {
                         case 0://elbows
                             subMessage = "You touch your elbows together without much difficulty.";
-                            if (imageIndex > 6 ^ largeBreastMode) subMessage = "It's a struggle, but you barely manage to bring your elbows together.";
-                            if (imageIndex > 12 || (imageIndex > 6 && largeBreastMode)) subMessage = "You try bringing your elbows together, but it's impossible for obvious reasons.";
+                            if (breastIndex == 1) subMessage = "It's a struggle, but you barely manage to bring your elbows together.";
+                            if (breastIndex == 2 || (breastIndex == 1 && imageIndex >= 12)) subMessage = "You try bringing your elbows together, but it's impossible for obvious reasons.";
                             bellyText.text = "\"can you touch your elbows together?\"\n\n" + (alreadySeenInteractions[0] ? "You're not falling for that again." : (subMessage + " What was that all about?"));
                             if (!alreadySeenInteractions[0])
                             {
@@ -2892,8 +2987,13 @@ public class MainLoop : MonoBehaviour
                             }
                             else
                             {
-                                subMessage = "You tell them that you are stuffed to the limit, " + ((hungerModifier >= 4.6f && intestineContents >= intestineCapacity * intestineMultiplier) ? "and it is physically impossible to stuff yourself any further." : "but you might be able to force yourself to eat more with some encouragement from chat.");
-                                if (gasContents > 0)
+                                subMessage = "You tell them that you are stuffed to the limit, " + ((hungerModifier >= 4.4f && intestineContents >= intestineCapacity * intestineMultiplier && stomachContents >= 13.6f ) ? "and it is physically impossible to stuff yourself any further." : "but you might be able to force yourself to eat more with some encouragement from chat.");
+                                if (berserkMode && stomachContents < 18f)
+                                {
+                                    subMessage = "Yes.";
+                                    subMessage2 = "";
+                                }
+                                else if (gasContents > 0)
                                 {
                                     subMessage2 = "\n\nYou can probably free up some space by burping.";
                                     faces.SetCounterTo(0);
@@ -2918,13 +3018,14 @@ public class MainLoop : MonoBehaviour
                                     subMessage2 = "\n\nThough maybe not today. You feel like you could eat more on a day when you're feeling particularly strong cravings.";
                                     faces.SetCounterTo(0);
                                 }
-                                else if (hungerModifier >= 4.4f && intestineContents >= intestineCapacity * intestineMultiplier && foodStock < 10 && stomachContents >= 13.6f)
+                                else if (hungerModifier >= 4.4f && intestineContents >= intestineCapacity * intestineMultiplier && foodStock < 10 && preyOutside == 0 && stomachContents >= 13.6f && !berserkMode)
                                 {
-                                    subMessage2 = "\n\nBut is that really true? After all, you've already gotten this far, and there's only " + foodStock + " plates of food left...\n\nAn overwhelming urge takes over. You must finish what you started. There is no turning back.";
+                                    subMessage2 = " But is that really true? After all, you've already gotten this far, and there's only " + foodStock + " plates of food left...\n\nAn overwhelming urge takes over. You must finish what you started. There is no turning back.";
                                     berserkMode = true;
-                                    hungerText.text = "Hunger multiplier: " + (berserkMode ? "???" : (hungerModifier + "x"));
+                                    hungerText.text = "Hunger multiplier: ???";
+                                    hungerText.color = Color.yellow;
                                     faces.SetCounterTo(15);
-                                }                          
+                                }
                                 else if (stomachContents + intestineContents >= 20f)
                                 {
                                     subMessage2 = "\n\nYour massively overstretched belly serves as proof of what you've accomplished during this stream, and you proudly show it off to the camera.";
@@ -3047,6 +3148,7 @@ public class MainLoop : MonoBehaviour
 
                                     }
                                     liquidContents -= flowRate;
+                                    if (intestineContents >= intestineCapacity * intestineMultiplier) reachedMaxIntestine = true;
                                     if (inertSoda > 0)
                                     {
                                         inertSoda--;
@@ -3128,7 +3230,8 @@ public class MainLoop : MonoBehaviour
                         chatButton.GetComponent<SpriteRenderer>().color = Color.white;
                         startingSize = imageIndex;
                         berserkMode = false;
-                        hungerText.text = "Hunger multiplier: " + (berserkMode ? "???" : (hungerModifier + "x"));
+                        hungerText.text = "Hunger multiplier: " + hungerModifier + "x";
+                        hungerText.color = Color.white;
                         lastJiggledSize = (imageIndex >= 6 ? (imageIndex - 1) : 5);
                         StartCoroutine(musicPlayer.ChangeTrackTo((currentTime > 7 && currentTime < 19) ? 2 : 3, 1.5f));
                         donationsText.text = "Donations: $" + streamEarnings;
@@ -3148,6 +3251,9 @@ public class MainLoop : MonoBehaviour
                             intestineMultiplier = 8f;
                             trainingModifier = 3f;
                             weedStock = Mathf.Min(5, 8 - munchiesConsumed);
+                            weedButton.SetActive(weedStock > 0);
+                            weedStockCounter.SetCounterTo(weedStock);
+                            weedStockCounter.SetAltColor(weedStock >= 5);
                             money = (int)Mathf.Max(money, 99999);
                             if (!isStreaming)
                             {
@@ -3164,6 +3270,18 @@ public class MainLoop : MonoBehaviour
                             PrintStats();
                             UpdateMedicineText();
                             UpdatePreyHealthbars();
+                        }
+                        if (mouseHeldDuration < 10f && mouseHeldDuration + Time.deltaTime >= 10f)
+                        {
+                            berserkMode = true;
+                            hungerText.text = "Hunger multiplier: ???";
+                            hungerText.color = Color.yellow;
+                            faces.SetCounterTo(15);
+
+                            foodStock = Mathf.Max(foodStock, 65 - (int)((intestineContents + stomachContents - 4 * (preyInside) + 0.001f) / 0.4f));
+                            if (foodStock > 60) foodStock = 60;
+                            foodButton.GetComponent<Collider2D>().enabled = foodStock < 60 && foodMinigameAvailable;
+                            foodButton.GetComponent<SpriteRenderer>().color = ((foodStock < 60 && foodMinigameAvailable) ? Color.white : new Color(1f, 1f, 1f, 0.2f));
                         }
                         mouseHeldDuration += Time.deltaTime;
                         yield return null;
@@ -3243,15 +3361,17 @@ public class MainLoop : MonoBehaviour
                     //achievementButton.GetComponent<ToggleButton>().ForceState(false);
                 }
 
-                if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.B))
+                /*if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.B))
                 {
                     berserkMode = !berserkMode;
                     hungerText.text = "Hunger multiplier: " + (berserkMode ? "???" : (hungerModifier + "x"));
-                }
+                }*/
 
                 if (Input.GetMouseButtonDown(1))
                 {
                     PrintStats();
+                    UpdatePreyXray();
+                    UpdatePreyHealthbars();
                     Debug.Log(Time.deltaTime);
                 }
                 /*if (clickedButtonName == "toggle_time")
@@ -3278,7 +3398,7 @@ public class MainLoop : MonoBehaviour
                     hungerModifier = 1f + (hungerTimer * 0.2f) + (0.2f * munchiesConsumed);
                     if (!achievements[0] && hungerModifier >= 4f) UpdateAchievements(0);
                     hungerText.text = "Hunger multiplier: " + (berserkMode ? "???" : (hungerModifier + "x"));
-
+                    hungerText.color = (berserkMode ? Color.yellow : Color.white);
                     //intestineMultiplier += 0.1f;
                     //intestineMultiplier = Mathf.Round(intestineMultiplier * 10) / 10;
                     money -= medicinePrices[0];
@@ -3393,8 +3513,9 @@ public class MainLoop : MonoBehaviour
                         dailyCalories += Mathf.Round(intestineContents * 1000);
                         if (intestineContents >= intestineCapacity * intestineMultiplier && intestineMultiplier < 8f)
                         {
-                            intestineMultiplier += 0.1f;
-                            if (intestineMultiplier < 8f && stomachContents > stomachCapacity * trainingModifier) intestineMultiplier += 0.1f;
+                            intestineMultiplier += 0.4f;
+                            if (intestineMultiplier > 8f) intestineMultiplier = 8f;
+                            //if (intestineMultiplier < 8f && stomachContents > stomachCapacity * trainingModifier) intestineMultiplier += 0.1f;
                             intestineMultiplier = Mathf.Round(intestineMultiplier * 10) / 10;
                         }
                         if (!achievements[2] && (int)dailyCalories >= 10000) UpdateAchievements(2);
@@ -3451,6 +3572,7 @@ public class MainLoop : MonoBehaviour
                     UpdateDigestionSounds();
                     if (!achievements[0] && hungerModifier >= 4f) UpdateAchievements(0);
                     hungerText.text = "Hunger multiplier: " + (berserkMode ? "???" : (hungerModifier + "x"));
+                    hungerText.color = (berserkMode ? Color.yellow : Color.white);
                     money -= medicinePrices[4];
                     UpdateMedicineText();
                     UpdatePreyHealthbars();
@@ -3768,8 +3890,9 @@ public class MainLoop : MonoBehaviour
                     dailyCalories += Mathf.Round(intestineContents * 1000);
                     if (intestineContents >= intestineCapacity * intestineMultiplier && intestineMultiplier < 8f)
                     {
-                        intestineMultiplier += 0.1f;
-                        if (intestineMultiplier < 8f && stomachContents > stomachCapacity * trainingModifier) intestineMultiplier += 0.1f;
+                        intestineMultiplier += 0.4f;
+                        if (intestineCapacity > 8f) intestineMultiplier = 8f;
+                        //if (intestineMultiplier < 8f && stomachContents > stomachCapacity * trainingModifier) intestineMultiplier += 0.1f;
                         intestineMultiplier = Mathf.Round(intestineMultiplier * 10) / 10;
                     }
                     if (!achievements[2] && (int)dailyCalories >= 10000) UpdateAchievements(2);
@@ -3867,18 +3990,20 @@ public class MainLoop : MonoBehaviour
                 //Mathf.Clamp(wombContents, 0f, fetusCount * pregnancyDays * 0.05f);
                 if (!reachedMaxIntestine && intestineMultiplier > 6f)
                 {
-                    intestineMultiplier -= 0.1f;
+                    intestineMultiplier -= 0.4f;
                     if (intestineMultiplier < 6f) intestineMultiplier = 6f;
                     intestineMultiplier = Mathf.Round(intestineMultiplier * 10) / 10;
                 }
                 reachedMaxIntestine = false;
 
                 if (fetusCount > 0) bankedCalories += (int)dailyCalories - GetCalorieRequirement();
-                bankedCalories -= fetusCount > 0 ? (600 - (pregnancyDays >= 20 ? (fetusCount * 300) : 0)) : 10000;
-                bankedCalories = Mathf.Clamp(bankedCalories, 0, 100000);
+                //bankedCalories -= fetusCount > 0 ? (600 - (pregnancyDays >= 20 ? (fetusCount * 300) : 0)) : 10000;
+                //bankedCalories = Mathf.Clamp(bankedCalories, 0, 50000 + fetusCount * 10000);
                 //Debug.Log("banked calories: " + bankedCalories);
                 dailyCalories = 0;
             }
+            bankedCalories -= fetusCount > 0 ? (20 - (pregnancyDays >= 20 ? (fetusCount * 10) : 0)) : 400;
+            bankedCalories = Mathf.Clamp(bankedCalories, 0, 150000);
 
             if (isAsleep && sleepCountdown == 0)
             {
@@ -3892,14 +4017,18 @@ public class MainLoop : MonoBehaviour
                         if (Random.Range(0, 100) < (30 + 3 * fetusCount))
                         {
                             munchiesConsumed++;
-                            foodDescription = "You wake up with intense cravings for food.";
+                            foodDescription = "You wake up with intense cravings for food.\n\n";
                         }
                         else
                         {
-                            foodDescription = "You wake up with heightened cravings for food.";
+                            foodDescription = "You wake up with heightened cravings for food.\n\n";
                         }
                         if (hungerModifier < 1f + (hungerTimer * 0.2f) + (0.2f * munchiesConsumed)) hungerModifier = 1f + (hungerTimer * 0.2f) + (0.2f * munchiesConsumed);
                     }
+                }
+                if (pregnancyDays == 41)
+                {
+                    foodDescription += "Your pregnancy has become overdue, and it seems like your " + (fetusCount == 1 ? "baby" : "babies") + " will grow for a few more days.";
                 }
             }
             achievementButton.GetComponent<Collider2D>().enabled = !isAsleep;
@@ -3910,7 +4039,7 @@ public class MainLoop : MonoBehaviour
             }
             timeText.text = (ampmMode ? (ConvertToAMPM(currentTime)) : ((currentTime < 10 ? "0" : "") + currentTime + ":00")) + " | Day " + (fetusCount > 0 ? actualDays : "--");
             hungerText.text = "Hunger multiplier: " + hungerModifier + "x";
-
+            hungerText.color = Color.white;
             //stomachContents = Mathf.Round(stomachContents * 1000) / 1000;
             //intestineContents = Mathf.Round(intestineContents * 1000) / 1000;
             //wombContents = Mathf.Round(wombContents * 1000) / 1000;
@@ -4023,46 +4152,126 @@ public class MainLoop : MonoBehaviour
         int volumeInt = (int)Mathf.Floor(totalBellyContents + gasContents + 0.001f);
         if (volumeInt <= 22)
         {
-            imageIndex = (int)Mathf.Min(characterSpritesBtm.Length / 4 - 1, volumeInt);
+            imageIndex = (int)Mathf.Min(characterSpritesBtm.Length / 6 - 1, volumeInt);
         }
         else
         {
-            imageIndex = (int)Mathf.Min(characterSpritesBtm.Length / 4 - 1, 22 + (volumeInt - 22) / 2);
+            imageIndex = (int)Mathf.Min(characterSpritesBtm.Length / 6 - 1, 22 + (volumeInt - 22) / 2);
         }
 
         Vector3 leftOffset = Vector3.zero;
         Vector3 rightOffset = Vector3.zero;
 
-        switch (imageIndex)
+        if (breastIndex == 1)
         {
-            case 22:
-                leftOffset = new Vector3(0.011f, 0.029f, 0f);
-                rightOffset = new Vector3(0f, 0.033f, 0f);
-                break;
-            case 23:
-                leftOffset = new Vector3(0.015f, 0.058f, 0f);
-                rightOffset = new Vector3(0.011f, 0.055f, 0f);
-                break;
-            case 24:
-                leftOffset = new Vector3(0.033f, 0.131f, 0f);
-                rightOffset = new Vector3(0.04f, 0.128f, 0f);
-                break;
-            case 25:
-                leftOffset = new Vector3(0.037f, 0.172f, 0f);
-                rightOffset = new Vector3(0.072f, 0.178f, 0f);
-                break;
-            case 26:
-                leftOffset = new Vector3(0.042f, 0.205f, 0f);
-                rightOffset = new Vector3(0.096f, 0.206f, 0f);
-                break;
-            case 27:
-                leftOffset = new Vector3(0.028f, 0.224f, 0f);
-                rightOffset = new Vector3(0.139f, 0.23f, 0f);
-                break;
-            default:
-                break;
+            switch (imageIndex)
+            {
+                case 22:
+                    leftOffset = new Vector3(0.011f, 0.029f, 0f);
+                    rightOffset = new Vector3(0f, 0.033f, 0f);
+                    break;
+                case 23:
+                    leftOffset = new Vector3(0.015f, 0.058f, 0f);
+                    rightOffset = new Vector3(0.011f, 0.055f, 0f);
+                    break;
+                case 24:
+                    leftOffset = new Vector3(0.033f, 0.131f, 0f);
+                    rightOffset = new Vector3(0.04f, 0.128f, 0f);
+                    break;
+                case 25:
+                    leftOffset = new Vector3(0.037f, 0.172f, 0f);
+                    rightOffset = new Vector3(0.072f, 0.178f, 0f);
+                    break;
+                case 26:
+                    leftOffset = new Vector3(0.042f, 0.205f, 0f);
+                    rightOffset = new Vector3(0.096f, 0.206f, 0f);
+                    break;
+                case 27:
+                    leftOffset = new Vector3(0.028f, 0.224f, 0f);
+                    rightOffset = new Vector3(0.139f, 0.23f, 0f);
+                    break;
+                default:
+                    break;
+            }
         }
-
+        else if (breastIndex == 2)
+        {
+            switch (imageIndex)
+            {
+                case 11:
+                    leftOffset = new Vector3(-0.355f, -0.094f, 0f);
+                    rightOffset = new Vector3(-0.177f, -0.106f, 0f);
+                    break;
+                case 12:
+                    leftOffset = new Vector3(-0.342f, -0.06f, 0f);
+                    rightOffset = new Vector3(-0.181f, -0.064f, 0f);
+                    break;
+                case 13:
+                    leftOffset = new Vector3(-0.338f, -0.033f, 0f);
+                    rightOffset = new Vector3(-0.173f, -0.026f, 0f);
+                    break;
+                case 14:
+                    leftOffset = new Vector3(-0.342f, -0.003f, 0f);
+                    rightOffset = new Vector3(-0.181f, 0.008f, 0f);
+                    break;
+                case 15:
+                    leftOffset = new Vector3(-0.338f, 0.02f, 0f);
+                    rightOffset = new Vector3(-0.185f, 0.027f, 0f);
+                    break;
+                case 16:
+                    leftOffset = new Vector3(-0.342f, 0.035f, 0f);
+                    rightOffset = new Vector3(-0.185f, 0.05f, 0f);
+                    break;
+                case 17:
+                    leftOffset = new Vector3(-0.342f, 0.058f, 0f);
+                    rightOffset = new Vector3(-0.181f, 0.069f, 0f);
+                    break;
+                case 18:
+                    leftOffset = new Vector3(-0.342f, 0.069f, 0f);
+                    rightOffset = new Vector3(-0.189f, 0.077f, 0f);
+                    break;
+                case 19:
+                    leftOffset = new Vector3(-0.342f, 0.084f, 0f);
+                    rightOffset = new Vector3(-0.193f, 0.085f, 0f);
+                    break;
+                case 20:
+                    leftOffset = new Vector3(-0.346f, 0.088f, 0f);
+                    rightOffset = new Vector3(-0.185f, 0.1f, 0f);
+                    break;
+                case 21:
+                    leftOffset = new Vector3(-0.346f, 0.096f, 0f);
+                    rightOffset = new Vector3(-0.185f, 0.111f, 0f);
+                    break;
+                case 22:
+                    leftOffset = new Vector3(-0.342f, 0.107f, 0f);
+                    rightOffset = new Vector3(-0.185f, 0.119f, 0f);
+                    break;
+                case 23:
+                    leftOffset = new Vector3(-0.338f, 0.13f, 0f);
+                    rightOffset = new Vector3(-0.177f, 0.149f, 0f);
+                    break;
+                case 24:
+                    leftOffset = new Vector3(-0.33f, 0.175f, 0f);
+                    rightOffset = new Vector3(-0.17f, 0.213f, 0f);
+                    break;
+                case 25:
+                    leftOffset = new Vector3(-0.345f, 0.251f, 0f);
+                    rightOffset = new Vector3(-0.161f, 0.279f, 0f);
+                    break;
+                case 26:
+                    leftOffset = new Vector3(-0.307f, 0.269f, 0f);
+                    rightOffset = new Vector3(-0.147f, 0.303f, 0f);
+                    break;
+                case 27:
+                    leftOffset = new Vector3(-0.288f, 0.355f, 0f);
+                    rightOffset = new Vector3(-0.128f, 0.404f, 0f);
+                    break;
+                default:
+                    leftOffset = new Vector3(-0.326f, -0.194f, 0f);
+                    rightOffset = new Vector3(-0.171f, -0.208f, 0f);
+                    break;
+            }
+        }
         leftNipple.localPosition = leftNipStartPos + leftOffset;
         rightNipple.localPosition = rightNipStartPos + rightOffset;
 
@@ -4187,7 +4396,7 @@ public class MainLoop : MonoBehaviour
         }
 
 
-        if (!achievements[8] && imageIndex == characterSpritesBtm.Length/4 - 1) UpdateAchievements(8);
+        if (!achievements[8] && imageIndex == characterSpritesBtm.Length/6 - 1) UpdateAchievements(8);
         /*switch (Mathf.Floor(totalBellyContents))
         {
             case 0:
@@ -4355,21 +4564,21 @@ public class MainLoop : MonoBehaviour
     void SetBellySprites(bool isTopHeavy, int index)
     {
         float effectiveContents = Mathf.Clamp(stomachContents + gasContents, 0f, 17f);
-        spriteRenderer.sprite = (isTopHeavy ? characterSpritesTop[index + (largeBreastMode ? 28 : 0) + (nakedMode ? 56 : 0)] : characterSpritesBtm[index + (largeBreastMode ? 28 : 0) + (nakedMode ? 56 : 0)]);
-        sideviewBase.GetComponent<DigitCounter>().SetCounterTo(largeBreastMode ? 1 : 0);
+        spriteRenderer.sprite = (isTopHeavy ? characterSpritesTop[index + (breastIndex * 28) + (nakedMode ? 84 : 0)] : characterSpritesBtm[index + (breastIndex * 28) + (nakedMode ? 84 : 0)]);
+        sideviewBase.GetComponent<DigitCounter>().SetCounterTo(breastIndex);
         stomachSprites.SetCounterTo(Mathf.Min(17, (int)effectiveContents));
         stomachSprites.transform.localPosition = new Vector3(Mathf.Clamp(imageIndex - (int)effectiveContents, 0, 17) * -0.02f, Mathf.Clamp(imageIndex - (int)effectiveContents, 0, 17) * 0.045f + (isTopHeavy ? 0f : effectiveContents / -120f), 0f);
         if (isTopHeavy)
         {
             sideviewBottom.GetComponent<SpriteRenderer>().enabled = false;
             sideviewTop.GetComponent<SpriteRenderer>().enabled = true;
-            sideviewTop.SetCounterTo(index + (largeBreastMode ? 28 : 0));
+            sideviewTop.SetCounterTo(index + (breastIndex * 28));
         }
         else
         {
             sideviewTop.GetComponent<SpriteRenderer>().enabled = false;
             sideviewBottom.GetComponent<SpriteRenderer>().enabled = true;
-            sideviewBottom.SetCounterTo(index + (largeBreastMode ? 28 : 0));
+            sideviewBottom.SetCounterTo(index + (breastIndex * 28));
         }
     }
 
