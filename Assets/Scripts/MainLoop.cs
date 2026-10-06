@@ -108,6 +108,7 @@ public class MainLoop : MonoBehaviour
     [SerializeField] private DigitCounter skipTime;
     [SerializeField] private DigitCounter sideviewTop;
     [SerializeField] private DigitCounter sideviewBottom;
+    [SerializeField] private DigitCounter background;
     [SerializeField] SpriteRenderer sideviewBase;
 
     [SerializeField] private string[] messageList;
@@ -240,6 +241,7 @@ public class MainLoop : MonoBehaviour
     public bool playingDigestionSounds = false;
     public bool ampmMode = false;
     public bool transparentSideview = true;
+    public int backgroundIndex = 0;
     public int version;
     int currentVersion = 1;
     Color oldColor = new Color(1f, 1f, 1f, 0.1019608f);
@@ -324,6 +326,7 @@ public class MainLoop : MonoBehaviour
         saveData.ampmMode = ampmMode;
         saveData.nakedMode = nakedMode;
         saveData.transparentSideview = transparentSideview;
+        saveData.backgroundIndex = backgroundIndex;
         saveData.version = currentVersion;
 
         string json = JsonUtility.ToJson(saveData);
@@ -343,6 +346,7 @@ public class MainLoop : MonoBehaviour
         }
         oldSaveData.ampmMode = ampmMode;
         oldSaveData.transparentSideview = transparentSideview;
+        oldSaveData.backgroundIndex = backgroundIndex;
         oldSaveData.version = currentVersion;
         if (Settings.SaveEnabled)
         {
@@ -431,7 +435,7 @@ public class MainLoop : MonoBehaviour
         saveData.trainingModifier = 1f;
         saveData.intestineMultiplier = 2f;
         saveData.munchiesConsumed = 0;
-        saveData.foodStock = 0;
+        saveData.foodStock = 5;
         saveData.weedStock = 0;
         saveData.enzymeStock = 20;
         saveData.money = 0;
@@ -475,6 +479,7 @@ public class MainLoop : MonoBehaviour
         saveData.ampmMode = false;
         saveData.nakedMode = false;
         saveData.transparentSideview = true;
+        saveData.backgroundIndex = 0;
 
         string json = JsonUtility.ToJson(saveData);
         File.WriteAllText(Application.persistentDataPath + "/savedGame.json", json);
@@ -576,6 +581,7 @@ public class MainLoop : MonoBehaviour
         sideviewTop.GetComponent<SpriteRenderer>().color = transparentSideview ? oldColor : Color.white;
         sideviewBottom.GetComponent<SpriteRenderer>().color = transparentSideview ? oldColor : Color.white;
         nopan.GetComponent<SpriteRenderer>().enabled = false;//nopanMode && !nakedMode;
+        background.SetCounterTo(backgroundIndex);
         PrintAchievementBoard();
         StartCoroutine(HandleOtherToggles());
         StartCoroutine(MainRoutine());
@@ -1363,11 +1369,11 @@ public class MainLoop : MonoBehaviour
         {
             case 0:
                 achievementMessage = "Eater of Worlds: Reach a hunger multiplier of 4x.";
-                rewardMessage = "Reward: receive 2 leaves per day";
+                rewardMessage = "Reward: earn 2 leaves per day";
                 break;
             case 1:
                 achievementMessage = "No Lunch Break: Spend every waking hour of the day with an overfilled stomach.";
-                rewardMessage = "Reward: when near the limit, eat twice";
+                rewardMessage = "Reward: eat twice if near limit";
                 break;
             case 2:
                 achievementMessage = "Miss Piggy: Digest 10000 calories in one day.";
@@ -1375,12 +1381,12 @@ public class MainLoop : MonoBehaviour
                 break;
             case 3:
                 achievementMessage = "Mucho Texto: Have a total of 20L or more in your stomach and intestines.";
-                rewardMessage = "Reward: intestines fill up 33% quicker";
+                rewardMessage = "Reward: intestines fill 33% faster";
                 flowRate = 0.4f;
                 break;
             case 4:
                 achievementMessage = "Take That, Triple Finish: Get filled with the maximum amount of baby batter.";
-                rewardMessage = "Reward: womb tattoo +\nauto sex";
+                rewardMessage = "Reward: womb tattoo + auto sex";
                 wombTattoo.GetComponent<SpriteRenderer>().enabled = true;
                 toggleButtons[6].gameObject.SetActive(true);
                 toggleButtons[6].ForceState(true);
@@ -1529,7 +1535,7 @@ public class MainLoop : MonoBehaviour
                 case 13:
                     achievementName = "Carnivore";
                     achievementDescription = "Fulfill your calorie requirements using only prey for 3 days.";
-                    rewardMessage = "always successfully swallow prey";
+                    rewardMessage = "always swallow prey";
                     break;
                 case 14:
                     achievementName = "Mega Milk";
@@ -1845,6 +1851,8 @@ public class MainLoop : MonoBehaviour
         //if (!sexButton.GetComponent<AnimateSprite>().enabled) sexButton.GetComponent<SpriteRenderer>().color = ((coomStorage >= 1f && !isAsleep) ? Color.white : new Color(1f, 1f, 1f, 0.2f));
         timeText.text = (ampmMode ? (ConvertToAMPM(currentTime)) : ((currentTime < 10 ? "0" : "") + currentTime + ":00")) + " | Day " + (fetusCount > 0 ? actualDays : "--");
         PrintStats();
+        UpdatePreyHealthbars();
+        UpdatePreyXray();
     }
 
     IEnumerator Swallow(Prey prey)
@@ -3313,6 +3321,12 @@ public class MainLoop : MonoBehaviour
                             skipFoodMinigame = skipFoodButton.isActive;
                             SaveOnlySettings();
                         }
+                        if (clickedButtonName == "BG_button")
+                        {
+                            background.Increment();
+                            backgroundIndex = background.index;
+                            SaveOnlySettings();
+                        }
                         if (clickedButtonName == "toggle_tattoo") SaveOnlySettings();
                         if (clickedButtonName == "delete_save_button")
                         {
@@ -3372,7 +3386,11 @@ public class MainLoop : MonoBehaviour
                     PrintStats();
                     UpdatePreyXray();
                     UpdatePreyHealthbars();
-                    Debug.Log(Time.deltaTime);
+                    /*Debug.Log(Time.deltaTime);
+                    if (Input.GetKey(KeyCode.LeftShift) && cursor.transform.position.x > -1 && cursor.transform.position.x < 6.5)
+                    {
+                        UpdateAchievements((int)((cursor.transform.position.x + 1) * 2));
+                    }*/
                 }
                 /*if (clickedButtonName == "toggle_time")
                 {

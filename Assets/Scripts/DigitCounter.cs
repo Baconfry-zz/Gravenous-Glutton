@@ -35,4 +35,10 @@ public class DigitCounter : MonoBehaviour
         spriteRenderer.color = isMaxed ? Color.yellow : Color.white;
     }
 
+    public void Increment()
+    {
+        index++;
+        if (index >= digits.Length) index = 0;
+        spriteRenderer.sprite = digits[index];
+    }
 }

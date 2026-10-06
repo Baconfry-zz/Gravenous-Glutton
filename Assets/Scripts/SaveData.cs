@@ -64,6 +64,7 @@ public class SaveData
     public bool ampmMode;
     public bool nakedMode;
     public bool transparentSideview;
+    public int backgroundIndex;
     public int version;
 
     // Start is called before the first frame update
