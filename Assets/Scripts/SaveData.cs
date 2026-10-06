@@ -65,6 +65,7 @@ public class SaveData
     public bool nakedMode;
     public bool transparentSideview;
     public int backgroundIndex;
+    public int breastOverride;
     public int version;
 
     // Start is called before the first frame update

@@ -22,6 +22,7 @@ public class MainLoop : MonoBehaviour
     [SerializeField] private Text donationsText;
     [SerializeField] private Text[] contentsText;
     [SerializeField] private Text deleteSaveText;
+    [SerializeField] private Text breastOverrideText;
 
     [SerializeField] private Text achievementBoard;
     [SerializeField] private Text achievementRewards;
@@ -242,6 +243,7 @@ public class MainLoop : MonoBehaviour
     public bool ampmMode = false;
     public bool transparentSideview = true;
     public int backgroundIndex = 0;
+    public int breastOverride = 2;
     public int version;
     int currentVersion = 1;
     Color oldColor = new Color(1f, 1f, 1f, 0.1019608f);
@@ -327,6 +329,7 @@ public class MainLoop : MonoBehaviour
         saveData.nakedMode = nakedMode;
         saveData.transparentSideview = transparentSideview;
         saveData.backgroundIndex = backgroundIndex;
+        saveData.breastOverride = breastOverride;
         saveData.version = currentVersion;
 
         string json = JsonUtility.ToJson(saveData);
@@ -347,6 +350,7 @@ public class MainLoop : MonoBehaviour
         oldSaveData.ampmMode = ampmMode;
         oldSaveData.transparentSideview = transparentSideview;
         oldSaveData.backgroundIndex = backgroundIndex;
+        oldSaveData.breastOverride = breastOverride;
         oldSaveData.version = currentVersion;
         if (Settings.SaveEnabled)
         {
@@ -418,6 +422,7 @@ public class MainLoop : MonoBehaviour
         //ampmMode = false;
         nakedMode = false;
         //transparentSideview = true;
+        breastOverride = 2;
     }
 
     public void WipeSaveData()
@@ -480,6 +485,7 @@ public class MainLoop : MonoBehaviour
         saveData.nakedMode = false;
         saveData.transparentSideview = true;
         saveData.backgroundIndex = 0;
+        saveData.breastOverride = 2;
 
         string json = JsonUtility.ToJson(saveData);
         File.WriteAllText(Application.persistentDataPath + "/savedGame.json", json);
@@ -718,7 +724,7 @@ public class MainLoop : MonoBehaviour
         eligibleMessages[109] = fetusCount == 1 && foodEaten > 15;
         eligibleMessages[110] = false;
         eligibleMessages[111] = false;
-        eligibleMessages[112] = breastIndex > 0;
+        eligibleMessages[112] = Mathf.Min(breastOverride, breastIndex) > 0;
         eligibleMessages[113] = imageIndex > 11;
         eligibleMessages[114] = false;
         eligibleMessages[115] = doingSpecialMessage && preyInside == 1;
@@ -888,7 +894,7 @@ public class MainLoop : MonoBehaviour
         Vector3 leftOffset = Vector3.zero;
         Vector3 rightOffset = Vector3.zero;
 
-        if (breastIndex == 1)
+        if (Mathf.Min(breastOverride, breastIndex) == 1)
         {
             switch (imageIndex)
             {
@@ -920,7 +926,7 @@ public class MainLoop : MonoBehaviour
                     break;
             }
         }
-        else if (breastIndex == 2)
+        else if (Mathf.Min(breastOverride, breastIndex) == 2)
         {
             switch (imageIndex)
             {
@@ -1639,7 +1645,7 @@ public class MainLoop : MonoBehaviour
         if (babyVolume >= 2.0f) babyDescriptor = "perfectly healthy ";
 
         gaspPlayer.PlayRandom();
-        if (breastIndex > 0 && nakedMode) StartCoroutine(CreateMilkStream(1, 0.05f, 0f));
+        if (Mathf.Min(breastOverride, breastIndex) > 0 && nakedMode) StartCoroutine(CreateMilkStream(1, 0.05f, 0f));
         StartCoroutine(Bounce(0.1f));
         StartCoroutine(BellyJiggle(false));
         faces.SetCounterTo(4);
@@ -1658,12 +1664,12 @@ public class MainLoop : MonoBehaviour
             if (fetusCount > 1)
             {
                 gaspPlayer.PlayRandom();
-                if (breastIndex > 0 && nakedMode) StartCoroutine(CreateMilkStream(Random.Range(1, 3), 0.05f, 0f));
+                if (Mathf.Min(breastOverride, breastIndex) > 0 && nakedMode) StartCoroutine(CreateMilkStream(Random.Range(1, 3), 0.05f, 0f));
             }
             else
             {
                 gaspPlayer.PlayCustom(lastBirthSound);
-                if (breastIndex > 0 && nakedMode)
+                if (Mathf.Min(breastOverride, breastIndex) > 0 && nakedMode)
                 {
                     StartCoroutine(CreateMilkStream(1, 0.05f, 0f));
                     StartCoroutine(CreateMilkStream(2, 0.05f, 0.6f));
@@ -2322,7 +2328,7 @@ public class MainLoop : MonoBehaviour
 
                 if (clickedButtonName == "leftNipple" || clickedButtonName == "rightNipple")
                 {
-                    if (breastIndex > 0 && nakedMode && Random.Range(0, 50000) < bankedCalories - 45000)
+                    if (Mathf.Min(breastOverride, breastIndex) > 0 && nakedMode && Random.Range(0, 50000) < bankedCalories - 45000)
                     {
                         StartCoroutine(CreateMilkStream(1 + Random.Range(0, (bankedCalories - 50000) / 15000), 0.05f, 0f));
                         if (Mathf.Floor(Mathf.Round((stomachContents + intestineContents + gasContents) * 1000) / 1000) > 8)
@@ -2908,8 +2914,8 @@ public class MainLoop : MonoBehaviour
                     {
                         case 0://elbows
                             subMessage = "You touch your elbows together without much difficulty.";
-                            if (breastIndex == 1) subMessage = "It's a struggle, but you barely manage to bring your elbows together.";
-                            if (breastIndex == 2 || (breastIndex == 1 && imageIndex >= 12)) subMessage = "You try bringing your elbows together, but it's impossible for obvious reasons.";
+                            if (Mathf.Min(breastOverride, breastIndex) == 1) subMessage = "It's a struggle, but you barely manage to bring your elbows together.";
+                            if (Mathf.Min(breastOverride, breastIndex) == 2 || (Mathf.Min(breastOverride, breastIndex) == 1 && imageIndex >= 12)) subMessage = "You try bringing your elbows together, but it's impossible for obvious reasons.";
                             bellyText.text = "\"can you touch your elbows together?\"\n\n" + (alreadySeenInteractions[0] ? "You're not falling for that again." : (subMessage + " What was that all about?"));
                             if (!alreadySeenInteractions[0])
                             {
@@ -3306,6 +3312,20 @@ public class MainLoop : MonoBehaviour
                     sideviewToggle.GetComponent<Collider2D>().enabled = false;
                     skipTime.GetComponent<Collider2D>().enabled = false;                   
                     deleteSaveText.text = (Settings.SaveEnabled ? "Delete save data" : "Resume old save");
+                    switch (breastOverride)
+                    {
+                        case 0:
+                            breastOverrideText.text = "Max breast size: small";
+                            break;
+                        case 1:
+                            breastOverrideText.text = "Max breast size: large";
+                            break;
+                        case 2:
+                            breastOverrideText.text = "Max breast size: huge";
+                            break;
+                        default:
+                            break;
+                    }
                     yield return null;
                     //while (clickedButtonName != "toggle_achievement") yield return null;
                     while (!(Input.GetMouseButtonDown(0) && !cursor.GetAllColliderNames(4).Contains("achievementTextBackdrop")) || clickedButtonName == "always_eat_button" || clickedButtonName == "toggle_tattoo")
@@ -3325,6 +3345,25 @@ public class MainLoop : MonoBehaviour
                         {
                             background.Increment();
                             backgroundIndex = background.index;
+                            SaveOnlySettings();
+                        }
+                        if (clickedButtonName == "breast_override_button")
+                        {
+                            breastOverride--;
+                            if (breastOverride < 0) breastOverride = 2;
+                            switch (breastOverride)
+                            {
+                                case 0:
+                                    breastOverrideText.text = "Max breast size: small";
+                                    break;
+                                case 1:
+                                    breastOverrideText.text = "Max breast size: large";
+                                    break;
+                                case 2:
+                                    breastOverrideText.text = "Max breast size: huge";
+                                    break;
+                            }
+                            SetBellySprites(stomachContents + gasContents > intestineContents + wombContents + coomContents, imageIndex);
                             SaveOnlySettings();
                         }
                         if (clickedButtonName == "toggle_tattoo") SaveOnlySettings();
@@ -4180,7 +4219,7 @@ public class MainLoop : MonoBehaviour
         Vector3 leftOffset = Vector3.zero;
         Vector3 rightOffset = Vector3.zero;
 
-        if (breastIndex == 1)
+        if (Mathf.Min(breastOverride, breastIndex) == 1)
         {
             switch (imageIndex)
             {
@@ -4212,7 +4251,7 @@ public class MainLoop : MonoBehaviour
                     break;
             }
         }
-        else if (breastIndex == 2)
+        else if (Mathf.Min(breastOverride, breastIndex) == 2)
         {
             switch (imageIndex)
             {
@@ -4582,21 +4621,21 @@ public class MainLoop : MonoBehaviour
     void SetBellySprites(bool isTopHeavy, int index)
     {
         float effectiveContents = Mathf.Clamp(stomachContents + gasContents, 0f, 17f);
-        spriteRenderer.sprite = (isTopHeavy ? characterSpritesTop[index + (breastIndex * 28) + (nakedMode ? 84 : 0)] : characterSpritesBtm[index + (breastIndex * 28) + (nakedMode ? 84 : 0)]);
-        sideviewBase.GetComponent<DigitCounter>().SetCounterTo(breastIndex);
+        spriteRenderer.sprite = (isTopHeavy ? characterSpritesTop[index + (Mathf.Min(breastOverride, breastIndex) * 28) + (nakedMode ? 84 : 0)] : characterSpritesBtm[index + (Mathf.Min(breastOverride, breastIndex) * 28) + (nakedMode ? 84 : 0)]);
+        sideviewBase.GetComponent<DigitCounter>().SetCounterTo(Mathf.Min(breastOverride, breastIndex));
         stomachSprites.SetCounterTo(Mathf.Min(17, (int)effectiveContents));
         stomachSprites.transform.localPosition = new Vector3(Mathf.Clamp(imageIndex - (int)effectiveContents, 0, 17) * -0.02f, Mathf.Clamp(imageIndex - (int)effectiveContents, 0, 17) * 0.045f + (isTopHeavy ? 0f : effectiveContents / -120f), 0f);
         if (isTopHeavy)
         {
             sideviewBottom.GetComponent<SpriteRenderer>().enabled = false;
             sideviewTop.GetComponent<SpriteRenderer>().enabled = true;
-            sideviewTop.SetCounterTo(index + (breastIndex * 28));
+            sideviewTop.SetCounterTo(index + (Mathf.Min(breastOverride, breastIndex) * 28));
         }
         else
         {
             sideviewTop.GetComponent<SpriteRenderer>().enabled = false;
             sideviewBottom.GetComponent<SpriteRenderer>().enabled = true;
-            sideviewBottom.SetCounterTo(index + (breastIndex * 28));
+            sideviewBottom.SetCounterTo(index + (Mathf.Min(breastOverride, breastIndex) * 28));
         }
     }
 
