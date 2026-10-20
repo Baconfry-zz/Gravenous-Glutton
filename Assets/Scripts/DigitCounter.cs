@@ -24,6 +24,11 @@ public class DigitCounter : MonoBehaviour
         
     }
 
+    public int GetLength()
+    {
+        return digits.Length;
+    }
+
     public void SetCounterTo(int newIndex)
     {
         spriteRenderer.sprite = digits[newIndex];

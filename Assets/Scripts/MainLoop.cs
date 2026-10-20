@@ -21,6 +21,7 @@ public class MainLoop : MonoBehaviour
     [SerializeField] private Text moneyText;
     [SerializeField] private Text donationsText;
     [SerializeField] private Text[] contentsText;
+    [SerializeField] private Text[] overlayText;
     [SerializeField] private Text deleteSaveText;
     [SerializeField] private Text breastOverrideText;
 
@@ -89,6 +90,7 @@ public class MainLoop : MonoBehaviour
     [SerializeField] private GameObject preyButton;
     [SerializeField] private GameObject sexButton;
     [SerializeField] private GameObject chatButton;
+    [SerializeField] private GameObject updownButton;
     [SerializeField] private GameObject tattooToggle;
     [SerializeField] private GameObject nakedToggle;
     [SerializeField] private GameObject micToggle;
@@ -149,21 +151,29 @@ public class MainLoop : MonoBehaviour
      * 17: 0.4
      * 18: 0.35
      * 19: 0.3
-     * 20: softness 0.25 |
-     * 21: softness 0.20 |
-     * 22: softness 0.15 |
-     * 23: softness 0.10 | v.angle 1.11
-     * 24: softness 0.05 | v.angle 1.19
-     * 25: v.angle 1.26
-     * 26: v.angle 1.36
-     * 27: v.angle 1.53
+     * 20: softness 0.25 | cl. offset 0.78
+     * 21: softness 0.20 | cl. offset 0.30
+     * 22: softness 0.15 | cl. offset 0.83
+     * 23: softness 0.10 | v.angle 1.11 | cl. offset 1.55
+     * 24: softness 0.05 | v.angle 1.19 | cl. offset 1.78
+     * 25: v.angle 1.26 | cl. offset 1.86
+     * 26: v.angle 1.36 | cl. offset 1.90
+     * 27: v.angle 1.53 | cl. offset 2.01
      * 
      * -1/0, 0/1 : -2/0, -1/1
      * forearm thickness 0.35
      * step: right 0.7832 left 0.4806
-     * for implementation: slightly randomize food intake?
      * 
-     * */
+     * sex camera: pos (0.04, 0.46, 0.05) ret (-17.3, 212.5, 0) dis: 1.53 fov: 23
+     * 
+     * */    
+    public float stomachContents = 0f; //save
+    public float intestineContents = 0f; //save
+    public float wombContents = 0f; //save
+    public float gasContents = 0f; //SAVE
+    public float liquidContents = 0f;
+    public float coomContents = 0f; //save
+
     float holdFaceDuration = 0f;
     float barRatio = 0.42f;
     public bool isPlayingJiggleAnim = false;
@@ -173,12 +183,10 @@ public class MainLoop : MonoBehaviour
     bool canSwallowFinalPrey;
 
     float stomachCapacity = 1.0f;
-    public float stomachContents = 0f; //save
-    public float gasContents = 0f; //SAVE
-    public float liquidContents = 0f;
+
     public int digestionTimer = 0; //save
     public int hungerTimer = 0; //save
-    public float coomContents = 0f; //save
+
     public float coomStorage = 2f; //save
 
     public float trainingModifier = 1.0f; //save
@@ -202,14 +210,14 @@ public class MainLoop : MonoBehaviour
     bool flowEnabled = false;
     public float flowRate = 0.3f; //save
     float intestineCapacity = 1.0f;
-    public float intestineContents = 0f; //save
+
     public int disposalTimer = 0; //save
     int disposalReq = 4; //save
 
     public float dailyCalories = 1000f; //save
     public int bankedCalories = 0;
 
-    public float wombContents = 0f; //save
+
     public int fetusCount; //save
     public int fertilityBonus; //save
     int maxFertilityBonus = 3;
@@ -223,7 +231,7 @@ public class MainLoop : MonoBehaviour
     public int sleepCountdown = 0; //save
     public bool isAsleep = false; //save
     bool isBouncing = false;
-    bool babiesKicking = false;
+    public bool babiesKicking = false;
     bool sawNauseaMessage = false;
     bool didElbows = false;
     bool viewingFullscreenSideview = false;
@@ -261,8 +269,12 @@ public class MainLoop : MonoBehaviour
     int imageIndex = 0;
     int startingSize = 0;
     int lastJiggledSize = 5;
-    [SerializeField] Sprite[] characterSpritesBtm = new Sprite[14];
-    [SerializeField] Sprite[] characterSpritesTop = new Sprite[14];
+    [SerializeField] Sprite[] characterSpritesBtm = new Sprite[84];
+    [SerializeField] Sprite[] characterSpritesTop = new Sprite[84];
+    [SerializeField] Sprite[] altSpritesBtm = new Sprite[84];
+    [SerializeField] Sprite[] altSpritesTop = new Sprite[84];
+    [SerializeField] Sprite[] nudeSpritesBtm = new Sprite[84];
+    [SerializeField] Sprite[] nudeSpritesTop = new Sprite[84];
 
     [SerializeField] private GameObject leftSquirt;
     [SerializeField] private GameObject rightSquirt;
@@ -568,6 +580,7 @@ public class MainLoop : MonoBehaviour
         alwaysEatButton.ForceState(alwaysUseEatingAnimation);
         skipFoodButton.ForceState(skipFoodMinigame);
         autoSexButton.SetActive(achievements[4]);
+        if (!achievements[8]) nakedMode = false;
         sideviewToggle.SetActive(achievements[14]);
         playingDigestionSounds = toggledStates[7];
         micToggle.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, ((playingDigestionSounds && toggleButtons[1].isActive) ? 1f : 0.2f));
@@ -584,6 +597,7 @@ public class MainLoop : MonoBehaviour
         toggleButtons[5].ForceState(toggledStates[5]);
         toggleButtons[6].ForceState(achievements[4] && toggledStates[6]);
         toggleButtons[6].gameObject.SetActive(achievements[4]);
+        micToggle.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, ((toggledStates[7] && toggledStates[1]) ? 1f : 0.2f));
         sideviewTop.GetComponent<SpriteRenderer>().color = transparentSideview ? oldColor : Color.white;
         sideviewBottom.GetComponent<SpriteRenderer>().color = transparentSideview ? oldColor : Color.white;
         nopan.GetComponent<SpriteRenderer>().enabled = false;//nopanMode && !nakedMode;
@@ -779,8 +793,13 @@ public class MainLoop : MonoBehaviour
                 reactionFaceIndex = 9;
                 break;
         }
+        
+        if (!isJiggling)
+        {
+            if (babiesKicking) reactionFaceIndex = 11;
+            if (preyInside > 0 && foodContents >= 9) reactionFaceIndex = 17;
+        }
         if (isAsleep) reactionFaceIndex = 0;
-        if (babiesKicking) reactionFaceIndex = 11;
         return reactionFaceIndex;
     }
 
@@ -805,6 +824,7 @@ public class MainLoop : MonoBehaviour
         int amountToDecrement = (int)Mathf.Clamp((int)(stomachContents + gasContents) - imageIndex, -2, 0) + 2;
         faces.SetCounterTo(10);
         float startingXpos = stomachSprites.transform.localPosition.x;
+        float startingYpos = stomachSprites.transform.localPosition.y;
         if (!isTopHeavy)
         {
             SetBellySprites(true, imageIndex);
@@ -812,19 +832,19 @@ public class MainLoop : MonoBehaviour
             yield return new WaitForSeconds(frameDelay);
         }
         Vector3 startPosForSuck = xRayWomb.localPosition;
-        SetBellySprites(true, (int)Mathf.Min(characterSpritesTop.Length/6 - 1, trueImageIndex - 1));
-        wombTattoo.SetCounterTo((int)(Mathf.Min(characterSpritesTop.Length/6 - 1, trueImageIndex - 1)) + (nakedMode ? 56 : 0));
+        SetBellySprites(true, (int)Mathf.Min(characterSpritesTop.Length/3 - 1, trueImageIndex - 1));
+        wombTattoo.SetCounterTo((int)(Mathf.Min(characterSpritesTop.Length/3 - 1, trueImageIndex - 1)) + (nakedMode ? 56 : (backgroundIndex == 0 ? 0 : 112)));
         stomachSprites.transform.localScale = new Vector3(1 - 0.025f * amountToDecrement, 1f, 1f);
-        stomachSprites.transform.localPosition = new Vector3(startingXpos + 0.002f * (stomachContents + gasContents), stomachSprites.transform.localPosition.y, 0f);
-        nopan.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/6 - 1, trueImageIndex - 1));
+        stomachSprites.transform.localPosition = new Vector3(startingXpos + 0.002f * (stomachContents + gasContents), startingYpos + 0.002f * (stomachContents + gasContents), 0f);
+        nopan.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/3 - 1, trueImageIndex - 1));
         xRayWomb.localPosition = startPosForSuck + new Vector3(0.05f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0.1f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0f) + new Vector3(0.04f, 0f, 0f);
         coomWomb.localPosition = xRayWomb.localPosition;
         yield return new WaitForSeconds(frameDelay);
-        SetBellySprites(true, (int)Mathf.Min(characterSpritesTop.Length/6 - 1, trueImageIndex - 2));
-        wombTattoo.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/6 - 1, trueImageIndex - 2) + (nakedMode ? 56 : 0));
+        SetBellySprites(true, (int)Mathf.Min(characterSpritesTop.Length/3 - 1, trueImageIndex - 2));
+        wombTattoo.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/3 - 1, trueImageIndex - 2) + (nakedMode ? 56 : (backgroundIndex == 0 ? 0 : 112)));
         stomachSprites.transform.localScale = new Vector3(1 - 0.05f * amountToDecrement, 1f, 1f);
-        stomachSprites.transform.localPosition = new Vector3(startingXpos + 0.004f * (stomachContents + gasContents), stomachSprites.transform.localPosition.y, 0f);
-        nopan.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/6 - 1, trueImageIndex - 2));
+        stomachSprites.transform.localPosition = new Vector3(startingXpos + 0.004f * (stomachContents + gasContents), startingYpos + 0.004f * (stomachContents + gasContents), 0f);
+        nopan.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/3 - 1, trueImageIndex - 2));
         xRayWomb.localPosition = startPosForSuck + new Vector3(0.1f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0.1f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0f) + new Vector3(0.08f, 0f, 0f);
         coomWomb.localPosition = xRayWomb.localPosition;
         yield return new WaitForSeconds(frameDelay);
@@ -835,18 +855,18 @@ public class MainLoop : MonoBehaviour
         faces.SetCounterTo(gasContents > 0f ? 10 : BellyToFaceIndex(true));
         if (stomachContents + intestineContents > 3f) gurglePlayer.PlayRandom();
         if ((int)(stomachContents + intestineContents) >= 5 && gasContents == 0f) stuffedMoansPlayer.PlayRandom();
-        SetBellySprites(true, (int)Mathf.Min(characterSpritesTop.Length/6 - 1, trueImageIndex - 1));
+        SetBellySprites(true, (int)Mathf.Min(characterSpritesTop.Length/3 - 1, trueImageIndex - 1));
         stomachSprites.transform.localScale = new Vector3(1 - 0.025f * amountToDecrement, 1f, 1f);
-        stomachSprites.transform.localPosition = new Vector3(startingXpos + 0.002f * (stomachContents + gasContents), stomachSprites.transform.localPosition.y, 0f);
-        wombTattoo.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/6 - 1, trueImageIndex - 1) + (nakedMode ? 56 : 0));
-        nopan.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/6 - 1, trueImageIndex - 1));
+        stomachSprites.transform.localPosition = new Vector3(startingXpos + 0.002f * (stomachContents + gasContents), startingYpos + 0.002f * (stomachContents + gasContents), 0f);
+        wombTattoo.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/3 - 1, trueImageIndex - 1) + (nakedMode ? 56 : (backgroundIndex == 0 ? 0 : 112)));
+        nopan.SetCounterTo((int)Mathf.Min(characterSpritesTop.Length/3 - 1, trueImageIndex - 1));
         xRayWomb.localPosition = startPosForSuck + new Vector3(0.05f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0.1f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0f) + new Vector3(0.04f, 0f, 0f);
         coomWomb.localPosition = xRayWomb.localPosition;
         yield return new WaitForSeconds(frameDelay);
         SetBellySprites(true, imageIndex);
-        wombTattoo.SetCounterTo(imageIndex + (nakedMode ? 56 : 0));
+        wombTattoo.SetCounterTo(imageIndex + (nakedMode ? 56 : (backgroundIndex == 0 ? 0 : 112)));
         stomachSprites.transform.localScale = new Vector3(1f, 1f, 1f);
-        stomachSprites.transform.localPosition = new Vector3(startingXpos, stomachSprites.transform.localPosition.y, 0f);
+        stomachSprites.transform.localPosition = new Vector3(startingXpos, startingYpos, 0f);
         nopan.SetCounterTo(imageIndex);
         xRayWomb.localPosition = startPosForSuck + new Vector3(0f, 0.1f * (int)(Mathf.Max(4f, wombContents) + coomContents) / 19, 0f);// + new Vector3(-0.04f * (imageIndex - (int)(Mathf.Max(4f, wombContents) + coomContents)), -0.04f * (imageIndex - (int)(Mathf.Max(4f, wombContents) + coomContents)), 0f);
         coomWomb.localPosition = xRayWomb.localPosition;
@@ -866,7 +886,7 @@ public class MainLoop : MonoBehaviour
         yield return new WaitForSeconds(frameDelay * 8);
         if (gasContents > 0f)
         {
-            StartCoroutine(gaspPlayer.PlayCustomWaitFor(burpSounds[gasContents > 0.5f ? 1 : 0], stuffedMoansPlayer.GetComponent<AudioSource>()));
+            StartCoroutine(plapsPlayer.PlayCustomWaitFor(burpSounds[gasContents > 0.5f ? 1 : 0], stuffedMoansPlayer.GetComponent<AudioSource>()));
             StartCoroutine(ChangeFaceDuringClip(stuffedMoansPlayer, burpSounds[gasContents > 0.5f ? 1 : 0].length, 0.08f));
             gasContents = 0f;
             PrintStats();
@@ -1093,7 +1113,7 @@ public class MainLoop : MonoBehaviour
             if (gasContents > 0f)
             {
                 yield return new WaitForSeconds(0.2f);
-                StartCoroutine(gaspPlayer.PlayCustomWaitFor(burpSounds[gasContents > 0.5f ? 1 : 0], stuffedMoansPlayer.GetComponent<AudioSource>()));
+                StartCoroutine(plapsPlayer.PlayCustomWaitFor(burpSounds[gasContents > 0.5f ? 1 : 0], stuffedMoansPlayer.GetComponent<AudioSource>()));
                 StartCoroutine(ChangeFaceDuringClip(stuffedMoansPlayer, burpSounds[gasContents > 0.5f ? 1 : 0].length + 0.1f, 0.08f));
                 gasContents = 0f;
                 PrintStats();
@@ -1101,7 +1121,7 @@ public class MainLoop : MonoBehaviour
             }
             else if (useDefaultBehavior && stomachContents + intestineContents > 2f && Random.Range(0, Mathf.Max(3, 10 - imageIndex)) == 0)
             {
-                StartCoroutine(gaspPlayer.PlayCustomWaitFor(hiccupSound, stuffedMoansPlayer.GetComponent<AudioSource>()));
+                StartCoroutine(plapsPlayer.PlayCustomWaitFor(hiccupSound, stuffedMoansPlayer.GetComponent<AudioSource>()));
                 StartCoroutine(ChangeFaceDuringClip(stuffedMoansPlayer, 0.2f, 0.08f));
             }
         }
@@ -1115,7 +1135,7 @@ public class MainLoop : MonoBehaviour
         if ((babiesKicking || preyInside > 0) && !givingBirth)
         {
             if (useDefaultBehavior) yield return new WaitForSeconds(holdFaceDuration);
-            faces.SetCounterTo(doingSpecialMessage ? 12 : BellyToFaceIndex(false));
+            if (holdFaceDuration <= 0f) faces.SetCounterTo(doingSpecialMessage ? 12 : BellyToFaceIndex(false));
         }
     }
 
@@ -1188,7 +1208,7 @@ public class MainLoop : MonoBehaviour
             if (gasContents > 0f)
             {
                 yield return new WaitForSeconds(0.2f);
-                StartCoroutine(gaspPlayer.PlayCustomWaitFor(burpSounds[gasContents > 0.5f ? 1 : 0], stuffedMoansPlayer.GetComponent<AudioSource>()));
+                StartCoroutine(plapsPlayer.PlayCustomWaitFor(burpSounds[gasContents > 0.5f ? 1 : 0], stuffedMoansPlayer.GetComponent<AudioSource>()));
                 StartCoroutine(ChangeFaceDuringClip(stuffedMoansPlayer, burpSounds[gasContents > 0.5f ? 1 : 0].length + 0.1f, 0.08f));
                 gasContents = 0f;
                 PrintStats();
@@ -1281,7 +1301,7 @@ public class MainLoop : MonoBehaviour
             {
                 inertSoda += storedSoda;
                 storedSoda = 0;
-                StartCoroutine(gaspPlayer.PlayCustomWaitFor(burpSounds[gasContents > 0.5f ? 1 : 0], stuffedMoansPlayer.GetComponent<AudioSource>()));
+                StartCoroutine(plapsPlayer.PlayCustomWaitFor(burpSounds[gasContents > 0.5f ? 1 : 0], stuffedMoansPlayer.GetComponent<AudioSource>()));
                 StartCoroutine(ChangeFaceDuringClip(stuffedMoansPlayer, burpSounds[gasContents > 0.5f ? 1 : 0].length + 0.1f, 0.08f));
                 PrintStats();
             }
@@ -1329,20 +1349,20 @@ public class MainLoop : MonoBehaviour
         medicineButtons[0].SetActive(isNauseous);
         medicineButtons[1].SetActive(((stomachContents > 0f && intestineContents < (intestineCapacity * intestineMultiplier)) || preyInside > 0) && enzymeStock > 0);
         medicineButtons[2].SetActive(isStreaming ? (storedSoda > 0 && stomachContents + gasContents < 14f) : (intestineContents > 0f && !tookLaxative));
-        medicineButtons[3].SetActive(fetusCount > 0 ? (Mathf.Round(wombContents * 10000) / 10000 < Mathf.Round(pregnancyDays * (0.15f + 0.05f * fetusCount) * 10000) / 10000) : (achievements[10] ? (pregnancyDays == 0 && fertilityBonus < maxFertilityBonus) : false));
+        medicineButtons[3].SetActive(pregnancyDays > 0 ? (Mathf.Round(wombContents * 10000) / 10000 < Mathf.Round(pregnancyDays * (0.15f + 0.05f * fetusCount) * 10000) / 10000) : (achievements[10] ? (fertilityBonus < maxFertilityBonus) : false));
         medicineButtons[4].SetActive(hungerTimer < 10);
         medicineButtons[5].SetActive(!tookCaffeine);
         medicineButtons[6].SetActive(!usedViagra);
         medicineButtons[7].SetActive(false);
 
         medicinePrices[2] = (isStreaming ? 5 : 50);
-        medicinePrices[3] = ((achievements[10] && pregnancyDays == 0 && fetusCount == 0) ? 1000 : 500);
+        medicinePrices[3] = ((achievements[10] && pregnancyDays == 0) ? 1000 : 500);
 
         string updatedText = "";
         updatedText += "Antiemetic: cures nausea\n\n";
         updatedText += "Enzyme: digest some food in stomach (" + enzymeStock + ") \n\n";
         updatedText += (isStreaming ? "Mentos: reacts on contact with soda\n\n" : ("Laxative: " + (tookLaxative ? "already taken today\n\n" : "digest all food in intestines \n\n")));
-        updatedText += ((achievements[10] && pregnancyDays == 0 && fetusCount == 0) ? ("Fertility drug: +1 baby after sex (" + fertilityBonus + "/" + maxFertilityBonus + ")\n\n") : "Folate: restore 1 day of missed growth\n\n");
+        updatedText += ((achievements[10] && pregnancyDays == 0) ? ("Fertility drug: +1 ovulation count (" + fertilityBonus + "/" + maxFertilityBonus + ")\n\n") : "Folate: restore 1 day of missed growth\n\n");
         updatedText += "Ghrelin: +1 hr of natural hunger\n\n";
         updatedText += "Caffeine: sleep at " + (ampmMode ? "3 AM" : "03:00") + "\n\n";
         updatedText += "Sildenafil: " + (usedViagra ? "already used today\n\n" : "refill semen, 5x regen until " + (ampmMode ? "8 AM" : "08:00") + "\n\n");
@@ -1516,7 +1536,7 @@ public class MainLoop : MonoBehaviour
                 case 8:
                     achievementName = "That's No Moon";
                     achievementDescription = "Reach the largest possible belly size.";
-                    rewardMessage = "naked mode + auto food restock up to 20";
+                    rewardMessage = "naked mode + auto food restock up to 30";
                     break;
                 case 9:
                     achievementName = "Queen of Kebabs";
@@ -1570,7 +1590,7 @@ public class MainLoop : MonoBehaviour
 
     void UpdateWombTattoo(bool isTopHeavy)
     {
-        wombTattoo.SetCounterTo(imageIndex + (isTopHeavy ? 0 : 28) + (nakedMode ? 56 : 0));
+        wombTattoo.SetCounterTo(imageIndex + (isTopHeavy ? 0 : 28) + (nakedMode ? 56 : (backgroundIndex == 0 ? 0 : 112)));
         /*if (nakedMode)
         {
             nopan.GetComponent<SpriteRenderer>().enabled = false;
@@ -1636,6 +1656,7 @@ public class MainLoop : MonoBehaviour
         givingBirth = true;
         foodText.text = "You feel your contractions starting.";
         timeText.text = (ampmMode ? (ConvertToAMPM(currentTime)) : ((currentTime < 10 ? "0" : "") + currentTime + ":00")) + " | Day " + (fetusCount > 0 ? actualDays : "--");
+        UpdateOverlayText();
         faces.SetCounterTo(5);
         float babyVolume = (wombContents - 6) / fetusCount;
 
@@ -1652,7 +1673,7 @@ public class MainLoop : MonoBehaviour
         yield return new WaitForSeconds(1f);
         faces.SetCounterTo(5);
         yield return new WaitForSeconds(1f);
-        nopan.GetComponent<SpriteRenderer>().enabled = !nakedMode;
+        nopan.GetComponent<SpriteRenderer>().enabled = !nakedMode && backgroundIndex == 0;
 
         float amountToDecrement = (wombContents - (0.15f * (pregnancyDays - 1))) / fetusCount;//2 * wombContents / (6f + 2 * fetusCount);
         amountToDecrement = Mathf.Round(amountToDecrement * 10000) / 10000;
@@ -1797,16 +1818,17 @@ public class MainLoop : MonoBehaviour
         StartCoroutine(musicPlayer.ChangeTrackTo(0, 3f));
         achievementButton.GetComponent<Collider2D>().enabled = false;
         //bool initialState = nopan.GetComponent<SpriteRenderer>().enabled;
-        nopan.GetComponent<SpriteRenderer>().enabled = !nakedMode;
+        nopan.GetComponent<SpriteRenderer>().enabled = !nakedMode && backgroundIndex == 0;
         achievementButton.Brighten(false);
-        micToggle.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.2f);
-        bool initialMicState = playingDigestionSounds;
-        playingDigestionSounds = false;
-        UpdateDigestionSounds();
+        //micToggle.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.2f);
+        //bool initialMicState = playingDigestionSounds;
+        //playingDigestionSounds = false;
+        //UpdateDigestionSounds();
         yield return StartCoroutine(sexMinigame.Oscillate(startPregnancy, coomStorage));
-        playingDigestionSounds = initialMicState;
-        UpdateDigestionSounds();
-        micToggle.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, ((playingDigestionSounds && toggleButtons[1].isActive) ? 1f : 0.2f));
+        minigameUI.SetActive(false);
+        //playingDigestionSounds = initialMicState;
+        //UpdateDigestionSounds();
+        //micToggle.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, ((playingDigestionSounds && toggleButtons[1].isActive) ? 1f : 0.2f));
         nopan.GetComponent<SpriteRenderer>().enabled = false;
         achievementButton.Brighten(true);
         achievementButton.GetComponent<Collider2D>().enabled = true;
@@ -1815,7 +1837,7 @@ public class MainLoop : MonoBehaviour
         {
             fetusCount = 1 + fertilityBonus + Mathf.Min((int)sexMinigame.amountReleased, 200) / 100;
             if (currentTime < 8) actualDays = 1;
-            fertilityBonus = 0;
+            //fertilityBonus = 0;
             if (Random.Range(0, 3) == 0)
             {
                 UpdateMedicineText();
@@ -1832,7 +1854,21 @@ public class MainLoop : MonoBehaviour
                 }
             }
         }
-        coomContents += sexMinigame.amountReleased / 100;
+        else if (fetusCount > 0 && pregnancyDays == 0 && fetusCount - fertilityBonus < 3)
+        {
+            fetusCount += 1 + Mathf.Min((int)sexMinigame.amountReleased, 200) / 100;
+            if (fetusCount - fertilityBonus > 3) fetusCount = 3 + fertilityBonus;
+        }
+        float amountToRelease = sexMinigame.amountReleased / 100;
+        if (amountToRelease + coomContents > 9f + 2 * fetusCount) amountToRelease = 9f + 2 * fetusCount - coomContents;
+        while (amountToRelease > 1f)
+        {
+            coomContents += 1f;
+            amountToRelease -= 1f;
+            PrintStats();
+            yield return new WaitForSeconds(0.1f);
+        }
+        coomContents += amountToRelease;
         CapCoomContents();
         //Debug.Log(sexMinigame.amountReleased);
         //coomStorage -= sexMinigame.amountReleased / 100;
@@ -1840,7 +1876,7 @@ public class MainLoop : MonoBehaviour
         if (sexMinigame.amountReleased > 0) coomStorage = 0f;
         sexMinigame.amountReleased = 0;
         wombCapacityBar.localScale = new Vector3((6f + 2 * fetusCount) * barRatio, wombCapacityBar.localScale.y, 1);
-        minigameUI.SetActive(false);
+
         //overrideFace.enabled = false;
         faces.SetCounterTo(BellyToFaceIndex(false));
         //sexButton.GetComponent<Collider2D>().enabled = (coomStorage >= 1f && !isAsleep);
@@ -1857,13 +1893,14 @@ public class MainLoop : MonoBehaviour
         //if (!sexButton.GetComponent<AnimateSprite>().enabled) sexButton.GetComponent<SpriteRenderer>().color = ((coomStorage >= 1f && !isAsleep) ? Color.white : new Color(1f, 1f, 1f, 0.2f));
         timeText.text = (ampmMode ? (ConvertToAMPM(currentTime)) : ((currentTime < 10 ? "0" : "") + currentTime + ":00")) + " | Day " + (fetusCount > 0 ? actualDays : "--");
         PrintStats();
+        UpdateOverlayText();
         UpdatePreyHealthbars();
         UpdatePreyXray();
     }
 
     IEnumerator Swallow(Prey prey)
     {
-        bool initialButtonState = achievementButton.GetComponent<Collider2D>().enabled;
+        //bool initialButtonState = achievementButton.GetComponent<Collider2D>().enabled;
         achievementButton.GetComponent<Collider2D>().enabled = false;
         recordButton.GetComponent<Collider2D>().enabled = false;
         foodDescription = prey.health > 20 ? "You manage to catch the struggling prey and start swallowing it." : "Your weakened prey is unable to resist as you start swallowing it.";
@@ -1924,7 +1961,7 @@ public class MainLoop : MonoBehaviour
         UpdatePreyXray();
         UpdatePreyHealthbars();
         //PrintStats();
-        achievementButton.GetComponent<Collider2D>().enabled = initialButtonState;
+        achievementButton.GetComponent<Collider2D>().enabled = true;
         recordButton.GetComponent<Collider2D>().enabled = !isStreaming && !isAsleep && daysUntilNextStream <= 0;
         faces.SetCounterTo(BellyToFaceIndex(false));
     }
@@ -2021,7 +2058,7 @@ public class MainLoop : MonoBehaviour
     {
         while (true)
         {
-            if (clickedButtonName == "toggle_naked" && !viewingFullscreenSideview)
+            if (clickedButtonName == "toggle_naked" && !viewingFullscreenSideview && !achievementButton.isActive)
             {
                 nakedMode = !nakedMode;
                 nakedToggle.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, (nakedMode ? 1f : 0.2f));
@@ -2041,10 +2078,11 @@ public class MainLoop : MonoBehaviour
                     SaveOnlySettings();
                 }
             }
-            if (clickedButtonName == "toggle_time" && !viewingFullscreenSideview)
+            if (clickedButtonName == "toggle_time" && !viewingFullscreenSideview && !achievementButton.isActive)
             {
                 ampmMode = !ampmMode;
                 timeText.text = (ampmMode ? (ConvertToAMPM(currentTime)) : ((currentTime < 10 ? "0" : "") + currentTime + ":00")) + " | Day " + (fetusCount > 0 ? actualDays : "--");
+                UpdateOverlayText();
                 UpdateMedicineText();
                 SaveOnlySettings();
             }
@@ -2055,7 +2093,7 @@ public class MainLoop : MonoBehaviour
                 yield return null;
                 SaveOnlySettings();
             }
-            if (cursor.GetColliderName(2) == "sideview_panel" && Input.GetMouseButtonDown(0) && !pillButton.isActive && !viewingFullscreenSideview)
+            if (cursor.GetColliderName(2) == "sideview_panel" && Input.GetMouseButtonDown(0) && !pillButton.isActive && !viewingFullscreenSideview && !achievementButton.isActive)
             {
                 //sideviewBase.enabled = true;
                 transparentSideview = !transparentSideview;
@@ -2067,9 +2105,23 @@ public class MainLoop : MonoBehaviour
         }
     }
 
+    void UpdateOverlayText()
+    {
+        overlayText[0].text = timeText.text;
+        overlayText[2].text = caloriesText.text;
+        overlayText[2].color = caloriesText.color;
+        overlayText[3].text = hungerText.text;
+        overlayText[3].color = hungerText.color;
+        foreach (Text t in overlayText)
+        {
+            t.color = new Color(t.color.r, t.color.g, t.color.b, 0.2f);
+        }
+    }
+
     IEnumerator MainRoutine()
     {
         float adjustedStomachCapacity;
+        Vector3 updownStartPos = updownButton.transform.localPosition;
         bool ateThisTurn;
         faces.SetCounterTo(BellyToFaceIndex(false));
         PrintStats();
@@ -2079,6 +2131,7 @@ public class MainLoop : MonoBehaviour
         moneyText.text = "$" + money;
         foodStockText.text = "x" + foodStock;
         foodStockText.color = (foodStock >= 60 ? Color.yellow : Color.white);
+        UpdateOverlayText();
         wombTattoo.GetComponent<SpriteRenderer>().enabled = achievements[4];
         statsView.SetActive(achievements[6]);
 
@@ -2257,7 +2310,7 @@ public class MainLoop : MonoBehaviour
             int lastSeenInteraction = -1;
             float preyVolume = GetPreyVolume();
             sodaMode = false;
-            if (achievements[8] && foodStock < 20)
+            if (achievements[8] && foodStock < 30)
             {
                 foodStock++;
             }
@@ -2344,7 +2397,7 @@ public class MainLoop : MonoBehaviour
                     }
                 }
 
-                if ((isStreaming || alwaysUseEatingAnimation) && clickedButtonName == "streaming_food" && foodStock > 0)
+                if ((isStreaming || alwaysUseEatingAnimation) && Input.GetMouseButtonDown(0) && cursor.GetAllColliderNames(5).Contains("streaming_food") && foodStock > 0)
                 {
                     cursor.GetComponent<SpriteRenderer>().sprite = draggableFood[sodaMode ? 1 : 0];
                     streamFoodIcon.enabled = false;
@@ -2358,11 +2411,11 @@ public class MainLoop : MonoBehaviour
                     cursor.GetComponent<SpriteRenderer>().sprite = null;
                 }
 
-                if (fedDuringStream || (!isStreaming && (Input.GetKeyDown(KeyCode.Space) || (!alwaysUseEatingAnimation && clickedButtonName == "streaming_food" && !isStreaming))))
+                if (fedDuringStream || (!isStreaming && (Input.GetKeyDown(KeyCode.Space) || (!alwaysUseEatingAnimation && Input.GetMouseButtonDown(0) && cursor.GetAllColliderNames(5).Contains("streaming_food") && !isStreaming))))
                 {
                     achievementText.text = "";
 
-                    if ((stomachContents + gasContents < adjustedStomachCapacity - 0.0001f || (berserkMode && stomachContents + gasContents < 17.5999f)) && !isNauseous && foodStock > 0)
+                    if ((stomachContents + gasContents < adjustedStomachCapacity - 0.0001f || (berserkMode && stomachContents + gasContents < 17.6001f)) && !isNauseous && foodStock > 0)
                     {
                         babiesKicking = false;
                         //kickTimer = 0f;
@@ -2429,23 +2482,26 @@ public class MainLoop : MonoBehaviour
                             faces.SetCounterTo(BellyToFaceIndex(false));
                         }
                         gulpPlayer.PlayRandom();
-                        if (((achievements[1] && stomachContents + gasContents >= adjustedStomachCapacity - 0.0001f) || (berserkMode && stomachContents + gasContents < 17.5999f)) && foodStock > 0)
+                        if (((achievements[1] && stomachContents + gasContents >= adjustedStomachCapacity - 0.0001f) || (berserkMode && stomachContents + gasContents < 17.6001f)) && foodStock > 0)
                         {
+                            bool initialButtonState = achievementButton.GetComponent<Collider2D>().enabled;
+                            achievementButton.GetComponent<Collider2D>().enabled = false;
                             int initialFoodStock = foodStock;
                             for (int i = 0; i < (berserkMode ? initialFoodStock : 1); i++)
                             {
                                 foodDescription = "You're not done yet...";
                                 foodText.text = foodDescription;
                                 PrintStats();
+                                if (stomachContents + gasContents > stomachCapacity * trainingModifier) slowdownMultiplier = 1f + (stomachContents + gasContents - stomachCapacity * trainingModifier) / (stomachCapacity * trainingModifier * 3);
                                 if (fedDuringStream || alwaysUseEatingAnimation)
                                 {
-                                    achievementButton.GetComponent<Collider2D>().enabled = false;
+                                    //achievementButton.GetComponent<Collider2D>().enabled = false;
                                     recordButton.GetComponent<Collider2D>().enabled = false;
                                     StartCoroutine(Bounce(0.2f));
                                     mouthSprite.enabled = true;
                                     //mouthSprite.transform.position = mouthSpriteStartPos + new Vector3(0f, (sodaMode ? -0.1f : 0f), 0f);
                                     //overrideFace.enabled = true;
-                                    faces.SetCounterTo(0);//imageIndex > 4 ? 3 : 0);
+                                    faces.SetCounterTo(berserkMode ? 19 : 0);//imageIndex > 4 ? 3 : 0);
                                     gulpPlayer.PlayRandom();
                                     yield return new WaitForSeconds(0.6f * slowdownMultiplier);
                                     StartCoroutine(Bounce(0.2f));
@@ -2454,7 +2510,7 @@ public class MainLoop : MonoBehaviour
                                     //overrideFace.enabled = false;
                                     faces.SetCounterTo(BellyToFaceIndex(false));
                                     //yield return new WaitForSeconds(0.2f);
-                                    achievementButton.GetComponent<Collider2D>().enabled = true;
+                                    //achievementButton.GetComponent<Collider2D>().enabled = true;
                                 }
                                 else
                                 {
@@ -2485,6 +2541,7 @@ public class MainLoop : MonoBehaviour
                                 gulpPlayer.PlayRandom();
                                 if (stomachContents + gasContents >= 18f) break;
                             }
+                            achievementButton.GetComponent<Collider2D>().enabled = initialButtonState;
                         }
                         mouthSprite.transform.localPosition = mouthSpriteStartPos;
                         recordButton.GetComponent<Collider2D>().enabled = !isStreaming && !isAsleep && daysUntilNextStream <= 0;
@@ -2564,7 +2621,7 @@ public class MainLoop : MonoBehaviour
                         }
                         if (gasContents > 0f && stomachContents + intestineContents >= 18f && !gaspPlayer.GetComponent<AudioSource>().isPlaying)
                         {
-                            StartCoroutine(gaspPlayer.PlayCustomWaitFor(burpSounds[gasContents > 0.5f ? 1 : 0], stuffedMoansPlayer.GetComponent<AudioSource>()));
+                            StartCoroutine(plapsPlayer.PlayCustomWaitFor(burpSounds[gasContents > 0.5f ? 1 : 0], stuffedMoansPlayer.GetComponent<AudioSource>()));
                             StartCoroutine(ChangeFaceDuringClip(stuffedMoansPlayer, burpSounds[gasContents > 0.5f ? 1 : 0].length + 0.1f, 0.08f));
                             gasContents = 0f;
                             //PrintStats();
@@ -2736,6 +2793,8 @@ public class MainLoop : MonoBehaviour
                             }
                             else
                             {
+                                faces.SetCounterTo(stomachContents + intestineContents + gasContents < 9 ? 11 : 19);
+                                holdFaceDuration = 0.8f * (1 + ((float)imageIndex / 20));
                                 kickTimer = Random.Range(320f / (160f + GetTotalPreyHealth()), 1440f / (160f + GetTotalPreyHealth()));
                             }
                         }
@@ -2806,6 +2865,7 @@ public class MainLoop : MonoBehaviour
                 weedStockCounter.SetAltColor(weedStock >= 5);
                 hungerText.text = "Hunger multiplier: " + (berserkMode ? "???" : (hungerModifier + "x"));
                 hungerText.color = (berserkMode ? Color.yellow : Color.white);
+                UpdateOverlayText();
 
                 if (clickedButtonName == this.gameObject.name)
                 {
@@ -2815,6 +2875,19 @@ public class MainLoop : MonoBehaviour
                         StartCoroutine(Bounce(0.3f));
                         yield return StartCoroutine(BellyJiggle(true));
                     }
+                }
+                if (clickedButtonName == "updown")
+                {
+                    Vector3 cursorStartPos = cursor.transform.position;
+                    Vector3 bodyStartPos = transform.localPosition;
+                    updownButton.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.6f);
+                    while (Input.GetMouseButton(0))
+                    {
+                        transform.localPosition = new Vector3(transform.localPosition.x, Mathf.Clamp(bodyStartPos.y + 0.625f * (cursor.transform.position.y - cursorStartPos.y), 0f, 1.52f), transform.localPosition.z);
+                        updownButton.transform.localPosition = new Vector3(updownStartPos.x, updownStartPos.y + 1.6f * transform.localPosition.y, updownStartPos.z);
+                        yield return null;
+                    }
+                    updownButton.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.2f);
                 }
                 if (holdFaceDuration > 0f)
                 {
@@ -2890,7 +2963,7 @@ public class MainLoop : MonoBehaviour
                     eligibleInteractions[4] = imageIndex > 3;
                     eligibleInteractions[5] = pregnancyDays >= 20 && imageIndex >= 6;
                     eligibleInteractions[6] = stomachContents + gasContents >= stomachCapacity * trainingModifier * hungerModifier;
-                    eligibleInteractions[7] = GetPreyCount() == 3 && stomachContents + gasContents <= adjustedStomachCapacity;                   
+                    eligibleInteractions[7] = GetPreyCount() == 3 && stomachContents + gasContents <= adjustedStomachCapacity && !berserkMode;                   
 
                     int interactionIndex = Random.Range(0, eligibleInteractions.Length);
                     while (!eligibleInteractions[interactionIndex]) interactionIndex = Random.Range(0, eligibleInteractions.Length);
@@ -2910,6 +2983,9 @@ public class MainLoop : MonoBehaviour
                     string subMessage = "";
                     string subMessage2 = "";
 
+                    float totalBellyContents = Mathf.Round(stomachContents + intestineContents + wombContents + coomContents + gasContents + 0.0001f);
+                    float totalDigestiveContents = Mathf.Round(stomachContents + gasContents + intestineContents + 0.0001f);
+
                     switch (interactionIndex)
                     {
                         case 0://elbows
@@ -2927,10 +3003,14 @@ public class MainLoop : MonoBehaviour
                                 {
                                     commentGenerator.GenerateComment(Random.Range(0, 2) == 0 ? "lmao she fell for it" : "lol, classic elbow trick");
                                 }
+                                if (totalDigestiveContents < 9f) faces.SetCounterTo(1);
                             }
-                            if (alreadySeenInteractions[0]) eligibleInteractions[0] = false;
+                            else
+                            {
+                                faces.SetCounterTo(18);
+                                eligibleInteractions[0] = false;
+                            }
                             didElbows = true;
-                            faces.SetCounterTo(1);
                             break;
                         case 1://other streamer
                             int streamerIndex = Random.Range(0, 8);
@@ -2983,7 +3063,7 @@ public class MainLoop : MonoBehaviour
                                 bellyText.text = "\"does anyone know any other streamers who do similar content\"\n\n" + "You playfully admonish the chatter for thinking about other girls, but mention that you know a girl named " + subMessage + " who does " + subMessage2 + " content.";
                                 if (!alreadySeenInteractions[1]) commentGenerator.GenerateComment(subMessage + "? what game is she from");
                             }
-                            faces.SetCounterTo(1);
+                            if (totalDigestiveContents < 9f) faces.SetCounterTo(1);
                             break;
                         case 2://digestion sounds
                             bellyText.text = "\"can you do tummy noises pls\"\n\nYou oblige and hold the microphone against your belly.";
@@ -3039,6 +3119,7 @@ public class MainLoop : MonoBehaviour
                                     hungerText.text = "Hunger multiplier: ???";
                                     hungerText.color = Color.yellow;
                                     faces.SetCounterTo(15);
+                                    UpdateOverlayText();
                                 }
                                 else if (stomachContents + intestineContents >= 20f)
                                 {
@@ -3051,7 +3132,7 @@ public class MainLoop : MonoBehaviour
                             break;
                         case 4://guess how many babies
                             subMessage = "\"Oh, you're pregnant? Congratulations!!!\"";
-                            float totalBellyContents = stomachContents + intestineContents + wombContents + coomContents + gasContents;
+                            
                             if (totalBellyContents >= 5f) subMessage = "\"She definitely looks pregnant. Imagine if she was just trolling us with a food baby though\"";
                             if (totalBellyContents >= 7f) subMessage = "\"I thought she was already in her third trimester. is this a trick question?\"";
                             if (totalBellyContents >= 9f) subMessage = "\"She's way too big for a single pregnancy. I think maybe twins?\"";
@@ -3073,8 +3154,8 @@ public class MainLoop : MonoBehaviour
                             if (pregnancyDays > 39) trimester = "your pregnancy has reached full term. ";
                             if (pregnancyDays > 4)
                             {
-                                bellyText.text = "You ask some newly-joined viewers to guess how many babies you are carrying right now.\n\n" + subMessage + (alreadySeenInteractions[4] ? ("\n\nYou let the other chatters tell the newcomers about the " + (fetusCount == 1 ? "single baby" : (fetusCount + " babies")) + (foodBabyCount > 0 ? (" (and " + foodBabyCount + " food bab" + (foodBabyCount == 1 ? "y)" : "ies)")) : "") + " in your belly.") : "\n\nAfter a while, you reveal that you are carrying " + fetusCount + (fetusCount == 1 ? " baby" : " babies") + " and " + trimester + subMessage2);                       
-                                faces.SetCounterTo(1);
+                                bellyText.text = "You ask some newly-joined viewers to guess how many babies you are carrying right now.\n\n" + subMessage + (alreadySeenInteractions[4] ? ("\n\nYou let the other chatters tell the newcomers about the " + (fetusCount == 1 ? "single baby" : (fetusCount + " babies")) + (foodBabyCount > 0 ? (" (and " + foodBabyCount + " food bab" + (foodBabyCount == 1 ? "y)" : "ies)")) : "") + " in your belly.") : "\n\nAfter a while, you reveal that you are carrying " + fetusCount + (fetusCount == 1 ? " baby" : " babies") + " and " + trimester + subMessage2);
+                                if (totalDigestiveContents < 9f) faces.SetCounterTo(1);
                                 if (!alreadySeenInteractions[4] && fetusCount > 1)
                                 {
                                     switch (fetusCount)
@@ -3132,7 +3213,7 @@ public class MainLoop : MonoBehaviour
                             subMessage = "Your round tummy presses into the counter, leaving you without much room to work with";
                             if (imageIndex > 7) subMessage = "You have to rest your huge belly on the edge of the sink to make room";
                             if (imageIndex > 13) subMessage = "You have to lean forward with your enormous belly pressed against the front of the counter in order to reach the sink";
-                            subMessage2 = "\n\nAs you work, you feel some of your stomach contents flow into the lower parts of your abdomen, freeing up some additional room.";
+                            subMessage2 = "\n\nWhile you move your body, you feel some of your stomach contents flow into the lower parts of your abdomen, freeing up some additional room.";
                             for (int i = 0; i < 2; i++)
                             {
                                 if (intestineContents < intestineCapacity * intestineMultiplier)
@@ -3183,7 +3264,7 @@ public class MainLoop : MonoBehaviour
                                 }
                                 else if (i == 0)
                                 {
-                                    subMessage2 = "\n\nAs you work, you feel your belly, thoroughly stuffed all the way from your stomach to intestines, slowly churning away at the massive meal inside.";
+                                    subMessage2 = "\n\nWhile you move your body, you feel your belly, thoroughly stuffed all the way from your stomach to intestines, slowly churning away at the massive meal inside.";
                                 }
                             }
                             bellyText.text = "You are too full to eat another bite, so you decide it's a good time to take a break and wash some dishes. " + subMessage + ", but you manage to make some decent progress." + subMessage2;
@@ -3193,12 +3274,12 @@ public class MainLoop : MonoBehaviour
                             yield return StartCoroutine(BellyJiggle(false));
                             break;
                         case 7://prey taunt
-                            bellyText.text = "\"is three the limit? that's too bad, I wanted to see her try to swallow one more\"\n\nIs that meant to be a challenge? You weren't planning to do it, but with your pride at stake, you decide to try to push past your limits. As long as there's no space in your stomach taken up by anything other than prey, it might just be possible.\n\n1 additional prey has spawned.";
+                            bellyText.text = "\"is three the limit? that's too bad, I wanted to see her try to swallow one more\"\n\nIs that meant to be a challenge? You weren't planning to do it, but with your pride at stake, you decide to try to push past your limits. As long as there's still a tiny bit of room left in your stomach, it might just be possible.\n\n1 additional prey has spawned.";
                             canSwallowFinalPrey = true;
                             preyOutside++;
                             preySpawner.SpawnPrey();
                             //preySpawner.UpdateValues(preyInside, (int)(stomachCapacity * trainingModifier * hungerModifier) / 4);
-                            faces.SetCounterTo(1);
+                            faces.SetCounterTo(18);
                             break;
                         case 8://measurements
                             float inches = Mathf.Round(10 * (24 + 2 * (stomachContents + intestineContents + wombContents + coomContents + gasContents))) / 10;
@@ -3246,6 +3327,7 @@ public class MainLoop : MonoBehaviour
                         berserkMode = false;
                         hungerText.text = "Hunger multiplier: " + hungerModifier + "x";
                         hungerText.color = Color.white;
+                        UpdateOverlayText();
                         lastJiggledSize = (imageIndex >= 6 ? (imageIndex - 1) : 5);
                         StartCoroutine(musicPlayer.ChangeTrackTo((currentTime > 7 && currentTime < 19) ? 2 : 3, 1.5f));
                         donationsText.text = "Donations: $" + streamEarnings;
@@ -3290,7 +3372,15 @@ public class MainLoop : MonoBehaviour
                             berserkMode = true;
                             hungerText.text = "Hunger multiplier: ???";
                             hungerText.color = Color.yellow;
+                            UpdateOverlayText();
                             faces.SetCounterTo(15);
+                            while (preyInside + preyOutside < 4)
+                            {
+                                preyOutside++;
+                                preySpawner.SpawnPrey();
+                                yield return new WaitForSeconds(0.25f);
+                            }
+                            UpdatePreyHealthbars();
 
                             foodStock = Mathf.Max(foodStock, 65 - (int)((intestineContents + stomachContents - 4 * (preyInside) + 0.001f) / 0.4f));
                             if (foodStock > 60) foodStock = 60;
@@ -3328,7 +3418,7 @@ public class MainLoop : MonoBehaviour
                     }
                     yield return null;
                     //while (clickedButtonName != "toggle_achievement") yield return null;
-                    while (!(Input.GetMouseButtonDown(0) && !cursor.GetAllColliderNames(4).Contains("achievementTextBackdrop")) || clickedButtonName == "always_eat_button" || clickedButtonName == "toggle_tattoo")
+                    while (!(Input.GetMouseButtonDown(0) && !cursor.GetAllColliderNames(4).Contains("achievementTextBackdrop")))// || clickedButtonName == "always_eat_button" || clickedButtonName == "toggle_tattoo")
                     {
                         yield return null;
                         if (clickedButtonName == "always_eat_button")
@@ -3345,6 +3435,7 @@ public class MainLoop : MonoBehaviour
                         {
                             background.Increment();
                             backgroundIndex = background.index;
+                            PrintStats();
                             SaveOnlySettings();
                         }
                         if (clickedButtonName == "breast_override_button")
@@ -3456,6 +3547,7 @@ public class MainLoop : MonoBehaviour
                     if (!achievements[0] && hungerModifier >= 4f) UpdateAchievements(0);
                     hungerText.text = "Hunger multiplier: " + (berserkMode ? "???" : (hungerModifier + "x"));
                     hungerText.color = (berserkMode ? Color.yellow : Color.white);
+                    UpdateOverlayText();
                     //intestineMultiplier += 0.1f;
                     //intestineMultiplier = Mathf.Round(intestineMultiplier * 10) / 10;
                     money -= medicinePrices[0];
@@ -3591,13 +3683,21 @@ public class MainLoop : MonoBehaviour
 
                 if (clickedButtonName == "folate")// && wombContents < (pregnancyDays * (0.15f + 0.05f * fetusCount))) //(fetusCount + 3f) * 0.05f * pregnancyDays)
                 {
-                    if (fetusCount > 0 && wombContents < (pregnancyDays * (0.15f + 0.05f * fetusCount)))
+                    if (pregnancyDays > 0 && wombContents < (pregnancyDays * (0.15f + 0.05f * fetusCount)))
                     {
                         wombContents += fetusCount * 0.05f;
                         //wombContents += (fetusCount + 3f) * 0.04f;
                         wombContents = Mathf.Round(wombContents * 10000) / 10000;
                         CapCoomContents();
                         money -= medicinePrices[3];
+                        PrintStats();
+                        UpdateMedicineText();
+                    }
+                    else if (fetusCount > 0)
+                    {
+                        fetusCount++;
+                        fertilityBonus++;
+                        money -= medicinePrices[7];
                         PrintStats();
                         UpdateMedicineText();
                     }
@@ -3630,6 +3730,7 @@ public class MainLoop : MonoBehaviour
                     if (!achievements[0] && hungerModifier >= 4f) UpdateAchievements(0);
                     hungerText.text = "Hunger multiplier: " + (berserkMode ? "???" : (hungerModifier + "x"));
                     hungerText.color = (berserkMode ? Color.yellow : Color.white);
+                    UpdateOverlayText();
                     money -= medicinePrices[4];
                     UpdateMedicineText();
                     UpdatePreyHealthbars();
@@ -3653,6 +3754,8 @@ public class MainLoop : MonoBehaviour
                     }
                     else
                     {
+                        faces.SetCounterTo(isAsleep ? 16 : (stomachContents + intestineContents + gasContents < 9 ? 11 : 19));
+                        holdFaceDuration = 0.8f * (1 + ((float)imageIndex / 20));
                         kickTimer = Random.Range(320f / (160f + GetTotalPreyHealth()), 1440f / (160f + GetTotalPreyHealth()));
                     }
                 }
@@ -3716,7 +3819,7 @@ public class MainLoop : MonoBehaviour
             {
                 faces.SetCounterTo(10);
                 holdFaceDuration = 0.9f;
-                StartCoroutine(gaspPlayer.PlayCustomWaitFor(burpSounds[gasContents > 0.5f ? 1 : 0], stuffedMoansPlayer.GetComponent<AudioSource>()));
+                StartCoroutine(plapsPlayer.PlayCustomWaitFor(burpSounds[gasContents > 0.5f ? 1 : 0], stuffedMoansPlayer.GetComponent<AudioSource>()));
                 StartCoroutine(ChangeFaceDuringClip(stuffedMoansPlayer, burpSounds[gasContents > 0.5f ? 1 : 0].length + 0.1f, 0.08f));
                 gasContents = 0f;
                 PrintStats();
@@ -4042,6 +4145,7 @@ public class MainLoop : MonoBehaviour
                         lastSeenEmptyBelly = 0;
                         wombCapacityBar.localScale = new Vector3((6f + 2 * fetusCount) * barRatio, wombCapacityBar.localScale.y, 1);
                     }
+                    fertilityBonus = 0;
                 }
                 //if (dailyCalories >= 2000 + fetusCount * 800) wombContents += fetusCount * 0.025f;
                 //Mathf.Clamp(wombContents, 0f, fetusCount * pregnancyDays * 0.05f);
@@ -4097,6 +4201,7 @@ public class MainLoop : MonoBehaviour
             timeText.text = (ampmMode ? (ConvertToAMPM(currentTime)) : ((currentTime < 10 ? "0" : "") + currentTime + ":00")) + " | Day " + (fetusCount > 0 ? actualDays : "--");
             hungerText.text = "Hunger multiplier: " + hungerModifier + "x";
             hungerText.color = Color.white;
+            UpdateOverlayText();
             //stomachContents = Mathf.Round(stomachContents * 1000) / 1000;
             //intestineContents = Mathf.Round(intestineContents * 1000) / 1000;
             //wombContents = Mathf.Round(wombContents * 1000) / 1000;
@@ -4200,8 +4305,15 @@ public class MainLoop : MonoBehaviour
             case 19:
                 bellyDescription = "Your gigantic belly has gone far beyond the limit of what the human body is meant to withstand. You feel your consciousness slipping away as your brain is bombarded with intense sensations of orgasmic pleasure and pain from your tightly stretched skin, abdominal muscles, and overstuffed guts.";
                 break;
+            case 20:
+            case 21:
+            case 22:
+            case 23:
+                bellyDescription = "Every inch of your digestive tract is stretched like a balloon, and your massively overstuffed belly contains what feels like an entire ocean of " + (liquidContents / stomachContents > 0.8f ? "liquid" : "food") + ". You cannot even burp, as a burp would imply the existence of a pocket of air trapped somewhere in your enormously distended abdomen, and every last bit of space relieved by previous burps has already been " + (liquidContents / stomachContents > 0.8f ? "filled with even more liquid" : "crammed with even more food") + ". By volume, you are almost more food than girl at this point and you feel like you might burst if you force down one more bite.";
+                if (!achievements[3]) UpdateAchievements(3);
+                break;
             default:
-                bellyDescription = "Every inch of your digestive tract is stretched like a balloon, and your massively overstretched belly contains what feels like an entire ocean of " + (liquidContents / stomachContents > 0.8f ? "soda" : "food") + ". You cannot even burp, as a burp would imply the existence of a pocket of air trapped somewhere in your enormously distended abdomen, and every last bit of space relieved by previous burps has already been " + (liquidContents / stomachContents > 0.8f ? "filled with even more soda" : "crammed with even more food") + ". By volume, you are almost more food than girl at this point and you feel like you might burst if you force down one more bite.";
+                bellyDescription = "What you just did was insane and you know it. Having pushed well past what should have been your absolute physical limit, your mind goes blank with pleasure as your gigantic belly desperately churns away at the " + (preyInside == 4 ? "mass of squirming prey" : "sheer volume of food") + " within it. Even before that last act of overindulgence, your belly was truly and utterly stuffed... and now, the absurd amount of food inside your belly, densely compacted by the immense pressure, has stretched it to such an indescribably enormous size that it could just as easily fit an entire adult person inside.";
                 if (!achievements[3]) UpdateAchievements(3);
                 break;
 
@@ -4209,11 +4321,11 @@ public class MainLoop : MonoBehaviour
         int volumeInt = (int)Mathf.Floor(totalBellyContents + gasContents + 0.001f);
         if (volumeInt <= 22)
         {
-            imageIndex = (int)Mathf.Min(characterSpritesBtm.Length / 6 - 1, volumeInt);
+            imageIndex = (int)Mathf.Min(characterSpritesBtm.Length / 3 - 1, volumeInt);
         }
         else
         {
-            imageIndex = (int)Mathf.Min(characterSpritesBtm.Length / 6 - 1, 22 + (volumeInt - 22) / 2);
+            imageIndex = (int)Mathf.Min(characterSpritesBtm.Length / 3 - 1, 22 + (volumeInt - 22) / 2);
         }
 
         Vector3 leftOffset = Vector3.zero;
@@ -4453,7 +4565,7 @@ public class MainLoop : MonoBehaviour
         }
 
 
-        if (!achievements[8] && imageIndex == characterSpritesBtm.Length/6 - 1) UpdateAchievements(8);
+        if (!achievements[8] && imageIndex == characterSpritesBtm.Length/3 - 1) UpdateAchievements(8);
         /*switch (Mathf.Floor(totalBellyContents))
         {
             case 0:
@@ -4532,6 +4644,7 @@ public class MainLoop : MonoBehaviour
         wombSprites.GetComponent<SpriteRenderer>().color = new Color(wombColor.r, wombColor.g, wombColor.b, Mathf.Clamp(-0.75f + 0.075f * pregnancyDays, 0f, 0.75f));
         caloriesText.text = Mathf.Round(displayedCalories) + " / " + (fetusCount > 0 ? GetCalorieRequirement() : "----");
         caloriesText.color = (Mathf.Round(dailyCalories) >= GetCalorieRequirement() && fetusCount > 0) ? new Color(0.5058824f, 1f, 0.3803922f, 1f) : Color.white;
+        UpdateOverlayText();
         RefreshTouchColliders();
         UpdateWombTattoo(stomachContents + gasContents > intestineContents + wombContents + coomContents);
         SetBellySprites(stomachContents + gasContents > intestineContents + wombContents + coomContents, imageIndex);
@@ -4614,17 +4727,29 @@ public class MainLoop : MonoBehaviour
                 displayedCalories += (int)Mathf.Sign(dailyCalories - displayedCalories);
             }
             caloriesText.text = Mathf.Round(displayedCalories) + " / " + (fetusCount > 0 ? GetCalorieRequirement() : "----");
+            UpdateOverlayText();
             yield return null;
         }
     }
 
     void SetBellySprites(bool isTopHeavy, int index)
     {
-        float effectiveContents = Mathf.Clamp(stomachContents + gasContents, 0f, 17f);
-        spriteRenderer.sprite = (isTopHeavy ? characterSpritesTop[index + (Mathf.Min(breastOverride, breastIndex) * 28) + (nakedMode ? 84 : 0)] : characterSpritesBtm[index + (Mathf.Min(breastOverride, breastIndex) * 28) + (nakedMode ? 84 : 0)]);
+        float effectiveContents = Mathf.Clamp(stomachContents + gasContents, 0f, 20f);
+        if (nakedMode)
+        {
+            spriteRenderer.sprite = (isTopHeavy ? nudeSpritesTop[index + (Mathf.Min(breastOverride, breastIndex) * 28)] : nudeSpritesBtm[index + (Mathf.Min(breastOverride, breastIndex) * 28)]);
+        }
+        else if (backgroundIndex == 0)
+        {
+            spriteRenderer.sprite = (isTopHeavy ? characterSpritesTop[index + (Mathf.Min(breastOverride, breastIndex) * 28)] : characterSpritesBtm[index + (Mathf.Min(breastOverride, breastIndex) * 28)]);
+        }
+        else
+        {
+            spriteRenderer.sprite = (isTopHeavy ? altSpritesTop[index + (Mathf.Min(breastOverride, breastIndex) * 28)] : altSpritesBtm[index + (Mathf.Min(breastOverride, breastIndex) * 28)]);
+        }
         sideviewBase.GetComponent<DigitCounter>().SetCounterTo(Mathf.Min(breastOverride, breastIndex));
-        stomachSprites.SetCounterTo(Mathf.Min(17, (int)effectiveContents));
-        stomachSprites.transform.localPosition = new Vector3(Mathf.Clamp(imageIndex - (int)effectiveContents, 0, 17) * -0.02f, Mathf.Clamp(imageIndex - (int)effectiveContents, 0, 17) * 0.045f + (isTopHeavy ? 0f : effectiveContents / -120f), 0f);
+        stomachSprites.SetCounterTo(Mathf.Min(stomachSprites.GetLength() + 1, (int)effectiveContents));
+        stomachSprites.transform.localPosition = new Vector3(Mathf.Clamp(imageIndex - (int)effectiveContents, 0, stomachSprites.GetLength() + 1) * -0.02f, Mathf.Clamp(imageIndex - (int)effectiveContents, 0, stomachSprites.GetLength() + 1) * 0.045f + (isTopHeavy ? 0f : effectiveContents / -200f), 0f);
         if (isTopHeavy)
         {
             sideviewBottom.GetComponent<SpriteRenderer>().enabled = false;

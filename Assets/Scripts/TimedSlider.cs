@@ -73,8 +73,15 @@ public class TimedSlider : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        cancelButton.GetComponent<Collider2D>().enabled = volume <= 0f && !autoMode;
-        cancelButton.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, ((volume > 0f || canceledSex || autoMode) ? 0.1f : 1f));
+        cancelButton.GetComponent<Collider2D>().enabled = !canceledSex || autoMode;
+        if (autoMode && climax < 200f)
+        {
+            cancelButton.GetComponent<SpriteRenderer>().color = new Color(1f, 0.1462264f, 0.6066363f, 1f);
+        }
+        else
+        {
+            cancelButton.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, ((canceledSex || volume > 0f) ? 0.2f : 1f));
+        }
 
         
         if (mainLoop.clickedButtonName == "auto")
@@ -83,7 +90,23 @@ public class TimedSlider : MonoBehaviour
         }
         else if (mainLoop.clickedButtonName == "cancel_sex")
         {
-            canceledSex = true;
+            if (volume <= 0f && !autoMode)
+            { 
+                canceledSex = true; 
+            }
+            else if (autoMode)
+            {
+                clickedThisCycle = true;
+                volume = maxVolume;
+                volumeTransform.localScale = new Vector3(volume / 100f, volumeTransform.localScale.y, 1);
+                climax = 200f;
+                climaxTransform.localScale = new Vector3(climax / 100f, climaxTransform.localScale.y, 1);
+                //if (climax < 200f) StartCoroutine(mainLoop.Bounce(0.2f));
+                StartCoroutine(mainLoop.BellyJiggle(false));
+                if (mainLoop.nakedMode && mainLoop.breastIndex > 0 && Random.Range(0, 100000) < mainLoop.bankedCalories - 40000) StartCoroutine(mainLoop.CreateMilkStream(1, 0.05f, 0f));
+                plapsPlayer.PlayRandom();
+                sexualMoansPlayer.PlayRandom();
+            }
         }
         else if (((Input.GetMouseButtonDown(0)) || Input.GetKeyDown(KeyCode.Space) || (value == 10f && autoMode && !canceledSex && !(climax > 10f && volume + 190f < maxVolume))) && !clickedThisCycle && !mainLoop.clickedButtonName.StartsWith("toggle"))
         {

@@ -64,6 +64,7 @@ public class AudioPlayer : MonoBehaviour
 
     public IEnumerator PlayConstantly()
     {
+        yield return new WaitForSeconds(Random.Range(minimumDelay, maximumDelay));
         while (true)
         {
             PlayRandom();
