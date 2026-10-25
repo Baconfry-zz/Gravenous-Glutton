@@ -12,10 +12,10 @@ public class TimedSlider : MonoBehaviour
 
     [SerializeField] private Transform volumeTransform;
     [SerializeField] private SpriteRenderer screenFlash;
-    [SerializeField] private SpriteRenderer pregnancyPreview;
+    //[SerializeField] private SpriteRenderer pregnancyPreview;
     [SerializeField] private SpriteRenderer sleepingHead;
     //[SerializeField] private SpriteRenderer sleepingHeadBackdrop;
-    [SerializeField] private SpriteRenderer previewBG;
+    //[SerializeField] private SpriteRenderer previewBG;
     [SerializeField] private Sprite[] previewSprites = new Sprite[3];
     [SerializeField] private ToggleButton autoButton;
     [SerializeField] private GameObject cancelButton;
@@ -108,7 +108,7 @@ public class TimedSlider : MonoBehaviour
                 sexualMoansPlayer.PlayRandom();
             }
         }
-        else if (((Input.GetMouseButtonDown(0)) || Input.GetKeyDown(KeyCode.Space) || (value == 10f && autoMode && !canceledSex && !(climax > 10f && volume + 190f < maxVolume))) && !clickedThisCycle && !mainLoop.clickedButtonName.StartsWith("toggle"))
+        else if (((Input.GetMouseButtonDown(0)) || Input.GetKeyDown(KeyCode.Space) || (value == 10f && autoMode && !canceledSex && !(climax > 10f && volume + 190f < maxVolume))) && !clickedThisCycle && !mainLoop.clickedButtonName.StartsWith("toggle") && !canceledSex)
         {
             clickedThisCycle = true;
             volume += value;
@@ -155,8 +155,8 @@ public class TimedSlider : MonoBehaviour
         cancelButton.SetActive(true);
         autoButton.ForceState(false);
         autoMode = false;
-        previewBG.enabled = false;
-        pregnancyPreview.enabled = false;
+        //previewBG.enabled = false;
+        //pregnancyPreview.enabled = false;
         sleepingHead.enabled = true;
         //backdropFace.enabled = true;
 
@@ -229,13 +229,13 @@ public class TimedSlider : MonoBehaviour
             amountReleased = volume;
 
             //if (amountReleased > 200) amountReleased = 200;
-            if (startPregnancy)
+            /*if (startPregnancy)
             {
-                pregnancyPreview.sprite = previewSprites[(mainLoop.fertilityBonus + Mathf.Min((int)amountReleased, 200) / 100 + (mainLoop.breastIndex * 8) + (mainLoop.nakedMode ? 24 : 0))];
+                pregnancyPreview.sprite = previewSprites[(mainLoop.fertilityBonus + Mathf.Min((int)amountReleased, 200) / 100 + (mainLoop.breastIndex * 8) + 24)];//(mainLoop.nakedMode ? 24 : 0))];
                 pregnancyPreview.enabled = true;
-                previewBG.enabled = true;
+                //previewBG.enabled = true;
                 pregnancyPreview.color = new Color(pregnancyPreview.color.r, pregnancyPreview.color.g, pregnancyPreview.color.b, 0.2f);
-            }
+            }*/
 
             //previewBG.color = new Color(previewBG.color.r, previewBG.color.g, previewBG.color.b, 0.2f);
             previewFace.SetCounterTo(2);
@@ -276,9 +276,9 @@ public class TimedSlider : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         previewFace.SetCounterTo(0);
         //backdropFace.SetCounterTo(0);
-        pregnancyPreview.enabled = false;
+        //pregnancyPreview.enabled = false;
         sleepingHead.enabled = false;
-        previewBG.enabled = false;
+        //previewBG.enabled = false;
         //backdropFace.enabled = false;
         value = 0;
         volume = 0;

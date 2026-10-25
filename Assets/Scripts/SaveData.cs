@@ -10,6 +10,8 @@ public class SaveData
     public float coomContents;
     public float gasContents;
     public float coomStorage;
+    public float chubVolume;
+    public int chubDays;
     public float liquidContents;
     public int digestionTimer;
     public int hungerTimer;
@@ -27,9 +29,11 @@ public class SaveData
     public int disposalTimer;
     public float dailyCalories;
     public int bankedCalories;
+    public int lactationHours;
     public float wombContents;
     public int fetusCount;
     public int fertilityBonus;
+    public float coomulativeTotal;
     public int pregnancyDays;
     public int overdueDays;
     public int actualDays;
