@@ -838,7 +838,7 @@ public class MainLoop : MonoBehaviour
         }
         else
         {
-            trueImageIndex = (int)(22 + (stomachContents + intestineContents + gasContents + wombContents + coomContents + 0.001f - 22) / 2);
+            trueImageIndex = (int)(22 + (stomachContents + intestineContents + gasContents + wombContents + coomContents + chubVolume + 0.001f - 22) / 2);
         }//(int)(stomachContents + gasContents + intestineContents + wombContents + coomContents);
         frameDelay *= 1 + (trueImageIndex / 50f);
         int amountToDecrement = (int)Mathf.Clamp((int)(stomachContents + gasContents) - imageIndex, -2, 0) + 2;
@@ -2013,8 +2013,8 @@ public class MainLoop : MonoBehaviour
         {
             if (preyHealth[i] > 0)
             {
-                /*preyMaxHealthBars[i].localPosition = new Vector3(4 * barRatio * i, preyMaxHealthBars[i].localPosition.y, preyMaxHealthBars[i].localPosition.z);
-                preyHealthBars[i].localPosition = new Vector3(4 * barRatio * i, preyHealthBars[i].localPosition.y, preyHealthBars[i].localPosition.z);*/
+                preyMaxHealthBars[i].localPosition = new Vector3(preyMaxHealthBars[0].localPosition.x + 4 * barRatio * i, preyMaxHealthBars[i].localPosition.y, preyMaxHealthBars[i].localPosition.z);
+                preyHealthBars[i].localPosition = new Vector3(preyHealthBars[0].localPosition.x + 4 * barRatio * i, preyHealthBars[i].localPosition.y, preyHealthBars[i].localPosition.z);
                 preyMaxHealthBars[i].localScale = new Vector3(4 * barRatio, preyMaxHealthBars[i].localScale.y, preyMaxHealthBars[i].localScale.z);
                 preyHealthBars[i].localScale = new Vector3(barRatio * preyHealth[i] / 10, preyMaxHealthBars[i].localScale.y, preyMaxHealthBars[i].localScale.z);
             }
@@ -2508,7 +2508,7 @@ public class MainLoop : MonoBehaviour
                             if (plateIndex < plates.Length && !sodaMode) plates[plateIndex].SetActive(true);
                             foodEaten++;
                             if (!sodaMode) plateIndex++;
-                            streamEarnings += (int)((1 + 2 * (stomachContents + intestineContents + wombContents + gasContents + coomContents)) * Mathf.Pow(1.013f, (foodEaten + preyInside * 10)));
+                            streamEarnings += (int)((1 + 2 * (stomachContents + intestineContents + wombContents + gasContents + coomContents + chubVolume)) * Mathf.Pow(1.013f, (foodEaten + preyInside * 10)));
                             chatButton.GetComponent<Collider2D>().enabled = true;
                             chatButton.GetComponent<SpriteRenderer>().color = Color.white;
                         }
@@ -2572,7 +2572,7 @@ public class MainLoop : MonoBehaviour
                                     if (plateIndex < plates.Length) plates[plateIndex].SetActive(true);
                                     foodEaten++;
                                     if (!sodaMode) plateIndex++;
-                                    streamEarnings += (int)((3 + 2 * (stomachContents + intestineContents + wombContents + gasContents + coomContents)) * Mathf.Pow(1.013f, foodEaten));
+                                    streamEarnings += (int)((3 + 2 * (stomachContents + intestineContents + wombContents + gasContents + coomContents + chubVolume)) * Mathf.Pow(1.013f, foodEaten));
                                 }
                                 gulpPlayer.PlayRandom();
                                 if (stomachContents + gasContents >= 18f) break;
@@ -2822,8 +2822,8 @@ public class MainLoop : MonoBehaviour
                                 }
                                 else
                                 {
-                                    yield return StartCoroutine(BellyJiggle(true, 0.3f));
-                                    yield return StartCoroutine(BellyJiggle(true, 0.3f));
+                                    yield return StartCoroutine(BellyJiggle(true, 0.5f));
+                                    yield return StartCoroutine(BellyJiggle(false, 0.5f));
                                 }
                             }
                         }
@@ -2926,8 +2926,8 @@ public class MainLoop : MonoBehaviour
                         }
                         else
                         {
-                            yield return StartCoroutine(BellyJiggle(true, 0.3f));
-                            yield return StartCoroutine(BellyJiggle(true, 0.3f));
+                            yield return StartCoroutine(BellyJiggle(true, 0.5f));
+                            yield return StartCoroutine(BellyJiggle(false, 0.5f));
                         }
                     }
                 }
@@ -3183,7 +3183,7 @@ public class MainLoop : MonoBehaviour
                                 }
                                 else if (hungerModifier >= 4.4f && intestineContents >= intestineCapacity * intestineMultiplier && foodStock < 10 && preyOutside == 0 && stomachContents >= 13.6f && !berserkMode)
                                 {
-                                    subMessage2 = " But is that really true? After all, you've already gotten this far, and there's only " + foodStock + " plates of food left...\n\nAn overwhelming urge takes over. You must finish what you started. There is no turning back.";
+                                    subMessage2 = " But is that really true? After all, you've already gotten this far, and there's only " + foodStock + (foodStock > 1 ? " plates" : " plate") + " of food left...\n\nAn overwhelming urge takes over. You must finish what you started. There is no turning back.";
                                     berserkMode = true;
                                     hungerText.text = "Hunger multiplier: ???";
                                     hungerText.color = Color.yellow;
@@ -3352,7 +3352,7 @@ public class MainLoop : MonoBehaviour
                             faces.SetCounterTo(18);
                             break;
                         case 8://measurements
-                            float inches = Mathf.Round(10 * (24 + 2 * (stomachContents + intestineContents + wombContents + coomContents + gasContents))) / 10;
+                            float inches = Mathf.Round(10 * (24 + 2 * (stomachContents + intestineContents + wombContents + coomContents + gasContents + chubVolume))) / 10;
                             float centimetres = Mathf.Round(10 * 2.54f * inches) / 10;
                             float kilograms = Mathf.Round(10 * foodEaten * 0.4f) / 10;
                             float pounds = Mathf.Round(10 * kilograms * 2.20462f) / 10;
@@ -4503,7 +4503,7 @@ public class MainLoop : MonoBehaviour
                 if (!achievements[3]) UpdateAchievements(3);
                 break;
             default:
-                bellyDescription = "What you just did was insane and you know it. Having pushed well past what should have been your absolute physical limit, your mind goes blank with pleasure as your gigantic belly desperately churns away at the " + (preyInside == 4 ? "mass of squirming prey" : "sheer volume of food") + " within it. Even before that last act of overindulgence, your belly was truly and utterly stuffed... and now, the absurd amount of food inside your belly, densely compacted by the immense pressure, has stretched it to such an indescribably enormous size that it could just as easily fit an entire adult person inside.";
+                bellyDescription = "What you just did was insane and you know it. Having pushed well past what should have been your absolute physical limit, your mind goes blank with pleasure as your gigantic belly desperately churns away at the " + (preyInside == 4 ? "mass of squirming prey" : "sheer volume of food") + " within it. Even before that last act of overindulgence, your belly was already engorged several times beyond its capacity... and now, the absurd amount of food inside your belly, densely compacted by the immense pressure, has stretched it to such an indescribably enormous size that it could just as easily fit an entire adult person inside.";
                 if (!achievements[3]) UpdateAchievements(3);
                 break;
 
@@ -4642,7 +4642,7 @@ public class MainLoop : MonoBehaviour
                 {
                     if (pregnancyDays <= 40)
                     {
-                        switch (imageIndex)
+                        switch ((int)wombContents)
                         {
                             case 0:
                                 break;
