@@ -13,14 +13,17 @@ public class SaveData
     public float chubVolume;
     public int chubDays;
     public float liquidContents;
+    public float intestineLiquidContents;
     public int digestionTimer;
     public int hungerTimer;
     public float trainingModifier;
     public float intestineMultiplier;
     public int munchiesConsumed;
     public int foodStock;
+    public int sodaStock;
     public int weedStock;
     public int enzymeStock;
+    public float activeSodaContents;
     public int money;
     public int cumulativeEarnings;
     public int daysEatingPreyOnly;
@@ -39,6 +42,7 @@ public class SaveData
     public int actualDays;
     //public int lastSeenEmptyBelly;
     public int currentTime;
+    public bool sodaMode;
     public bool reachedMaxIntestine;
     public bool foodMinigameAvailable;
     public bool tookCaffeine;
